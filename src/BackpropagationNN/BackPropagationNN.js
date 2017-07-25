@@ -2,44 +2,47 @@
 var Layer = require('./layer');
 
 
-function BackpropagationNeuralNetwork(inputSize, hiddenSize, outputSize) {
+function BackpropagationNeuralNetwork(options) {
+    this.options = defaults;
+    if (options) {
+        this.options = Object.assign(this.options, options);
+    }
     this.layers = [];
     this.error = null;
-
-    this.layers.push(new Layer(inputSize, hiddenSize));
-    this.layers.push(new Layer(hiddenSize, outputSize));
+    //Layer that contains the edges between the input neurons and the hidden neurons
+    this.layers.push(new Layer(this.options.inputSize, this.options.hiddenSize));
+    //Layer that contains the edges between the hidden neurons and the output neurons
+    this.layers.push(new Layer(this.options.hiddenSize, this.options.outputSize));
 }
 
 var nn = {
-
+    //return a single layer
     getLayer: function(index) {
         return this.layers[index];
     },
+    //Forward process
     run: function(input) {
         var activations = input;
         for (var i = 0; i < this.layers.length; i++) {
-            if (this.layers[i]) {
-                //produce output based on the input
-                activations = this.layers[i].run(activations);
-            }
+            //produce output based on the input
+            activations = this.layers[i].run(activations);
         }
-        //return the output produced by the neural network
+        //return the normalized output produced by the neural network
         return activations;
     },
-    train: function(input, targetOutput, learningRate, momentum) {
+    train: function(input, targetOutput) {
         //get output from the neural network
-        var outputFromNN = this.run(input);
+        var calculatedOutput = this.run(input);
         var error = [];
 
-        // console.log(outputFromNN);
-        for (var i = 0; i < outputFromNN.length; i++) {
+        for (var i = 0; i < calculatedOutput.length; i++) {
             error.push(0);
         }
         //check wether targetOutput is an object or an array
         if (targetOutput instanceof Array) {
             for (var x = 0; x < error.length; x++) {
                 //calculate the error
-                error[x] = targetOutput[x] - outputFromNN[x];
+                error[x] = targetOutput[x] - calculatedOutput[x];
             }
         } else if (targetOutput instanceof Object) {
             var target = [];
@@ -48,20 +51,28 @@ var nn = {
             }
             for (var x = 0; x < error.length; x++) {
                 //calculate the error
-                error[x] = target[x] - outputFromNN[x];
+                error[x] = target[x] - calculatedOutput[x];
             }
         }
+        //backpropagation
         for (var y = this.layers.length - 1; y >= 0; y--) {
             if (this.layers[y]) {
                 //train the layers using the calculated error
-                error = this.layers[y].train(error, learningRate, momentum);
+                error = this.layers[y].train(error, this.options.learningRate, this.options.momentum);
             }
         }
         //set the new error to the neural net class
-        this.error = error[0];
+        this.error = error[error.length - 1];
     }
 }
 
+var defaults = {
+    inputSize: 3,
+    hiddenSize: 2,
+    outputSize: 1,
+    learningRate: 0.3,
+    momentum: 0.6
+}
 BackpropagationNeuralNetwork.prototype = nn;
 
 module.exports = BackpropagationNeuralNetwork;
