@@ -17,7 +17,7 @@ var Neuralnet = require('./src/neuralnet'),
         { green: 1 },
         { blue: 0.5 }
     ],
-    nn = new Neuralnet().BackpropagationNeuralNetwork();
+    nn = new Neuralnet().BackpropagationNeuralNetwork(options);
 
 
 console.log('Training...');
