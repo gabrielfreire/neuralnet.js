@@ -56,3 +56,7 @@ input: R[0.5], G[0.5], B[1] > output:  0.49998682870432254
 - [ ] neuralnet.RecurrentNeuralNetwork - Recurrent Neural Network
 
 Being developed for study purposes
+# Useful links
+
+http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-1-introduction-to-rnns/
+http://neuralnetworksanddeeplearning.com/chap2.html

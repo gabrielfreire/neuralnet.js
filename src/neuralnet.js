@@ -12,7 +12,9 @@ var nn = {
     /*TODO
     RecurrentNeuralNetwork: function(){},
     LongShortTermMemory: function(){},
-    GatedRecurrentUnit: function(){}
+    GatedRecurrentUnit: function(){},
+    ConvolutionNeuralNetwork: function(){},
+    PerceptronNeuralNetwork: function(){}
     */
 }
 
