@@ -1,4 +1,4 @@
-var Neuralnet = require('./neuralnet'),
+var Neuralnet = require('./src/neuralnet'),
     learningRate = 0.3,
     momentum = 0.06,
     iterations = 60000,

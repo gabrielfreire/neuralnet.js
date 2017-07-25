@@ -18,7 +18,6 @@ function Layer(inputSize, outputSize) {
     }
 }
 
-
 Layer.prototype = {
     run: function(inputArray) {
         //check if inputArray is an object or an array

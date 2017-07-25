@@ -35,7 +35,7 @@ var nn = {
         for (var i = 0; i < outputFromNN.length; i++) {
             error.push(0);
         }
-        //check if targetoutput is an object or an array
+        //check wether targetOutput is an object or an array
         if (targetOutput instanceof Array) {
             for (var x = 0; x < error.length; x++) {
                 //calculate the error
