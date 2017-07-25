@@ -4,9 +4,18 @@ Fast Neural Network for node.js
 # Usage
 Code
 ```js
-var Neuralnet = require('./neuralnet')
-var nn = new Neuralnet().BackpropagationNeuralNetwork(inputSize, hiddenSize, outputSize);
-
+var Neuralnet = require('./neuralnet'),
+    nn = new Neuralnet().BackpropagationNeuralNetwork(inputSize, hiddenSize, outputSize),
+    trainingData = [
+        { r: 1.03, g: 0.7, b: 0.5 },
+        { r: 0.16, g: 1.09, b: 0.2 },
+        { r: 0.5, g: 0.5, b: 1.0 }
+    ],
+    trainingOutput = [
+        { red: 0 },
+        { green: 1 },
+        { blue: 0.5 }
+    ],
 
 console.log('Training...');
 for (var i = 0; i < iterations; i++) {
