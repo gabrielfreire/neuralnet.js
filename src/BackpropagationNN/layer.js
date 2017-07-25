@@ -1,4 +1,4 @@
-var ActivationFunction = require('./activation');
+var ActivationFunction = require('../Utils/activation');
 
 function Layer(inputSize, outputSize) {
     this.input = [];

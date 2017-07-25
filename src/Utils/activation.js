@@ -13,6 +13,7 @@ var af = {
 
     //TODO
     //relu: function(){}
+    //softmax: function(){}
 }
 ActivationFunction.prototype = af;
 
