@@ -1,15 +1,35 @@
 {
-    "name": "backprop_nn",
+    "name": "neuralnet.js",
     "version": "1.0.0",
-    "description": "",
+    "description": "Machine learning library",
     "main": "index.js",
     "scripts": {
         "test": "echo \"Error: no test specified\" && exit 1",
         "start": "node index.js"
     },
-    "author": "Gabriel Freire",
+    "author": "Gabriel Freire <gabrielfreiredev@gmail.com>",
+    "repository": {
+        "type": "git",
+        "url": "git+ssh://git@github.com/gabrielfreire/neuralnet.js.git"
+    },
     "license": "ISC",
-    "dependencies": {
-
-    }
+    "keywords": [
+        "ai",
+        "artificial-intelligence",
+        "feed forward",
+        "neural network",
+        "classifier",
+        "neural",
+        "network",
+        "neural-networks",
+        "machine-learning",
+        "synapse",
+        "recurrent",
+        "long short term memory",
+        "gated recurrent unit",
+        "rnn",
+        "lstm",
+        "gru"
+    ],
+    "dependencies": {}
 }
