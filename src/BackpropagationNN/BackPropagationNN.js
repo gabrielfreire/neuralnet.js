@@ -1,5 +1,6 @@
 //backpropagation Neural Network
-var Layer = require('./layer');
+var Layer = require('./layer'),
+    zeros = require('../Utils/zeros');
 
 
 function BackpropagationNeuralNetwork(options) {
@@ -33,11 +34,8 @@ var nn = {
     train: function(input, targetOutput) {
         //get output from the neural network
         var calculatedOutput = this.run(input);
-        var error = [];
+        var error = zeros(calculatedOutput.length);
 
-        for (var i = 0; i < calculatedOutput.length; i++) {
-            error.push(0);
-        }
         //check wether targetOutput is an object or an array
         if (targetOutput instanceof Array) {
             for (var x = 0; x < error.length; x++) {

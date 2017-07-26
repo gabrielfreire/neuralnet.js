@@ -1,22 +1,14 @@
 var ActivationFunction = require('../Utils/activation');
+var zeros = require('../Utils/zeros');
+var randomWeights = require('../Utils//randomWeights');
 
 function Layer(inputSize, outputSize) {
-    this.input = [];
-    this.output = [];
-    this.weights = [];
-    this.dWeights = []; //change of weights in the previous iterations
+    this.input = zeros(inputSize + 1);
+    this.output = zeros(outputSize);
+    this.weights = randomWeights((inputSize + 1) * outputSize);
+    this.dWeights = zeros((inputSize + 1) * outputSize); //change of weights in the previous iterations
     this.inputSize = inputSize;
     this.outputSize = outputSize;
-
-    for (var i = 0; i < outputSize; i++) {
-        this.output.push(0);
-    }
-    //We need as many weights as input * output size
-    var length = (inputSize + 1) * outputSize;
-    for (var i = 0; i < length; i++) {
-        this.weights[i] = Math.random() * 2 - 2 + 2; // [-2, 2]
-        this.dWeights[i] = 0; // [-2, 2]
-    }
 }
 
 Layer.prototype = {
@@ -42,7 +34,7 @@ Layer.prototype = {
             newOutput;
         for (var i = 0; i < this.output.length; i++) {
             for (var j = 0; j < this.input.length; j++) {
-                //calculate the output based on the input and the weights
+                //calculate the output based on the input and its weights
                 this.output[i] += this.weights[offset + j] * this.input[j];
             }
             //normalize the output using the sigmoid activation function
@@ -56,7 +48,7 @@ Layer.prototype = {
     train: function(error, learningRate, momentum) {
         //the offset variable helps with the distribution of weights for each input
         var offset = 0,
-            nextError = [];
+            nextError = zeros(this.input.length);
 
         for (var i = 0; i < this.output.length; i++) {
             //calculate the delta
@@ -64,7 +56,6 @@ Layer.prototype = {
 
             for (var j = 0; j < this.input.length; j++) {
 
-                nextError.push(0);
                 var weightIndex = offset + j;
                 //calculate the next error
                 nextError[j] += this.weights[weightIndex] * delta;
