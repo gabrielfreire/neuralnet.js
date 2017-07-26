@@ -54,10 +54,17 @@ input: R[0.5], G[0.5], B[1] > output:  0.49998682870432254
 
 # Neural Network Types
 - [x] neuralnet.BackpropagationNeuralNetwork - Feedforward Neural Network with backpropagation
+- [ ] neuralnet.Perceptron - Basic Perceptron Neural Network
 - [ ] neuralnet.RecurrentNeuralNetwork - Recurrent Neural Network
+- [ ] neuralnet.RecurrentNeuralNetworkLTSM - Recurrent Neural Network Long term short memory
+- [ ] neuralnet.RecurrentNeuralNetworkGRU - Recurrent Neural Network Gated Recurrent Unit
 
-Being developed for study purposes
+# TODO
+- [ ] Add support for gpu.js
+
 # Useful links
 
 http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-1-introduction-to-rnns/
 http://neuralnetworksanddeeplearning.com/chap2.html
+
+This library was not npm published and is being developed for study purposes, feel free to contribute
