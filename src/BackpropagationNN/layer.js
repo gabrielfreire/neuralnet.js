@@ -60,8 +60,19 @@ Layer.prototype = {
                 //calculate the next error
                 nextError[j] += this.weights[weightIndex] * delta;
 
-                //adjust the weights
-                //Δw(t) = α * (Δ*input) + μ * Δw(t - 1) < the following code represents this formula
+                /**
+                 * --------------------------
+                 * Mathematical representation of weight adjustments
+                 * --------------------------
+                 * Δw(t): current weight
+                 * α: learningRate
+                 * (Δ*input): gradient
+                 * μ: momentum
+                 * Δw(t - 1): previous weight
+                 * --------------------------
+                 *  adjust the weights
+                 * Δw(t) = α * (Δ*input) + μ * Δw(t - 1) < the following code represents this formula 
+                 */
                 var dw = this.input[j] * delta * learningRate;
                 this.weights[weightIndex] += this.dWeights[weightIndex] * momentum + dw;
                 this.dWeights[weightIndex] = dw;
