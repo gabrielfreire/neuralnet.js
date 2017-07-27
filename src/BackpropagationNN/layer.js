@@ -2,13 +2,24 @@ var ActivationFunction = require('../Utils/activation');
 var zeros = require('../Utils/zeros');
 var randomWeights = require('../Utils//randomWeights');
 
-function Layer(inputSize, outputSize) {
+//Types [FEED_FORWARD, RECURRENT, CONVOLUTIONAL, SUBSAMPLING, RECURSIVE, MULTILAYER, NORMALIZATION]
+function Layer(inputSize, outputSize, activation) {
     this.input = zeros(inputSize + 1);
     this.output = zeros(outputSize);
     this.weights = randomWeights((inputSize + 1) * outputSize);
     this.dWeights = zeros((inputSize + 1) * outputSize); //change of weights in the previous iterations
     this.inputSize = inputSize;
     this.outputSize = outputSize;
+    this.activationFunction = null;
+
+    switch (activation) {
+        case 'relu':
+            this.activationFunction = ActivationFunction.relu;
+            break;
+        case 'sigmoid':
+            this.activationFunction = ActivationFunction.sigmoid;
+            break;
+    }
 }
 
 Layer.prototype = {
@@ -38,11 +49,11 @@ Layer.prototype = {
                 this.output[i] += this.weights[offset + j] * this.input[j];
             }
             //normalize the output using the sigmoid activation function
-            this.output[i] = ActivationFunction.sigmoid(this.output[i]);
+            this.output[i] = this.activationFunction(this.output[i], false);
             offset += this.input.length;
         }
         //and return a copy of the output from the neural network
-        return this.output.slice();;
+        return this.output.slice();
     },
 
     train: function(error, learningRate, momentum) {
@@ -51,8 +62,8 @@ Layer.prototype = {
             nextError = zeros(this.input.length);
 
         for (var i = 0; i < this.output.length; i++) {
-            //calculate the delta
-            var delta = error[i] * ActivationFunction.dSigmoid(this.output[i])
+            //calculate the delta parameter
+            var delta = error[i] * this.activationFunction(this.output[i], true)
 
             for (var j = 0; j < this.input.length; j++) {
 

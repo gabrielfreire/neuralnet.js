@@ -4,13 +4,12 @@ function ActivationFunction() {
 }
 
 var af = {
-    sigmoid: function(x) {
-        return 1 / (1 + Math.exp(-x));
-    },
-    //derivative of the sigmoid
-    dSigmoid: function(x) {
+    sigmoid: function(x, isDerivative) {
+        if (!isDerivative) {
+            return 1 / (1 + Math.exp(-x));
+        }
         return x * (1 - x);
-    }
+    },
 
     //TODO
     //relu: function(){}
