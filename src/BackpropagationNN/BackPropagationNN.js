@@ -46,7 +46,7 @@ var nn = {
                 if (targetOutputs[i] instanceof Array) {
                     for (var x = 0; x < error.length; x++) {
                         //calculate the error
-                        error[x] = targetOutputs[i][x] - calculatedOutput[x];
+                        error[x] = targetOutputs[i] - calculatedOutput[x];
                     }
                 } else if (targetOutputs[i] instanceof Object) {
                     var target = [];

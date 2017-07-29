@@ -1,12 +1,16 @@
 //backpropagation Neural Network
 var BPNN = require('./BackpropagationNN/BackPropagationNN');
+var Perceptron = require('./PerceptronNN/Perceptron');
 
 function NeuralNetwork() {}
 
 
 var nn = {
-    BackpropagationNeuralNetwork: function(inputSize, hiddenSize, outputSize) {
-        return new BPNN(inputSize, hiddenSize, outputSize);
+    BackpropagationNeuralNetwork: function(options) {
+        return new BPNN(options);
+    },
+    PerceptronNeuralNetwork: function(options) {
+        return new Perceptron(options);
     }
 
     /*TODO
@@ -14,7 +18,6 @@ var nn = {
     LongShortTermMemory: function(){},
     GatedRecurrentUnit: function(){},
     ConvolutionNeuralNetwork: function(){},
-    PerceptronNeuralNetwork: function(){}
     */
 }
 

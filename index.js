@@ -5,9 +5,9 @@ var Neuralnet = require('./src/neuralnet'),
         { r: 0.5, g: 0.5, b: 1.0 }
     ],
     trainingOutput = [
-        { red: 0 },
+        { red: 1 },
         { green: 1 },
-        { blue: 0.5 }
+        { blue: 0 }
     ],
     nn = new Neuralnet().BackpropagationNeuralNetwork({
         inputSize: 3,
@@ -18,6 +18,9 @@ var Neuralnet = require('./src/neuralnet'),
         iterations: 100000,
         momentum: 0.6
     });
+// nn2 = new Neuralnet().PerceptronNeuralNetwork();
+
+// nn2.train(trainingData, trainingOutput);
 
 console.log('Training...');
 nn.train(trainingData, trainingOutput);
@@ -29,6 +32,7 @@ for (var x = 0; x < trainingOutput.length; x++) {
     var t = trainingData[x];
     if (t) {
         var result = nn.run(t);
+        // var result = nn2.run(t);
         console.log('input: R[' + t['r'] + '], G[' + t['g'] + '], B[' + t['b'] + '] > output: ', result[0]);
         // console.log('input: [' + t[0] + '], [' + t[1] + '] > output: ', result[0]);
     }

@@ -10,6 +10,12 @@ var af = {
         }
         return x * (1 - x);
     },
+    step: function(x) {
+        if (x >= 1) {
+            return 1;
+        }
+        return 0;
+    }
 
     //TODO
     //relu: function(){}

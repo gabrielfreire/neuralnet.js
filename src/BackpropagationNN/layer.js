@@ -10,16 +10,7 @@ function Layer(inputSize, outputSize, activation) {
     this.dWeights = zeros((inputSize + 1) * outputSize); //change of weights in the previous iterations
     this.inputSize = inputSize;
     this.outputSize = outputSize;
-    this.activationFunction = null;
-
-    switch (activation) {
-        case 'relu':
-            this.activationFunction = ActivationFunction.relu;
-            break;
-        case 'sigmoid':
-            this.activationFunction = ActivationFunction.sigmoid;
-            break;
-    }
+    this.activation = activation ? activation : 'sigmoid';
 }
 
 Layer.prototype = {
@@ -49,7 +40,7 @@ Layer.prototype = {
                 this.output[i] += this.weights[offset + j] * this.input[j];
             }
             //normalize the output using the sigmoid activation function
-            this.output[i] = this.activationFunction(this.output[i], false);
+            this.output[i] = ActivationFunction[this.activation](this.output[i], false);
             offset += this.input.length;
         }
         //and return a copy of the output from the neural network
@@ -63,7 +54,7 @@ Layer.prototype = {
 
         for (var i = 0; i < this.output.length; i++) {
             //calculate the delta parameter
-            var delta = error[i] * this.activationFunction(this.output[i], true)
+            var delta = error[i] * ActivationFunction[this.activation](this.output[i], true)
 
             for (var j = 0; j < this.input.length; j++) {
 
