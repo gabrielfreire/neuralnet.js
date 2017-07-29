@@ -1,7 +1,7 @@
 var ActivationFunction = require('../Utils/activation');
 var zeros = require('../Utils/zeros');
 var randomW = require('../Utils/randomWeights');
-var toMatrixArray = require('../Utils/toArray');
+var toMatrix = require('../Utils/toArray');
 
 function Perceptron(options) {
     this.options = defaults;
@@ -22,32 +22,40 @@ var perceptron = {
     },
     run: function(input) {
         var sum = 0;
-        for (var j = 0; j < input.length; j++) {
-            sum += this.weights[j] * input[j];
+        if (!Array.isArray(input)) {
+            input = toMatrix.toArray(input);
         }
-        sum = ActivationFunction[this.activation](sum, false);
+        for (var j = 0; j < input.length; j++) {
+
+            sum += this.weights[j] * input[j];
+
+        }
+        sum = ActivationFunction[this.activation](sum);
         return sum;
     },
     train: function(input, output) {
-        var totalError = 1;
+        var totalError = 1,
+            iterations = 0;
         this.input = input;
         this.output = output;
 
-        this.input = toMatrix(this.input);
-        this.output = toMatrix(this.output);
+        this.input = toMatrix.toMatrix(this.input);
+        this.output = toMatrix.toMatrix(this.output);
         while (totalError !== 0) {
+            totalError = 0;
             for (var i = 0; i < this.output.length; i++) {
 
                 var calculatedOutput = this.run(this.input[i]);
-                var error = this.output[i] - calculatedOutput;
-                totalError = error;
-
+                var error = this.output[i][0] - calculatedOutput;
+                totalError += error;
                 //calculate the weights according to the error and learning rate
                 for (var j = 0; j < this.weights.length; j++) {
                     this.weights[j] += this.options.learningRate * this.input[i][j] * error;
                 }
             }
+            iterations++;
         }
+        this.options.iterations = iterations;
         this.error = totalError;
     }
 }

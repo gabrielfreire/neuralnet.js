@@ -1,5 +1,12 @@
 var matrix = require('./matrix');
 
+function toArray(obj) {
+    var ar = [];
+    for (var key in obj) {
+        ar.push(obj[key]);
+    }
+    return ar;
+}
 
 function toMatrix(objArray) {
     var _matrix, propCount = 0,
@@ -32,4 +39,7 @@ function toMatrix(objArray) {
     return _matrix;
 }
 
-module.exports = toMatrix;
+module.exports = {
+    toMatrix: toMatrix,
+    toArray: toArray
+};
