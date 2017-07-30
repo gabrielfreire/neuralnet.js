@@ -3,7 +3,7 @@ var Layer = require('./layer'),
     zeros = require('../Utils/zeros');
 
 
-function BackpropagationNeuralNetwork(options) {
+function FeedfowardNeuralNetwork(options) {
     this.options = defaults;
     if (options) {
         this.options = Object.assign(this.options, options);
@@ -83,6 +83,6 @@ var defaults = {
     iterations: 50000,
     momentum: 0.6
 }
-BackpropagationNeuralNetwork.prototype = nn;
+FeedfowardNeuralNetwork.prototype = nn;
 
-module.exports = BackpropagationNeuralNetwork;
+module.exports = FeedfowardNeuralNetwork;
