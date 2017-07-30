@@ -1,3 +1,10 @@
+/**
+ * Create a Matrix with 0s
+ * @param {Number} rowSize 
+ * @param {Number} colSize
+ * @return [ [0, 0, 0], [0, 0, 0], [0, 0, 0] ] Matrix 
+ */
+//Create a Matrix with 0s
 function matrix(rowSize, colSize) {
     var colSize = colSize;
     if (!colSize) {

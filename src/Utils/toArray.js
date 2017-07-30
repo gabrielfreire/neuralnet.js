@@ -1,5 +1,10 @@
 var matrix = require('./matrix');
 
+/**
+ * Convert an Object into an array
+ * @param {Object} obj
+ * @return [value1, value2, ..., valueN] Array
+ */
 function toArray(obj) {
     var ar = [];
     for (var key in obj) {
@@ -8,6 +13,11 @@ function toArray(obj) {
     return ar;
 }
 
+/**
+ * Convert an array of objects to a Matrix
+ * @param [{}, {}, {}] objArray
+ * @return [[],[],[]] Matrix 
+ */
 function toMatrix(objArray) {
     var _matrix, propCount = 0,
         objCount = objArray.length;

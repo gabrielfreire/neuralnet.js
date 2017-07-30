@@ -1,7 +1,7 @@
 var ActivationFunction = require('../Utils/activation');
-var zeros = require('../Utils/zeros');
-var randomW = require('../Utils/randomWeights');
-var toMatrix = require('../Utils/toArray');
+zeros = require('../Utils/zeros'),
+    randomW = require('../Utils/randomWeights'),
+    toMatrix = require('../Utils/toArray');
 
 function Perceptron(options) {
     this.options = defaults;
@@ -30,12 +30,12 @@ var perceptron = {
             sum += this.weights[j] * input[j];
 
         }
-        sum = ActivationFunction[this.activation](sum);
-        return sum;
+        return ActivationFunction[this.activation](sum);;
     },
     train: function(input, output) {
         var totalError = 1,
             iterations = 0;
+
         this.input = input;
         this.output = output;
 
@@ -45,9 +45,11 @@ var perceptron = {
             totalError = 0;
             for (var i = 0; i < this.output.length; i++) {
 
-                var calculatedOutput = this.run(this.input[i]);
-                var error = this.output[i][0] - calculatedOutput;
+                var calculatedOutput = this.run(this.input[i]),
+                    error = this.output[i][0] - calculatedOutput;
+
                 totalError += error;
+
                 //calculate the weights according to the error and learning rate
                 for (var j = 0; j < this.weights.length; j++) {
                     this.weights[j] += this.options.learningRate * this.input[i][j] * error;
@@ -65,7 +67,7 @@ Perceptron.prototype = perceptron;
 var defaults = {
     learningRate: 0.1,
     activation: 'step',
-    iterations: 200000,
+    iterations: 0,
     inputSize: 3,
     outputSize: 1
 }

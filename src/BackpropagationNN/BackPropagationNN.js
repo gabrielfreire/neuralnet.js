@@ -43,7 +43,7 @@ var nn = {
                 var error = zeros(calculatedOutput.length);
 
                 //check wether targetOutput is an object or an array
-                if (targetOutputs[i] instanceof Array) {
+                if (Array.isArray(targetOutputs[i])) {
                     for (var x = 0; x < error.length; x++) {
                         //calculate the error
                         error[x] = targetOutputs[i] - calculatedOutput[x];

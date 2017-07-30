@@ -17,7 +17,7 @@ Layer.prototype = {
     //Forward process
     run: function(inputArray) {
         //check if inputArray is an object or an array
-        if (inputArray instanceof Array) {
+        if (Array.isArray(inputArray)) {
             this.input = inputArray.slice(); //copy the array
         } else if (inputArray instanceof Object) {
             this.input = Object.assign(inputArray); //copy the object
