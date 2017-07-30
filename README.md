@@ -53,7 +53,7 @@ input: R[0.16], G[1.09], B[0.2] > output:  0.9946055536273819
 input: R[0.5], G[0.5], B[1] > output:  0.49998682870432254
 ```
 
-### Code to train a Perceptron Neural Network with backpropagation algorithm
+### Code to train a Perceptron Neural Network
 ```js
 var Neuralnet = require('./neuralnet'),
     trainingData = [
