@@ -17,8 +17,8 @@ var Neuralnet = require('./src/neuralnet'),
         activation: 'sigmoid',
         iterations: 100000,
         momentum: 0.6
-    });
-nn2 = new Neuralnet().PerceptronNeuralNetwork();
+    }),
+    nn2 = new Neuralnet().PerceptronNeuralNetwork();
 
 // nn2.train(trainingData, trainingOutput);
 
