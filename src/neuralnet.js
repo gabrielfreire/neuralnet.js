@@ -1,15 +1,15 @@
 //backpropagation Neural Network
-var FFNN = require('./BackpropagationNN/FeedfowardNN');
-var Perceptron = require('./PerceptronNN/Perceptron');
+const FFNN = require('./BackpropagationNN/FeedfowardNN');
+const Perceptron = require('./PerceptronNN/Perceptron');
 
 function NeuralNetwork() {}
 
 
 var nn = {
-    FeedfowardNeuralNetwork: function(options) {
+    FeedfowardNeuralNetwork: (options) => {
         return new FFNN(options);
     },
-    PerceptronNeuralNetwork: function(options) {
+    PerceptronNeuralNetwork: (options) => {
         return new Perceptron(options);
     }
 

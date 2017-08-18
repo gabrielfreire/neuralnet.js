@@ -24,5 +24,5 @@ function matrix(rowSize, colSize) {
 
     return matrix;
 }
-
+//TODO better performance solution
 module.exports = matrix;

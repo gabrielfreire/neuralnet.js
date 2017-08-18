@@ -1,7 +1,17 @@
 //feedfoward backpropagation Neural Network
-var Layer = require('./layer'),
-    zeros = require('../Utils/zeros');
+const Layer = require('./layer');
+const zeros = require('../Utils/zeros');
 
+
+var defaults = {
+    inputSize: 3,
+    hiddenSize: 2,
+    outputSize: 1,
+    activation: 'sigmoid',
+    learningRate: 0.3,
+    iterations: 50000,
+    momentum: 0.6
+};
 
 function FeedfowardNeuralNetwork(options) {
     this.options = defaults;
@@ -74,15 +84,6 @@ var nn = {
     }
 }
 
-var defaults = {
-    inputSize: 3,
-    hiddenSize: 2,
-    outputSize: 1,
-    activation: 'sigmoid',
-    learningRate: 0.3,
-    iterations: 50000,
-    momentum: 0.6
-}
 FeedfowardNeuralNetwork.prototype = nn;
 
 module.exports = FeedfowardNeuralNetwork;

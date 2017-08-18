@@ -4,27 +4,26 @@ Fast Neural Network for node.js
 # Usage
 ### Code to train a Feedfoward Neural Network with backpropagation algorithm
 ```js
-var Neuralnet = require('./neuralnet'),
-    trainingData = [
-        { r: 1.03, g: 0.7, b: 0.5 },
-        { r: 0.16, g: 1.09, b: 0.2 },
-        { r: 0.5, g: 0.5, b: 1.0 }
-    ],
-    trainingOutput = [
-        { red: 0 },
-        { green: 1 },
-        { blue: 0.5 }
-    ],
-
-    nn = new Neuralnet().FeedfowardNeuralNetwork({
-        inputSize: 3,
-        hiddenSize: 3,
-        outputSize: 1,
-        learningRate: 0.3,
-        activation: 'sigmoid',
-        iterations: 100000,
-        momentum: 0.6
-    });
+const Neuralnet = require('./src/neuralnet');
+const trainingData = [
+    { r: 1.03, g: 0.7, b: 0.5 },
+    { r: 0.16, g: 1.09, b: 0.2 },
+    { r: 0.5, g: 0.5, b: 1.0 }
+];
+const trainingOutput = [
+    { red: 1 },
+    { green: 1 },
+    { blue: 0 }
+];
+const nn = new Neuralnet().FeedfowardNeuralNetwork({
+    inputSize: 3,
+    hiddenSize: 3,
+    outputSize: 1,
+    learningRate: 0.3,
+    activation: 'sigmoid',
+    iterations: 100000,
+    momentum: 0.6
+});
 
 console.log('Training...');
 nn.train(trainingData, trainingOutput);
@@ -55,19 +54,18 @@ input: R[0.5], G[0.5], B[1] > output:  0.49998682870432254
 
 ### Code to train a Perceptron Neural Network
 ```js
-var Neuralnet = require('./neuralnet'),
-    trainingData = [
-        { r: 1.03, g: 0.7, b: 0.5 },
-        { r: 0.16, g: 1.09, b: 0.2 },
-        { r: 0.5, g: 0.5, b: 1.0 }
-    ],
-    trainingOutput = [
-        { red: 1 },
-        { green: 1 },
-        { blue: 0 }
-    ],
-
-    nn = new Neuralnet().PerceptronNeuralNetwork({
+const Neuralnet = require('./src/neuralnet');
+const trainingData = [
+    { r: 1.03, g: 0.7, b: 0.5 },
+    { r: 0.16, g: 1.09, b: 0.2 },
+    { r: 0.5, g: 0.5, b: 1.0 }
+];
+const trainingOutput = [
+    { red: 1 },
+    { green: 1 },
+    { blue: 0 }
+];
+const nn = new Neuralnet().PerceptronNeuralNetwork({
         inputSize: 3,
         outputSize: 1,
         learningRate: 0.1,

@@ -1,7 +1,14 @@
-var ActivationFunction = require('../Utils/activation');
-zeros = require('../Utils/zeros'),
-    randomW = require('../Utils/randomWeights'),
-    toMatrix = require('../Utils/toArray');
+const ActivationFunction = require('../Utils/activation');
+const zeros = require('../Utils/zeros');
+const randomW = require('../Utils/randomWeights');
+const toMatrix = require('../Utils/toArray');
+var defaults = {
+    learningRate: 0.1,
+    activation: 'step',
+    iterations: 0,
+    inputSize: 3,
+    outputSize: 1
+};
 
 function Perceptron(options) {
     this.options = defaults;
@@ -41,6 +48,7 @@ var perceptron = {
 
         this.input = toMatrix.toMatrix(this.input);
         this.output = toMatrix.toMatrix(this.output);
+
         while (totalError !== 0) {
             totalError = 0;
             for (var i = 0; i < this.output.length; i++) {
@@ -63,13 +71,5 @@ var perceptron = {
 }
 
 Perceptron.prototype = perceptron;
-
-var defaults = {
-    learningRate: 0.1,
-    activation: 'step',
-    iterations: 0,
-    inputSize: 3,
-    outputSize: 1
-}
 
 module.exports = Perceptron;
