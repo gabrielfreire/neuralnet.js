@@ -47,9 +47,9 @@ Training...
 Done!
 Num of iterations  60000
 Error  0
-input: R[1.03], G[0.7], B[0.5] > output:  0.005852680044926707
-input: R[0.16], G[1.09], B[0.2] > output:  0.9946055536273819
-input: R[0.5], G[0.5], B[1] > output:  0.49998682870432254
+input: R[1.03], G[0.7], B[0.5] > output:  [ 0.30005626091017007 ]
+input: R[0.16], G[1.09], B[0.2] > output:  [ 0.7000064281889645 ]
+input: R[0.5], G[0.5], B[1] > output:  [ 0.9959214134557477 ]
 ```
 
 ### Code to train a Perceptron Neural Network
@@ -61,9 +61,9 @@ const trainingData = [
     { r: 0.5, g: 0.5, b: 1.0 }
 ];
 const trainingOutput = [
-    { red: 0.3 },
-    { green: 0.7 },
-    { blue: 1 }
+    { red: 1 },
+    { green: 1 },
+    { blue: 0 }
 ];
 const nn = new Neuralnet().PerceptronNeuralNetwork({
         inputSize: 3,
