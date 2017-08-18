@@ -5,9 +5,9 @@ const trainingData = [
     { r: 0.5, g: 0.5, b: 1.0 }
 ];
 const trainingOutput = [
-    { red: 1 },
-    { green: 1 },
-    { blue: 0 }
+    { red: 0.3 },
+    { green: 0.7 },
+    { blue: 1 }
 ];
 const nn = new Neuralnet().FeedfowardNeuralNetwork({
     inputSize: 3,
