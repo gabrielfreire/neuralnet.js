@@ -1,41 +1,40 @@
+'use strict'
 //feedfoward backpropagation Neural Network
 const Layer = require('./layer');
 const zeros = require('../Utils/zeros');
 
-
-var defaults = {
-    inputSize: 3,
-    hiddenSize: 2,
-    outputSize: 1,
-    activation: 'sigmoid',
-    learningRate: 0.3,
-    iterations: 50000,
-    momentum: 0.6
-};
-
-function FeedfowardNeuralNetwork(options) {
-    this.options = defaults;
-    if (options) {
-        this.options = Object.assign(this.options, options);
+class FeedfowardNeuralNetwork {
+    constructor(options) {
+        const defaults = {
+            inputSize: 3,
+            hiddenSize: 2,
+            outputSize: 1,
+            activation: 'sigmoid',
+            learningRate: 0.3,
+            iterations: 50000,
+            momentum: 0.6
+        };
+        this.options = defaults;
+        if (options) {
+            this.options = Object.assign(this.options, options);
+        }
+        this.layers = [];
+        this.error = null;
+        //Layer that contains the edges between the input neurons and the hidden neurons
+        this.layers.push(new Layer(this.options.inputSize, this.options.hiddenSize, this.options.activation));
+        //Layer that contains the edges between the hidden neurons and the output neurons
+        this.layers.push(new Layer(this.options.hiddenSize, this.options.outputSize, this.options.activation));
     }
-    this.layers = [];
-    this.error = null;
-    //Layer that contains the edges between the input neurons and the hidden neurons
-    this.layers.push(new Layer(this.options.inputSize, this.options.hiddenSize, this.options.activation));
-    //Layer that contains the edges between the hidden neurons and the output neurons
-    this.layers.push(new Layer(this.options.hiddenSize, this.options.outputSize, this.options.activation));
-}
 
-var nn = {
-    getConfiguration: function() {
+    getConfiguration() {
         return this.options;
-    },
-    //return a single layer
-    getLayer: function(index) {
+    }
+
+    getLayer(index) {
         return this.layers[index];
-    },
-    //Forward process
-    run: function(input) {
+    }
+
+    run(input) {
         var activations = input;
         for (var i = 0; i < this.layers.length; i++) {
             //produce output for each layer based on the input
@@ -43,14 +42,16 @@ var nn = {
         }
         //return the normalized output produced by the neural network
         return activations;
-    },
-    train: function(inputs, targetOutputs) {
+    }
+
+    train(inputs, targetOutputs) {
         var counter = 0;
+        var error = 0;
         while (counter <= this.options.iterations) {
             for (var i = 0; i < targetOutputs.length; i++) {
                 //get output from the neural network
                 var calculatedOutput = this.run(inputs[i]);
-                var error = zeros(calculatedOutput.length);
+                error = zeros(calculatedOutput.length);
 
                 //check wether targetOutput is an object or an array
                 if (Array.isArray(targetOutputs[i])) {
@@ -80,10 +81,8 @@ var nn = {
             counter++;
         }
         //set the new error to the neural net class
-        this.error = error[error.length - 1];
+        this.error = Math.abs(error[error.length - 1]);
     }
 }
-
-FeedfowardNeuralNetwork.prototype = nn;
 
 module.exports = FeedfowardNeuralNetwork;

@@ -1,11 +1,11 @@
-var matrix = require('./matrix');
+const matrix = require('./matrix');
 
 /**
  * Convert an Object into an array
  * @param {Object} obj
  * @return [value1, value2, ..., valueN] Array
  */
-function toArray(obj) {
+var toArray = (obj) => {
     var ar = [];
     for (var key in obj) {
         ar.push(obj[key]);
@@ -18,7 +18,7 @@ function toArray(obj) {
  * @param [{}, {}, {}] objArray
  * @return [[],[],[]] Matrix 
  */
-function toMatrix(objArray) {
+var toMatrix = (objArray) => {
     var _matrix, propCount = 0,
         objCount = objArray.length;
 

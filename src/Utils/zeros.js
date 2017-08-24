@@ -1,4 +1,4 @@
-function zeros(size) {
+var zeros = (size) => {
     var array = [];
     for (var i = 0; i < size; i++) {
         array[i] = 0;

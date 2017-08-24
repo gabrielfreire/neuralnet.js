@@ -1,21 +1,22 @@
-var ActivationFunction = require('../Utils/activation');
-var zeros = require('../Utils/zeros');
-var randomWeights = require('../Utils//randomWeights');
+'use strict'
+
+const ActivationFunction = require('../Utils/activation');
+const zeros = require('../Utils/zeros');
+const randomWeights = require('../Utils//randomWeights');
 
 //Types [FEED_FORWARD, RECURRENT, CONVOLUTIONAL, SUBSAMPLING, RECURSIVE, MULTILAYER, NORMALIZATION]
-function Layer(inputSize, outputSize, activation) {
-    this.input = zeros(inputSize + 1);
-    this.output = zeros(outputSize);
-    this.weights = randomWeights((inputSize + 1) * outputSize);
-    this.dWeights = zeros((inputSize + 1) * outputSize); //change of weights in the previous iterations
-    this.inputSize = inputSize;
-    this.outputSize = outputSize;
-    this.activation = activation ? activation : 'sigmoid';
-}
+class Layer {
+    constructor(inputSize, outputSize, activation) {
+        this.input = zeros(inputSize + 1);
+        this.output = zeros(outputSize);
+        this.weights = randomWeights((inputSize + 1) * outputSize);
+        this.dWeights = zeros((inputSize + 1) * outputSize); //change of weights in the previous iterations
+        this.inputSize = inputSize;
+        this.outputSize = outputSize;
+        this.activation = activation ? activation : 'sigmoid';
+    }
 
-Layer.prototype = {
-    //Forward process
-    run: function(inputArray) {
+    run(inputArray) {
         //check if inputArray is an object or an array
         if (Array.isArray(inputArray)) {
             this.input = inputArray.slice(); //copy the array
@@ -32,8 +33,8 @@ Layer.prototype = {
         this.input.push(1);
 
         //the offset variable helps with the distribution of weights for each input
-        var offset = 0,
-            newOutput;
+        var offset = 0;
+        var newOutput;
         for (var i = 0; i < this.output.length; i++) {
             for (var j = 0; j < this.input.length; j++) {
                 //calculate the output based on the input and its weights
@@ -45,12 +46,12 @@ Layer.prototype = {
         }
         //and return a copy of the output from the neural network
         return this.output.slice();
-    },
+    }
 
-    train: function(error, learningRate, momentum) {
+    train(error, learningRate, momentum) {
         //the offset variable helps with the distribution of weights for each input
-        var offset = 0,
-            nextError = zeros(this.input.length);
+        var offset = 0;
+        var nextError = zeros(this.input.length);
 
         for (var i = 0; i < this.output.length; i++) {
             //calculate the delta parameter
