@@ -11,30 +11,26 @@ class Layer {
         this.output = zeros(outputSize);
         this.weights = randomWeights((inputSize + 1) * outputSize);
         this.dWeights = zeros((inputSize + 1) * outputSize); //change of weights in the previous iterations
-        this.inputSize = inputSize;
-        this.outputSize = outputSize;
         this.activation = activation ? activation : 'sigmoid';
     }
 
-    run(inputArray) {
-        //check if inputArray is an object or an array
-        if (Array.isArray(inputArray)) {
-            this.input = inputArray.slice(); //copy the array
-        } else if (inputArray instanceof Object) {
-            this.input = Object.assign(inputArray); //copy the object
-            var input = [];
-            for (var key in this.input) {
-                input.push(this.input[key]);
+    run(input) {
+        // console.log(input, Array.isArray(input));
+        if (input instanceof Object && !Array.isArray(input)) {
+            var inputValues = [];
+            for (var key in input) {
+                inputValues.push(input[key]);
             }
-
+            this.input = inputValues.slice();
+        } else {
             this.input = input.slice();
         }
+
         // add 1 more for bias / anchor value / helps with fitting the data better
         this.input.push(1);
 
         //the offset variable helps with the distribution of weights for each input
         var offset = 0;
-        var newOutput;
         for (var i = 0; i < this.output.length; i++) {
             for (var j = 0; j < this.input.length; j++) {
                 //calculate the output based on the input and its weights

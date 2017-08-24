@@ -2,6 +2,8 @@
 //feedfoward backpropagation Neural Network
 const Layer = require('./layer');
 const zeros = require('../Utils/zeros');
+const matrix = require('../Utils/matrix');
+const toArray = require('../Utils/toArray');
 
 class FeedfowardNeuralNetwork {
     constructor(options) {
@@ -44,31 +46,24 @@ class FeedfowardNeuralNetwork {
         return activations;
     }
 
-    train(inputs, targetOutputs) {
+    train(trainingData) {
         var counter = 0;
         var error = 0;
+        var processedData = this.processData(trainingData);
+        var outputs = processedData.output;
+        var inputs = processedData.input;
+
         while (counter <= this.options.iterations) {
-            for (var i = 0; i < targetOutputs.length; i++) {
+            for (var i = 0; i < outputs.length; i++) {
                 //get output from the neural network
                 var calculatedOutput = this.run(inputs[i]);
                 error = zeros(calculatedOutput.length);
 
-                //check wether targetOutput is an object or an array
-                if (Array.isArray(targetOutputs[i])) {
-                    for (var x = 0; x < error.length; x++) {
-                        //calculate the error
-                        error[x] = targetOutputs[i] - calculatedOutput[x];
-                    }
-                } else if (targetOutputs[i] instanceof Object) {
-                    var target = [];
-                    for (var key in targetOutputs[i]) {
-                        target.push(targetOutputs[i][key]);
-                    }
-                    for (var x = 0; x < error.length; x++) {
-                        //calculate the error
-                        error[x] = target[x] - calculatedOutput[x];
-                    }
+                for (var x = 0; x < error.length; x++) {
+                    //calculate the error
+                    error[x] = outputs[i] - calculatedOutput[x];
                 }
+
                 //backpropagation <<<<
                 for (var y = this.layers.length - 1; y >= 0; y--) {
                     if (this.layers[y]) {
@@ -82,6 +77,30 @@ class FeedfowardNeuralNetwork {
         }
         //set the new error to the neural net class
         this.error = Math.abs(error[error.length - 1]);
+    }
+
+    processData(data) {
+        var outputs = [];
+        var inputs = [];
+        var out = [];
+        var inp = [];
+        for (let i = 0; i < data.length; i++) {
+            outputs.push(data[i]['output']);
+            inputs.push(data[i]['input']);
+        }
+
+        inp = toArray.toMatrix(inputs);
+
+        for (let i = 0; i < outputs.length; i++) {
+            for (var key in outputs[i]) {
+                out.push(outputs[i][key]);
+            }
+        }
+
+        return {
+            output: out,
+            input: inp
+        };
     }
 }
 
