@@ -1,4 +1,4 @@
-function randomW(size) {
+var randomW = (size) => {
     var weights = [];
     for (var i = 0; i < size; i++) {
         weights[i] = Math.random() * 2 - 2 + 2

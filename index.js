@@ -1,14 +1,5 @@
 const Neuralnet = require('./src/neuralnet');
-const trainingData = [
-    { r: 1.03, g: 0.7, b: 0.5 },
-    { r: 0.16, g: 1.09, b: 0.2 },
-    { r: 0.5, g: 0.5, b: 1.0 }
-];
-const trainingOutput = [
-    { red: 1 },
-    { green: 1 },
-    { blue: 0 }
-];
+const nn2 = new Neuralnet().PerceptronNeuralNetwork();
 const nn = new Neuralnet().FeedfowardNeuralNetwork({
     inputSize: 3,
     hiddenSize: 3,
@@ -18,25 +9,38 @@ const nn = new Neuralnet().FeedfowardNeuralNetwork({
     iterations: 100000,
     momentum: 0.6
 });
-const nn2 = new Neuralnet().PerceptronNeuralNetwork();
 
-// nn2.train(trainingData, trainingOutput);
-
-console.log('Training...');
-nn2.train(trainingData, trainingOutput);
-
-console.log('Done!');
-console.log('Num of iterations ', nn2.getConfiguration().iterations);
-console.log('Error ', nn2.error);
-for (var x = 0; x < trainingOutput.length; x++) {
-    var t = trainingData[x];
-    if (t) {
-        var result = nn2.run(t);
-        // var result = nn2.run(t);
-        console.log('input: R[' + t['r'] + '], G[' + t['g'] + '], B[' + t['b'] + '] > output: ', result);
-        // console.log('input: [' + t[0] + '], [' + t[1] + '] > output: ', result[0]);
+//Default data format
+const exampleData = [
+    { input: { r: 1.03, g: 0.7, b: 0.5 }, output: { red: 0.4 } },
+    { input: { r: 0.16, g: 1.09, b: 0.2 }, output: { green: 0.7 } },
+    { input: { r: 0.5, g: 0.5, b: 1.0 }, output: { blue: 1 } }
+];
+const predict = (exampleData) => {
+    for (var x = 0; x < exampleData.length; x++) {
+        var t = exampleData[x]['input'];
+        if (t) {
+            var result = nn.run(t);
+            console.log('input: R[' + t['r'] + '], G[' + t['g'] + '], B[' + t['b'] + '] > output: ', result);
+        }
     }
 }
+
+console.log('Training...');
+
+//Train the neural network
+nn.train(exampleData);
+
+
+
+console.log('Num of iterations ', nn.getConfiguration().iterations);
+console.log('Error ', nn.error);
+
+//Predict
+predict(exampleData);
+
+
+
 
 
 /* *************************** */

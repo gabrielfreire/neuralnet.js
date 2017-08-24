@@ -5,7 +5,7 @@
  * @return [ [0, 0, 0], [0, 0, 0], [0, 0, 0] ] Matrix 
  */
 //Create a Matrix with 0s
-function matrix(rowSize, colSize) {
+var matrix = (rowSize, colSize) => {
     var colSize = colSize;
     if (!colSize) {
         colSize = rowSize;
@@ -23,6 +23,7 @@ function matrix(rowSize, colSize) {
     }
 
     return matrix;
-}
+};
+
 //TODO better performance solution
 module.exports = matrix;

@@ -2,25 +2,15 @@
 const FFNN = require('./BackpropagationNN/FeedfowardNN');
 const Perceptron = require('./PerceptronNN/Perceptron');
 
-function NeuralNetwork() {}
+class NeuralNetwork {
+    constructor() {}
 
-
-var nn = {
-    FeedfowardNeuralNetwork: (options) => {
+    FeedfowardNeuralNetwork(options) {
         return new FFNN(options);
-    },
-    PerceptronNeuralNetwork: (options) => {
-        return new Perceptron(options);
     }
 
-    /*TODO
-    RecurrentNeuralNetwork: function(){},
-    LongShortTermMemory: function(){},
-    GatedRecurrentUnit: function(){},
-    ConvolutionNeuralNetwork: function(){},
-    */
+    PerceptronNeuralNetwork(options) {
+        return new Perceptron(options);
+    }
 }
-
-NeuralNetwork.prototype = nn;
-
 module.exports = NeuralNetwork;
