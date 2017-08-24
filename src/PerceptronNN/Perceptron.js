@@ -32,10 +32,9 @@ var perceptron = {
         if (!Array.isArray(input)) {
             input = toMatrix.toArray(input);
         }
+        //TODO vector multiplication method
         for (var j = 0; j < input.length; j++) {
-
             sum += this.weights[j] * input[j];
-
         }
         return ActivationFunction[this.activation](sum);;
     },
