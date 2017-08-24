@@ -3,7 +3,7 @@
 const Layer = require('./layer');
 const zeros = require('../Utils/zeros');
 const matrix = require('../Utils/matrix');
-const toArray = require('../Utils/toArray');
+const convert = require('../Utils/conversions');
 
 class FeedfowardNeuralNetwork {
     constructor(options) {
@@ -89,7 +89,7 @@ class FeedfowardNeuralNetwork {
             inputs.push(data[i]['input']);
         }
 
-        inp = toArray.toMatrix(inputs);
+        inp = convert.toMatrix(inputs);
 
         for (let i = 0; i < outputs.length; i++) {
             for (var key in outputs[i]) {

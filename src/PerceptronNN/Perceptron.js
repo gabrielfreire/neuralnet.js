@@ -1,7 +1,7 @@
 const ActivationFunction = require('../Utils/activation');
 const zeros = require('../Utils/zeros');
 const randomW = require('../Utils/randomWeights');
-const toMatrix = require('../Utils/toArray');
+const convert = require('../Utils/conversions');
 
 
 class Perceptron {
@@ -31,7 +31,7 @@ class Perceptron {
     run(input) {
         let sum = 0;
         if (!Array.isArray(input)) {
-            input = toMatrix.toArray(input);
+            input = convert.toArray(input);
         }
         for (let j = 0; j < input.length; j++) {
 
@@ -48,8 +48,8 @@ class Perceptron {
         this.input = input;
         this.output = output;
 
-        this.input = toMatrix.toMatrix(this.input);
-        this.output = toMatrix.toMatrix(this.output);
+        this.input = convert.toMatrix(this.input);
+        this.output = convert.toMatrix(this.output);
 
         while (totalError !== 0) {
             totalError = 0;
