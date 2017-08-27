@@ -48,7 +48,7 @@ Training...
 Done!
 Num of iterations  60000
 Error  0
-input: R[1.03], G[0.7], B[0.5] > output:  [ 0.30005626091017007 ]
+input: R[1.03], G[0.7], B[0.5] > output:  [ 0.40004971531635775 ]
 input: R[0.16], G[1.09], B[0.2] > output:  [ 0.7000064281889645 ]
 input: R[0.5], G[0.5], B[1] > output:  [ 0.9959214134557477 ]
 ```
