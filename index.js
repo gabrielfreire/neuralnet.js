@@ -16,7 +16,16 @@ const exampleData = [
     { input: { r: 0.16, g: 1.09, b: 0.2 }, output: { green: 0.7 } },
     { input: { r: 0.5, g: 0.5, b: 1.0 }, output: { blue: 1 } }
 ];
+
+const train = (exampleData) => {
+    console.log('Training...');
+    //Train the neural network
+    nn.train(exampleData);
+}
+
 const predict = (exampleData) => {
+    console.log('Num of iterations ', nn.getConfiguration().iterations);
+    console.log('Error ', nn.error);
     for (var x = 0; x < exampleData.length; x++) {
         var t = exampleData[x]['input'];
         if (t) {
@@ -26,16 +35,8 @@ const predict = (exampleData) => {
     }
 }
 
-console.log('Training...');
-
-//Train the neural network
-nn.train(exampleData);
-
-
-
-console.log('Num of iterations ', nn.getConfiguration().iterations);
-console.log('Error ', nn.error);
-
+//train
+train(exampleData);
 //Predict
 predict(exampleData);
 

@@ -41,8 +41,8 @@ class Perceptron {
     }
 
     train(input, output) {
-        let totalError = 1;
-        let iterations = 0;
+        var totalError = 1;
+        var iterations = 0;
 
         this.input = input;
         this.output = output;
@@ -52,15 +52,15 @@ class Perceptron {
 
         while (totalError !== 0) {
             totalError = 0;
-            for (let i = 0; i < this.output.length; i++) {
+            for (var i = 0; i < this.output.length; i++) {
 
-                let calculatedOutput = this.run(this.input[i]);
-                let error = this.output[i][0] - calculatedOutput;
+                var calculatedOutput = this.run(this.input[i]);
+                var error = this.output[i][0] - calculatedOutput;
 
                 totalError += error;
 
                 //calculate the weights according to the error and learning rate
-                for (let j = 0; j < this.weights.length; j++) {
+                for (var j = 0; j < this.weights.length; j++) {
                     this.weights[j] += this.options.learningRate * this.input[i][j] * error;
                 }
             }
