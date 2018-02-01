@@ -6,39 +6,40 @@ const nn = new Neuralnet().FeedfowardNeuralNetwork({
     outputSize: 1,
     learningRate: 0.3,
     activation: 'sigmoid',
-    iterations: 100000,
+    iterations: 10000,
     momentum: 0.6
 });
 
-//Default data format
-const exampleData = [
-    { input: { r: 1.03, g: 0.7, b: 0.5 }, output: { red: 0.4 } },
-    { input: { r: 0.16, g: 1.09, b: 0.2 }, output: { green: 0.7 } },
-    { input: { r: 0.5, g: 0.5, b: 1.0 }, output: { blue: 1 } }
+const features = [
+    [1.03, 0.7, 0.5],
+    [0.16, 1.09, 0.2],
+    [0.5, 0.5, 1.0],
+];
+const labels = [
+    [0.2],
+    [0.7],
+    [1]
 ];
 
-const train = (exampleData) => {
+//Train the neural network
+const train = (features, labels) => {
     console.log('Training...');
-    //Train the neural network
-    nn.train(exampleData);
+    nn.train(features, labels);
 }
 
-const predict = (exampleData) => {
+const predict = (features) => {
     console.log('Num of iterations ', nn.getConfiguration().iterations);
-    console.log('Error ', nn.error);
-    for (var x = 0; x < exampleData.length; x++) {
-        var t = exampleData[x]['input'];
-        if (t) {
-            var result = nn.run(t);
-            console.log('input: R[' + t['r'] + '], G[' + t['g'] + '], B[' + t['b'] + '] > output: ', result);
-        }
+    console.log(nn.getMetrics());
+    for (let i = 0; i < features.length; i++) {
+        const result = nn.predict(features[i]);
+        console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result);
     }
 }
 
 //train
-train(exampleData);
+train(features, labels);
 //Predict
-predict(exampleData);
+predict(features);
 
 
 

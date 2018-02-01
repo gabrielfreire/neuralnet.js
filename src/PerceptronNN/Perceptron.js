@@ -28,7 +28,7 @@ class Perceptron {
         return this.options;
     }
 
-    run(input) {
+    predict(input) {
         let sum = 0;
         if (!Array.isArray(input)) {
             input = convert.toArray(input);
@@ -54,20 +54,20 @@ class Perceptron {
             totalError = 0;
             for (var i = 0; i < this.output.length; i++) {
 
-                var calculatedOutput = this.run(this.input[i]);
-                var error = this.output[i][0] - calculatedOutput;
+                var prediction = this.predict(this.input[i]);
+                var loss = this.output[i][0] - prediction;
 
-                totalError += error;
+                totalLoss += loss;
 
-                //calculate the weights according to the error and learning rate
+                //calculate the weights according to the loss and learning rate
                 for (var j = 0; j < this.weights.length; j++) {
-                    this.weights[j] += this.options.learningRate * this.input[i][j] * error;
+                    this.weights[j] += this.options.learningRate * this.input[i][j] * loss;
                 }
             }
             iterations++;
         }
         this.options.iterations = iterations;
-        this.error = Math.abs(totalError);
+        this.error = Math.abs(totalLoss);
     }
 }
 

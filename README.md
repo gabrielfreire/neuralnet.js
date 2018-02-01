@@ -1,5 +1,5 @@
 # neuralnet.js
-Fast Neural Network for node.js
+Fast Neural Networks for node.js
 
 # Usage
 ### Code to train a Feedfoward Neural Network with backpropagation algorithm
@@ -11,34 +11,40 @@ const nn = new Neuralnet().FeedfowardNeuralNetwork({
     outputSize: 1,
     learningRate: 0.3,
     activation: 'sigmoid',
-    iterations: 100000,
+    iterations: 10000,
     momentum: 0.6
 });
 
-//Default data format
-const exampleData = [
-    { input: { r: 1.03, g: 0.7, b: 0.5 }, output: { red: 0.4 } },
-    { input: { r: 0.16, g: 1.09, b: 0.2 }, output: { green: 0.7 } },
-    { input: { r: 0.5, g: 0.5, b: 1.0 }, output: { blue: 1 } }
+const features = [
+    [1.03, 0.7, 0.5],
+    [0.16, 1.09, 0.2],
+    [0.5, 0.5, 1.0],
 ];
-
-console.log('Training...');
+const labels = [
+    [0.2],
+    [0.7],
+    [1]
+];
 
 //Train the neural network
-nn.train(exampleData);
+const train = (features, labels) => {
+    console.log('Training...');
+    nn.train(features, labels);
+}
 
-console.log('Done!');
-console.log('Num of iterations ', nn.getConfiguration().iterations);
-console.log('Error ', nn.error);
+const predict = (features) => {
+    console.log('Num of iterations ', nn.getConfiguration().iterations);
+    console.log(nn.getMetrics());
+    for (let i = 0; i < features.length; i++) {
+        const result = nn.predict(features[i]);
+        console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result);
+    }
+}
 
+//train
+train(features, labels);
 //Predict
-for (var x = 0; x < exampleData.length; x++) {
-    var t = exampleData[x]['input'];
-    if (t) {
-        var result = nn.run(t);
-        console.log('input: R[' + t['r'] + '], G[' + t['g'] + '], B[' + t['b'] + '] > output: ', result[0]);
-    }
-}
+predict(features);
 ```
 
 
@@ -46,56 +52,11 @@ for (var x = 0; x < exampleData.length; x++) {
 ```
 Training...
 Done!
-Num of iterations  60000
-Error  0
-input: R[1.03], G[0.7], B[0.5] > output:  [ 0.40004971531635775 ]
-input: R[0.16], G[1.09], B[0.2] > output:  [ 0.7000064281889645 ]
-input: R[0.5], G[0.5], B[1] > output:  [ 0.9959214134557477 ]
-```
-
-### Code to train a Perceptron Neural Network
-```js
-const Neuralnet = require('./src/neuralnet');
-const trainingData = [
-    { r: 1.03, g: 0.7, b: 0.5 },
-    { r: 0.16, g: 1.09, b: 0.2 },
-    { r: 0.5, g: 0.5, b: 1.0 }
-];
-const trainingOutput = [
-    { red: 1 },
-    { green: 1 },
-    { blue: 0 }
-];
-const nn = new Neuralnet().PerceptronNeuralNetwork({
-        inputSize: 3,
-        outputSize: 1,
-        learningRate: 0.1,
-        activation: 'step',
-    });
-
-console.log('Training...');
-nn.train(trainingData, trainingOutput);
-
-console.log('Done!');
-console.log('Num of iterations ', nn.getConfiguration().iterations);
-console.log('Error ', nn.error);
-for (var x = 0; x < trainingOutput.length; x++) {
-    var t = trainingData[x];
-    if (t) {
-        var result = nn.run(t);
-        console.log('input: R[' + t['r'] + '], G[' + t['g'] + '], B[' + t['b'] + '] > output: ', result);
-    }
-}
-```
-#### Output
-```
-Training...
-Done!
-Num of iterations  6
-Error  0
-input: R[1.03], G[0.7], B[0.5] > output:  1
-input: R[0.16], G[1.09], B[0.2] > output:  1
-input: R[0.5], G[0.5], B[1] > output:  0
+Num of iterations  10000
+Loss: 0.000003377864751484763
+input: R[1.03], G[0.7], B[0.5] > output:  [ 0.20124280374743347 ]
+input: R[0.16], G[1.09], B[0.2] > output:  [ 0.700076276624251 ]
+input: R[0.5], G[0.5], B[1] > output:  [ 0.9833677371274795 ]
 ```
 
 # Neural Network Types
@@ -103,14 +64,17 @@ input: R[0.5], G[0.5], B[1] > output:  0
 - [x] neuralnet.Perceptron - Basic Perceptron Neural Network
 - [ ] neuralnet.RecurrentNeuralNetwork - Recurrent Neural Network
 - [ ] neuralnet.RecurrentNeuralNetworkLTSM - Recurrent Neural Network Long term short memory
-- [ ] neuralnet.RecurrentNeuralNetworkGRU - Recurrent Neural Network Gated Recurrent Unit
+- [ ] neuralnet.ConvolutionalNeuralNetwork - Convolutional Neural Network
 
 # TODO
-- [ ] Add support for gpu.js
+- [ ] Add support for GPU
 
 # Useful links
 
 http://www.wildml.com/2015/09/recurrent-neural-networks-tutorial-part-1-introduction-to-rnns/
 http://neuralnetworksanddeeplearning.com/chap2.html
+https://www.youtube.com/watch?v=d14TUNcbn1k
+https://www.youtube.com/watch?v=bNb2fEVKeEo
+https://www.youtube.com/channel/UCdKG2JnvPu6mY1NDXYFfN0g
 
 This library was not npm published and is being developed for study purposes, feel free to contribute

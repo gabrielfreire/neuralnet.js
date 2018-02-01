@@ -12,8 +12,8 @@ class FeedfowardNeuralNetwork {
             hiddenSize: 2,
             outputSize: 1,
             activation: 'sigmoid',
-            learningRate: 0.3,
-            iterations: 50000,
+            learningRate: 0.03,
+            iterations: 1000,
             momentum: 0.6
         };
         this.options = defaults;
@@ -32,75 +32,54 @@ class FeedfowardNeuralNetwork {
         return this.options;
     }
 
-    getLayer(index) {
-        return this.layers[index];
-    }
-
-    run(input) {
-        var activations = input;
+    predict(input) {
+        var output = 0;
         for (var i = 0; i < this.layers.length; i++) {
             //produce output for each layer based on the input
-            activations = this.layers[i].run(activations);
+            output = this.layers[i].run(input);
         }
         //return the normalized output produced by the neural network
-        return activations;
+        return output;
     }
 
-    train(trainingData) {
-        var counter = 0;
-        var error = 0;
-        var processedData = this.processData(trainingData);
-        var outputs = processedData.output;
-        var inputs = processedData.input;
-
+    train(inputs, outputs) {
+        let counter = 0;
+        let loss = 0;
         while (counter <= this.options.iterations) {
-            for (var i = 0; i < outputs.length; i++) {
+            for (let i = 0; i < outputs.length; i++) {
                 //get output from the neural network
-                var calculatedOutput = this.run(inputs[i]);
-                error = zeros(calculatedOutput.length);
-
-                for (var x = 0; x < error.length; x++) {
-                    //calculate the error
-                    error[x] = outputs[i] - calculatedOutput[x];
-                }
-
-                //backpropagation <<<<
-                for (var y = this.layers.length - 1; y >= 0; y--) {
-                    if (this.layers[y]) {
-                        //train the layers using the calculated error
-                        error = this.layers[y].train(error, this.options.learningRate, this.options.momentum);
-                    }
-                }
+                const prediction = this.predict(inputs[i]);
+                loss = this.loss(prediction, outputs[i]);
+                loss = this.backward(loss);
             }
-
             counter++;
+            this.error = loss;
+            console.log("Step: " + counter + ", Loss: " + Math.abs(this.error[this.error.length - 1]));
         }
         //set the new error to the neural net class
-        this.error = Math.abs(error[error.length - 1]);
     }
 
-    processData(data) {
-        var outputs = [];
-        var inputs = [];
-        var out = [];
-        var inp = [];
-        for (let i = 0; i < data.length; i++) {
-            outputs.push(data[i]['output']);
-            inputs.push(data[i]['input']);
+    loss(prediction, y) {
+        let loss = zeros(prediction.length);
+        for (let x = 0; x < loss.length; x++) {
+            loss[x] = y - prediction[x];
         }
 
-        inp = convert.toMatrix(inputs);
+        return loss;
+    }
 
-        for (let i = 0; i < outputs.length; i++) {
-            for (var key in outputs[i]) {
-                out.push(outputs[i][key]);
+    backward(loss) {
+        for (var y = this.layers.length - 1; y >= 0; y--) {
+            if (this.layers[y]) {
+                //train the layers using the calculated error
+                loss = this.layers[y].optimize(loss, this.options.learningRate, this.options.momentum);
             }
         }
+        return loss;
+    }
 
-        return {
-            output: out,
-            input: inp
-        };
+    getMetrics() {
+        return "Loss: " + Math.abs(this.error[this.error.length - 1]);
     }
 }
 

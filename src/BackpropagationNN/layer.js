@@ -15,26 +15,14 @@ class Layer {
     }
 
     run(input) {
-        // console.log(input, Array.isArray(input));
-        if (input instanceof Object && !Array.isArray(input)) {
-            var inputValues = [];
-            for (var key in input) {
-                inputValues.push(input[key]);
-            }
-            this.input = inputValues.slice();
-        } else {
-            this.input = input.slice();
-        }
-
-        // add 1 more for bias / anchor value / helps with fitting the data better
-        this.input.push(1);
-
+        this.input = input.slice();
+        let bias = 1;
         //the offset variable helps with the distribution of weights for each input
         var offset = 0;
         for (var i = 0; i < this.output.length; i++) {
             for (var j = 0; j < this.input.length; j++) {
                 //calculate the output based on the input and its weights
-                this.output[i] += this.weights[offset + j] * this.input[j];
+                this.output[i] += (this.weights[offset + j] * this.input[j]) + bias;
             }
             //normalize the output using the sigmoid activation function
             this.output[i] = ActivationFunction[this.activation](this.output[i], false);
@@ -44,20 +32,20 @@ class Layer {
         return this.output.slice();
     }
 
-    train(error, learningRate, momentum) {
+    optimize(loss, learningRate, momentum) {
         //the offset variable helps with the distribution of weights for each input
         var offset = 0;
-        var nextError = zeros(this.input.length);
+        var nextLoss = zeros(this.input.length);
 
         for (var i = 0; i < this.output.length; i++) {
             //calculate the delta parameter
-            var delta = error[i] * ActivationFunction[this.activation](this.output[i], true)
+            var delta = loss[i] * ActivationFunction[this.activation](this.output[i], true)
 
             for (var j = 0; j < this.input.length; j++) {
 
                 var weightIndex = offset + j;
-                //calculate the next error
-                nextError[j] += this.weights[weightIndex] * delta;
+                //calculate the next loss
+                nextLoss[j] += this.weights[weightIndex] * delta;
 
                 /**
                  * --------------------------
@@ -80,8 +68,8 @@ class Layer {
             offset += this.input.length;
         }
 
-        //return the next error
-        return nextError;
+        //return the next loss
+        return nextLoss;
     }
 }
 
