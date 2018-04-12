@@ -14,7 +14,8 @@ class FeedfowardNeuralNetwork {
             activation: 'sigmoid',
             learningRate: 0.03,
             iterations: 1000,
-            momentum: 0.6
+            momentum: 0.6,
+            verbose: true
         };
         this.options = defaults;
         if (options) {
@@ -46,6 +47,7 @@ class FeedfowardNeuralNetwork {
         let counter = 0;
         let loss = 0;
         while (counter <= this.options.iterations) {
+            // let prediction = this.predict(inputs);
             for (let i = 0; i < outputs.length; i++) {
                 //get output from the neural network
                 const prediction = this.predict(inputs[i]);
@@ -54,7 +56,9 @@ class FeedfowardNeuralNetwork {
             }
             counter++;
             this.error = loss;
-            console.log("Step: " + counter + ", Loss: " + Math.abs(this.error[this.error.length - 1]));
+            if (this.options.verbose) {
+                console.log("Step: " + counter + ", Loss: " + Math.abs(this.error[this.error.length - 1]));
+            }
         }
         //set the new error to the neural net class
     }
