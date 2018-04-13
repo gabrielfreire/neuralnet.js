@@ -13,7 +13,7 @@ class FeedfowardNeuralNetwork {
             outputSize: 1,
             activation: 'sigmoid',
             learningRate: 0.03,
-            iterations: 1000,
+            iterations: 100,
             momentum: 0.6
         };
         this.options = defaults;
@@ -23,9 +23,9 @@ class FeedfowardNeuralNetwork {
         this.layers = [];
         this.error = null;
         //Layer that contains the edges between the input neurons and the hidden neurons
-        this.layers.push(new Layer(this.options.inputSize, this.options.hiddenSize, this.options.activation));
+        this.layers.push(new Layer(this.options.inputSize, 3, this.options.activation));
         //Layer that contains the edges between the hidden neurons and the output neurons
-        this.layers.push(new Layer(this.options.hiddenSize, this.options.outputSize, this.options.activation));
+        this.layers.push(new Layer(3, this.options.outputSize, this.options.activation));
     }
 
     getConfiguration() {
@@ -33,10 +33,10 @@ class FeedfowardNeuralNetwork {
     }
 
     predict(input) {
-        var output = 0;
+        var output = input;
         for (var i = 0; i < this.layers.length; i++) {
             //produce output for each layer based on the input
-            output = this.layers[i].run(input);
+            output = this.layers[i].run(output);
         }
         //return the normalized output produced by the neural network
         return output;
