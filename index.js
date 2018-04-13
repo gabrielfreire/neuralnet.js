@@ -2,14 +2,7 @@ const Neuralnet = require('./src/neuralnet');
 const Matrix = require('./src/Utils/matrix');
 const nn2 = new Neuralnet().PerceptronNeuralNetwork();
 const nn = new Neuralnet().FeedfowardNeuralNetwork({
-    inputSize: 3,
-    hiddenSize: 3,
-    outputSize: 1,
-    learningRate: 0.3,
-    activation: 'sigmoid',
-    iterations: 10000,
-    momentum: 0.6,
-    verbose: false
+    verbose: true
 });
 
 const features = [
@@ -18,26 +11,33 @@ const features = [
     [0.5, 0.5, 1.0],
 ];
 const labels = [
-    [0],
-    [1],
-    [0]
+    [0.4],
+    [0.7],
+    [0.1]
 ];
 // console.log(new Matrix(features.length, features[0].length).map((e, i, j) => features[i][j]));
 //Train the neural network
 const train = (features, labels) => {
+    model = nn;
+    // model.add(model.Layer({inputSize: 3, outputSize: 3, activation: 'sigmoid'}));
+    // model.add(model.Layer({inputSize: 3, outputSize: 1, activation: 'sigmoid'}));
     console.log('Training...');
-    nn2.train(features, labels);
+    let epochs = 100;
+    for(var i = 0; i < epochs; i++) {
+        for(var j = 0; j < labels.length; j++) {
+            nn.train(features[j], labels[j], 0.03, 0.6);
+        }
+    }
 }
 
 const predict = (features) => {
     // console.log(nn.getMetrics());
     console.log(' ** PREPARING PREDICTION ** ');
-    const result = nn2.predict(features, false);
-    console.log('--> FINAL RESULT', result.data);
-    // for (let i = 0; i < features.length; i++) {
-    //     const result = nn.predict(features[i]);
-    //     console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result);
-    // }
+    for (let i = 0; i < features.length; i++) {
+        const result = nn.predict(features[i]);
+        console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result);
+    }
+    // console.log('--> FINAL RESULT', result.data);
 }
 
 // //train
