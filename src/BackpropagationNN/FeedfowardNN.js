@@ -2,7 +2,7 @@
 //feedfoward backpropagation Neural Network
 const Layer = require('./layer');
 const zeros = require('../Utils/zeros');
-const Matrix = require('../Utils/matrix');
+// const Matrix = require('../Utils/matrix');
 const convert = require('../Utils/conversions');
 
 class FeedfowardNeuralNetwork {
@@ -44,27 +44,34 @@ class FeedfowardNeuralNetwork {
         return lastOutput;
     }
 
-    train(input, output, learningRate, momentum) {
+    train(inputs, outputs, learningRate, momentum) {
         // const prediction = this.predict(input);
-        // let loss = this.loss(output, prediction);
-        // loss = this.backward(loss, learningRate, momentum);
         // this.error = loss;
         // for (let i = 0; i < outputs.length; i++) {
             //get output from the neural network
-        const prediction = this.predict(input);
-        this.loss = zeros(prediction.length);
-        for(let i = 0; i < this.loss.length; i++ ){
-            this.loss[i] = output - prediction[i];
-        }
-        // this.loss = this.calculateLoss(prediction, output);
-        for(var y = this.layers.length - 1; y >= 0; y--){
-            this.loss = this.layers[y].optimize(this.loss, learningRate, momentum);
+            let c = 0;
+            let loss = 0;
+        while(c < 100) {
+            for(let i = 0; i < outputs.length; i++) {
+                const prediction = this.predict(inputs[i]);
+                loss = this.calculateLoss(prediction, outputs[i]);
+                loss = this.backward(loss, learningRate, momentum);
+                this.loss = loss;
+                // for(let j = 0; j < this.loss.length; j++ ){
+                //     this.loss[j] = outputs[i] - prediction[j];
+                // }
+                // // this.loss = this.calculateLoss(prediction, output);
+                // for(var y = this.layers.length - 1; y >= 0; y--){
+                //     this.loss = this.layers[y].optimize(this.loss, learningRate, momentum);
+                // }
+            }
+            c++;
+            if (this.options.verbose) {
+                console.log("Loss: " + Math.abs(this.loss[this.loss.length - 1]));
+            }
         }
         // this.loss = this.backward(this.loss,learningRate, momentum);
         // }
-        if (this.options.verbose) {
-            console.log("Loss: " + Math.abs(this.loss[this.loss.length - 1]));
-        }
         
         //set the new error to the neural net class
     }
@@ -72,13 +79,13 @@ class FeedfowardNeuralNetwork {
     calculateLoss(y, prediction) {
         let loss = zeros(prediction.length);
         for (let x = 0; x < loss.length; x++) {
-            loss[x] = y[x] - prediction[x];
+            loss[x] = y - prediction[x];
         }
 
         return loss;
     }
 
-    backward(loss,learningRate, momentum) {
+    backward(loss, learningRate, momentum) {
         for (var y = this.layers.length - 1; y >= 0; y--) {
             if (this.layers[y]) {
                 //train the layers using the calculated error

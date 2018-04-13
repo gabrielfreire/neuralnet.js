@@ -18,16 +18,14 @@ const labels = [
 // console.log(new Matrix(features.length, features[0].length).map((e, i, j) => features[i][j]));
 //Train the neural network
 const train = (features, labels) => {
-    model = nn;
-    // model.add(model.Layer({inputSize: 3, outputSize: 3, activation: 'sigmoid'}));
-    // model.add(model.Layer({inputSize: 3, outputSize: 1, activation: 'sigmoid'}));
+    // nn.add(nn.Layer({input: 3, output: 2, activation: 'sigmoid'}));
+    // nn.add(nn.Layer({input: 2, output: 1, activation: 'sigmoid'}));
     console.log('Training...');
     let epochs = 100;
-    for(var i = 0; i < epochs; i++) {
-        for(var j = 0; j < labels.length; j++) {
-            nn.train(features[j], labels[j], 0.03, 0.6);
-        }
-    }
+    // console.log(nn);
+    // for(var i = 0; i < epochs; i++) {
+        nn.train(features, labels, 0.03, 0.6);
+    // }
 }
 
 const predict = (features) => {
