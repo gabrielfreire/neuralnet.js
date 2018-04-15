@@ -8,13 +8,7 @@ const convert = require('../Utils/conversions');
 class FeedfowardNeuralNetwork {
     constructor(options) {
         const defaults = {
-            inputSize: 3,
-            hiddenSize: 2,
-            outputSize: 1,
-            activation: 'sigmoid',
-            learningRate: 0.03,
-            iterations: 1000,
-            momentum: 0.6
+            verbose: false
         };
         this.options = defaults;
         if (options) {
@@ -24,10 +18,6 @@ class FeedfowardNeuralNetwork {
         this.error = null;
         this.counter = 0;
         this.loss = [0];
-        //Layer that contains the edges between the input neurons and the hidden neurons
-        // this.layers.push(new Layer(this.options.inputSize, this.options.hiddenSize, this.options.activation));
-        //Layer that contains the edges between the hidden neurons and the output neurons
-        // this.layers.push(new Layer(this.options.hiddenSize, this.options.outputSize, this.options.activation));
     }
 
     Layer(options) {
@@ -49,6 +39,7 @@ class FeedfowardNeuralNetwork {
         const prediction = this.feedFoward(inputs);
         this.loss = Matrix.subtract(outputs, prediction);
         this.backPropagate(learningRate);
+        if(this.options.verbose) console.info(this.getMetrics());
     }
 
     feedFoward(input) {
@@ -71,7 +62,7 @@ class FeedfowardNeuralNetwork {
     }
 
     getMetrics() {
-        return "Loss: " + Math.abs(this.loss[this.loss.length - 1]);
+        return "Loss: " + this.loss.data[this.loss.data.length - 1];
     }
 }
 
