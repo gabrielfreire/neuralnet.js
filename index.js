@@ -2,7 +2,13 @@ const Neuralnet = require('./src/neuralnet');
 const Matrix = require('./src/Utils/matrix');
 const nn2 = new Neuralnet().PerceptronNeuralNetwork();
 const nn = new Neuralnet().FeedfowardNeuralNetwork({
-    verbose: true
+    inputSize: 3,
+    hiddenSize: 3,
+    outputSize: 1,
+    learningRate: 0.3,
+    activation: 'sigmoid',
+    iterations: 10000,
+    momentum: 0.6
 });
 
 const features = [
@@ -11,36 +17,36 @@ const features = [
     [0.5, 0.5, 1.0],
 ];
 const labels = [
-    [0.4],
+    [0.2],
     [0.7],
-    [0.1]
+    [1]
 ];
 // console.log(new Matrix(features.length, features[0].length).map((e, i, j) => features[i][j]));
 //Train the neural network
+nn.add(nn.Layer({ input: 3, output: 3, activation: 'sigmoid' }));
+nn.add(nn.Layer({ input: 3, output: 1, activation: 'sigmoid' }));
 const train = (features, labels) => {
-    // nn.add(nn.Layer({input: 3, output: 2, activation: 'sigmoid'}));
-    // nn.add(nn.Layer({input: 2, output: 1, activation: 'sigmoid'}));
     console.log('Training...');
-    let epochs = 100;
-    // console.log(nn);
-    // for(var i = 0; i < epochs; i++) {
-        nn.train(features, labels, 0.03, 0.6);
-    // }
+    let epochs = 10000;
+    for (let i = 0; i < epochs; i++) {
+        for (let j = 0; j < features.length; j++) {
+            nn.train(features[j], labels[j], 0.3, epochs);
+        }
+    }
 }
 
 const predict = (features) => {
-    // console.log(nn.getMetrics());
-    console.log(' ** PREPARING PREDICTION ** ');
+    console.log('Num of iterations ', nn.getConfiguration().iterations);
+    console.log(nn.getMetrics());
     for (let i = 0; i < features.length; i++) {
-        const result = nn.predict(features[i]);
-        console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result);
+        const result = nn.feedFoward(features[i]);
+        console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result.data);
     }
-    // console.log('--> FINAL RESULT', result.data);
 }
 
-// //train
+//train
 train(features, labels);
-// //Predict
+//Predict
 predict(features);
 
 
