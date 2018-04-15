@@ -63,9 +63,11 @@ class Layer {
         nextLoss = Matrix.multiply(weight_T, gradients);
         // Update weights
         let input_T = Matrix.transpose(this.input);
-        this.weights_delta = Matrix.multiply(gradients,input_T);
+        this.weights_delta = Matrix.multiply(gradients, input_T);
         this.weights.add(this.weights_delta);
+        // Update bias by the gradient
         this.bias.add(gradients);
+        // send loss for previous layer
         return nextLoss;
     }
 }
