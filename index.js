@@ -32,8 +32,8 @@ const train = (features, labels) => {
 const predict = (features) => {
     console.log(nn.getMetrics());
     for (let i = 0; i < features.length; i++) {
-        const result = nn.feedFoward(features[i]);
-        console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result.data);
+        const result = nn.predict(features[i]);
+        console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result);
     }
 }
 

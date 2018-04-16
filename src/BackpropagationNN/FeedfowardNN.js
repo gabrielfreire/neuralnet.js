@@ -1,9 +1,7 @@
 'use strict'
 //feedfoward backpropagation Neural Network
 const Layer = require('./layer');
-const zeros = require('../Utils/zeros');
 const Matrix = require('../Utils/matrix');
-const convert = require('../Utils/conversions');
 
 class FeedfowardNeuralNetwork {
     constructor(options) {
@@ -15,8 +13,6 @@ class FeedfowardNeuralNetwork {
             this.options = Object.assign(this.options, options);
         }
         this.layers = [];
-        this.error = null;
-        this.counter = 0;
         this.loss = [0];
     }
 
@@ -40,6 +36,10 @@ class FeedfowardNeuralNetwork {
         this.loss = Matrix.subtract(outputs, prediction);
         this.backPropagate(learningRate);
         if(this.options.verbose) console.info(this.getMetrics());
+    }
+
+    predict(input) {
+        return this.feedFoward(input).toArray();
     }
 
     feedFoward(input) {

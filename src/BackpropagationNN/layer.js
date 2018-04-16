@@ -1,8 +1,6 @@
 'use strict'
 
 const ActivationFunction = require('../Utils/activation');
-const zeros = require('../Utils/zeros');
-const randomWeights = require('../Utils//randomWeights');
 const Matrix = require('../Utils/matrix');
 //Types [FEED_FORWARD, RECURRENT, CONVOLUTIONAL, SUBSAMPLING, RECURSIVE, MULTILAYER, NORMALIZATION]
 class Layer {
