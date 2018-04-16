@@ -22,9 +22,10 @@ nn.add(nn.Layer({ input: 3, output: 1, activation: 'sigmoid' }));
 const train = (features, labels) => {
     console.log('Training...');
     let epochs = 10000;
+    let learningRate = 0.3;
     for (let i = 0; i < epochs; i++) {
         for (let j = 0; j < features.length; j++) {
-            nn.train(features[j], labels[j], 0.3, epochs);
+            nn.train(features[j], labels[j], learningRate, epochs);
         }
     }
 }

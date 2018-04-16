@@ -2,17 +2,12 @@
 Fast Neural Networks for node.js
 
 # Usage
-### Code to train a Feedfoward Neural Network with backpropagation algorithm
+### Train a simple Neural Network using Back-propagation and Gradient Descent
 ```js
 const Neuralnet = require('./src/neuralnet');
+const Matrix = require('./src/Utils/matrix');
 const nn = new Neuralnet().FeedfowardNeuralNetwork({
-    inputSize: 3,
-    hiddenSize: 3,
-    outputSize: 1,
-    learningRate: 0.3,
-    activation: 'sigmoid',
-    iterations: 10000,
-    momentum: 0.6
+    verbose: false
 });
 
 const features = [
@@ -25,15 +20,23 @@ const labels = [
     [0.7],
     [1]
 ];
-
+// console.log(new Matrix(features.length, features[0].length).map((e, i, j) => features[i][j]));
 //Train the neural network
+nn.add(nn.Layer({ input: 3, output: 3, activation: 'sigmoid' }));
+nn.add(nn.Layer({ input: 3, output: 1, activation: 'sigmoid' }));
 const train = (features, labels) => {
     console.log('Training...');
-    nn.train(features, labels);
+    let epochs = 10000;
+    let learningRate = 0.3;
+    for (let i = 0; i < epochs; i++) {
+        for (let j = 0; j < features.length; j++) {
+            nn.train(features[j], labels[j], learningRate, epochs);
+        }
+    }
+    console.log('Done!');
 }
 
 const predict = (features) => {
-    console.log('Num of iterations ', nn.getConfiguration().iterations);
     console.log(nn.getMetrics());
     for (let i = 0; i < features.length; i++) {
         const result = nn.predict(features[i]);
