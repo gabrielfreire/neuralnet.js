@@ -6,7 +6,6 @@ const Matrix = require('../Utils/matrix');
 class Layer {
     constructor(options) {
         this.options = options;
-        this.inputLength = options.input;
         this.input = new Matrix(options.input, 1);
         this.output = new Matrix(options.output, 1);
         this.weights = new Matrix(options.output, options.input);

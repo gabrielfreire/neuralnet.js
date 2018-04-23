@@ -36,6 +36,7 @@ function train (features, labels) {
         for (let j = 0; j < features.length; j++) {
             nn.train(features[j], labels[j], learningRate, epochs);
         }
+        console.log("Step ->", i);
     }
 }
 
