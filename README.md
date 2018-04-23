@@ -5,14 +5,9 @@ Fast Neural Networks for node.js
 ### Train a simple Neural Network using Back-propagation and Gradient Descent
 ```js
 const Neuralnet = require('./src/neuralnet');
-const Matrix = require('./src/Utils/matrix');
-const nn = new Neuralnet().FeedfowardNeuralNetwork({
-    verbose: false
-});
-
 const features = [
-    [1.03, 0.7, 0.5],
-    [0.16, 1.09, 0.2],
+    [1.0, 0.7, 0.5],
+    [0.16, 1.0, 0.2],
     [0.5, 0.5, 1.0],
 ];
 const labels = [
@@ -20,24 +15,31 @@ const labels = [
     [0.7],
     [1]
 ];
-// console.log(new Matrix(features.length, features[0].length).map((e, i, j) => features[i][j]));
+
+function _buildModel () {
+    const nn = new Neuralnet().FeedfowardNeuralNetwork({
+        verbose: false
+    });
+    nn.add(nn.Layer({ input: 3, output: 3, activation: 'sigmoid' }));
+    nn.add(nn.Layer({ input: 3, output: 1, activation: 'sigmoid' }));
+    return nn;
+}
+
+const nn = _buildModel();
+
 //Train the neural network
-nn.add(nn.Layer({ input: 3, output: 3, activation: 'sigmoid' }));
-nn.add(nn.Layer({ input: 3, output: 1, activation: 'sigmoid' }));
-const train = (features, labels) => {
+function train (features, labels) {
     console.log('Training...');
-    let epochs = 10000;
-    let learningRate = 0.3;
+    const epochs = 10000;
+    const learningRate = 0.3;
     for (let i = 0; i < epochs; i++) {
         for (let j = 0; j < features.length; j++) {
             nn.train(features[j], labels[j], learningRate, epochs);
         }
     }
-    console.log('Done!');
 }
 
-const predict = (features) => {
-    console.log(nn.getMetrics());
+function predict (features) {
     for (let i = 0; i < features.length; i++) {
         const result = nn.predict(features[i]);
         console.log('input: R[' + features[i][0] + '], G[' + features[i][1] + '], B[' + features[i][2] + '] > output: ', result);
