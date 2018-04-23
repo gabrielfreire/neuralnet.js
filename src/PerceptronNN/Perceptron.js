@@ -1,7 +1,5 @@
 const ActivationFunction = require('../Utils/activation');
-const zeros = require('../Utils/zeros');
-const randomW = require('../Utils/randomWeights');
-const convert = require('../Utils/conversions');
+const Matrix = require('../Utils/matrix');
 
 
 class Perceptron {
@@ -9,7 +7,7 @@ class Perceptron {
         const defaults = {
             learningRate: 0.1,
             activation: 'step',
-            iterations: 0,
+            iterations: 300,
             inputSize: 3,
             outputSize: 1
         };
@@ -20,54 +18,41 @@ class Perceptron {
         this.error = null;
         this.input = null;
         this.output = null;
-        this.weights = zeros(this.options.inputSize);
-        this.activation = this.options.activation ? this.options.activation : 'step';
+        this.weights = new Matrix(this.options.inputSize, this.options.outputSize);
+        this.weights.randomize();
+        console.log('STARTING WEIGHTS', this.weights.data)
+        this.activation = this.options.activation ? this.options.activation : 'sigmoid';
     }
 
     getConfiguration() {
         return this.options;
     }
 
-    predict(input) {
-        let sum = 0;
-        if (!Array.isArray(input)) {
-            input = convert.toArray(input);
+    predict(input, training) {
+        let output;
+        if(!(input instanceof Matrix)) {
+            input = new Matrix(input.length, input[0].length).map((_, i, j) => input[i][j]);
         }
-        //TODO vector multiplication method
-        for (var j = 0; j < input.length; j++) {
-            sum += this.weights[j] * input[j];
-        }
-        return ActivationFunction[this.activation](sum);
+        output = Matrix.multiply(input, this.weights);
+        return Matrix.map(output, (e, i, j) => ActivationFunction['sigmoid'](e) );
     }
 
     train(input, output) {
-        var totalError = 1;
-        var iterations = 0;
-
-        this.input = input;
-        this.output = output;
-
-        this.input = convert.toMatrix(this.input);
-        this.output = convert.toMatrix(this.output);
-
-        while (totalError !== 0) {
-            totalError = 0;
-            for (var i = 0; i < this.output.length; i++) {
-
-                var prediction = this.predict(this.input[i]);
-                var loss = this.output[i][0] - prediction;
-
-                totalLoss += loss;
-
-                //calculate the weights according to the loss and learning rate
-                for (var j = 0; j < this.weights.length; j++) {
-                    this.weights[j] += this.options.learningRate * this.input[i][j] * loss;
-                }
-            }
-            iterations++;
+        var epoch = 0;
+        this.input = new Matrix(input.length, input[0].length).map((e, i, j) => input[i][j]);
+        this.output = new Matrix(output.length, output[0].length).map((e, i, j) => output[i][j]);
+        while (epoch < this.options.iterations) {
+            var predictions = Matrix.multiply(this.input, this.weights)
+                                    .map((e, i, j) => ActivationFunction['sigmoid'](e));
+            var loss = Matrix.subtract(this.output, predictions);
+            // get gradient
+            var gradients = Matrix.multiply(this.input, loss)
+                                .multiply(this.options.learningRate);
+            // update the weights
+            this.weights.add(gradients);
+            // this.error = Math.abs(loss);
+            epoch++;
         }
-        this.options.iterations = iterations;
-        this.error = Math.abs(totalLoss);
     }
 }
 

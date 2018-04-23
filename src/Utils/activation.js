@@ -14,6 +14,11 @@ class ActivationFunction {
         }
         return 0;
     }
+
+    linear(x, derivative) {
+        if(x < 0) return 0;
+        return !derivative ? x : x * (1 - x);
+    }
 }
 
 module.exports = new ActivationFunction();
