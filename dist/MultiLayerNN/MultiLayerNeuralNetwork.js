@@ -64,7 +64,7 @@ class MultiLayerNeuralNetwork {
         return this.loss.data[this.loss.data.length - 1][0];
     }
     getMetrics() {
-        return "Loss: " + this.loss.data[this.loss.data.length - 1];
+        return "Loss: " + this.getCurrentLoss();
     }
 }
 exports.MultiLayerNeuralNetwork = MultiLayerNeuralNetwork;

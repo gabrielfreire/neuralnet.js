@@ -13,7 +13,7 @@ const labels: number[][] = [
 
 function _buildModel (): MultiLayerNeuralNetwork {
     const nn = new MultiLayerNeuralNetwork({
-        verbose: true,
+        verbose: false,
         frequency: 100
     });
     nn.add(nn.Layer({ input: 3, output: 3, activation: 'sigmoid' }));
