@@ -1,5 +1,8 @@
 # modules
 node_modules
-dist/
 # package
 package-lock.json
+
+
+dist/
+dist
