@@ -1,9 +1,14 @@
-'use strict'
-
-const ActivationFunction = require('../Utils/activation');
-const Matrix = require('../Utils/matrix');
+import { ActivationFunction } from '../Utils/activation';
+import {Matrix} from '../Utils/matrix';
 //Types [FEED_FORWARD, RECURRENT, CONVOLUTIONAL, SUBSAMPLING, RECURSIVE, MULTILAYER, NORMALIZATION]
-class Layer {
+export class Layer {
+    options: any;
+    input: Matrix;
+    output: Matrix;
+    weights: Matrix;
+    weights_delta: Matrix;
+    bias: Matrix;
+    activation: any;
     constructor(options) {
         this.options = options;
         this.input = new Matrix(options.input, 1);
@@ -11,12 +16,13 @@ class Layer {
         this.weights = new Matrix(options.output, options.input);
         this.weights_delta = new Matrix(options.output, options.input); //change of weights in the previous iterations
         this.bias = new Matrix(options.output, 1);
-        this.activation = options.activation ? options.activation : 'sigmoid';
+        const acvt = new ActivationFunction();
+        this.activation = options.activation ? acvt[options.activation] : acvt['sigmoid'];
         this.weights.randomize();
         this.bias.randomize();
     }
 
-    run(input) {
+    run(input): Matrix {
         if(!(input instanceof Matrix)) {
             this.input = Matrix.fromArray(input);
         } else {
@@ -24,14 +30,14 @@ class Layer {
         }
         // Y = SIGMOID(WX + b)
         this.output = Matrix.multiply(this.weights, this.input).add(this.bias);
-        return  this.output.map((e, i, j) => ActivationFunction[this.activation](e));
+        return  this.output.map((e, i, j) => this.activation(e));
     }
 
-    optimize(loss, learningRate) {
+    optimize(loss: Matrix, learningRate: number): Matrix {
         let nextLoss = new Matrix(this.options.input, 1);
         // Calculate Gradient
         // GRADIENT = LEARNING_RATE * LOSS * SIGMOID(OUTPUT_DERIVATIVE)
-        let gradients = this.output.map((e, i, j) => ActivationFunction[this.activation](e, true));
+        let gradients = this.output.map((e, i, j) => this.activation(e, true));
         gradients.multiply(loss);
         gradients.multiply(learningRate);
         //calculate the previous layer loss
@@ -47,5 +53,3 @@ class Layer {
         return nextLoss;
     }
 }
-
-module.exports = Layer;

@@ -1,11 +1,14 @@
-class Matrix {
-    constructor(rows, cols) {
+export class Matrix {
+  rows: number;
+  cols: number;
+  data: number[][];
+    constructor(rows: number, cols: number) {
       this.rows = rows;
       this.cols = cols;
       this.data = Array(this.rows).fill().map(() => Array(this.cols).fill(0));
     }
   
-    copy() {
+    copy(): Matrix {
       let m = new Matrix(this.rows, this.cols);
       for (let i = 0; i < this.rows; i++) {
         for (let j = 0; j < this.cols; j++) {
@@ -15,11 +18,11 @@ class Matrix {
       return m;
     }
   
-    static fromArray(arr) {
+    static fromArray(arr): Matrix {
       return new Matrix(arr.length, 1).map((e, i) => arr[i]);
     }
   
-    static subtract(a, b) {
+    static subtract(a, b): Matrix {
       if (a.rows !== b.rows || a.cols !== b.cols) {
         console.log('Columns and Rows of A must match Columns and Rows of B.');
         return;
@@ -30,7 +33,7 @@ class Matrix {
         .map((_, i, j) => a.data[i][j] - b.data[i][j]);
     }
   
-    toArray() {
+    toArray(): number[] {
       let arr = [];
       for (let i = 0; i < this.rows; i++) {
         for (let j = 0; j < this.cols; j++) {
@@ -40,11 +43,11 @@ class Matrix {
       return arr;
     }
   
-    randomize() {
+    randomize(): Matrix {
       return this.map(e => Math.random() * 2 - 1);
     }
   
-    add(n) {
+    add(n): Matrix {
       if (n instanceof Matrix) {
         if (this.rows !== n.rows || this.cols !== n.cols) {
           console.log('Columns and Rows of A must match Columns and Rows of B.');
@@ -56,12 +59,12 @@ class Matrix {
       }
     }
   
-    static transpose(matrix) {
+    static transpose(matrix: Matrix): Matrix {
       return new Matrix(matrix.cols, matrix.rows)
         .map((_, i, j) => matrix.data[j][i]);
     }
   
-    static multiply(a, b) {
+    static multiply(a: Matrix, b: Matrix): Matrix {
       // Matrix product
       if (a.cols !== b.rows) {
         console.log('Columns of A must match rows of B.')
@@ -79,7 +82,7 @@ class Matrix {
         });
     }
   
-    multiply(n) {
+    multiply(n): Matrix {
       if (n instanceof Matrix) {
         if (this.rows !== n.rows || this.cols !== n.cols) {
           console.log('Columns and Rows of A must match Columns and Rows of B.');
@@ -94,7 +97,7 @@ class Matrix {
       }
     }
   
-    map(func) {
+    map(func): Matrix {
       // Apply a function to every element of matrix
       for (let i = 0; i < this.rows; i++) {
         for (let j = 0; j < this.cols; j++) {
@@ -105,22 +108,22 @@ class Matrix {
       return this;
     }
   
-    static map(matrix, func) {
+    static map(matrix: Matrix, func): Matrix {
       // Apply a function to every element of matrix
       return new Matrix(matrix.rows, matrix.cols)
         .map((e, i, j) => func(matrix.data[i][j], i, j));
     }
   
-    print() {
+    print(): Matrix {
       console.table(this.data);
       return this;
     }
   
-    serialize() {
+    serialize(): string {
       return JSON.stringify(this);
     }
   
-    static deserialize(data) {
+    static deserialize(data): Matrix {
       if (typeof data == 'string') {
         data = JSON.parse(data);
       }
@@ -128,8 +131,4 @@ class Matrix {
       matrix.data = data.data;
       return matrix;
     }
-  }
-  
-  if (typeof module !== 'undefined') {
-    module.exports = Matrix;
   }

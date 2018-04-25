@@ -1,8 +1,13 @@
-const ActivationFunction = require('../Utils/activation');
-const Matrix = require('../Utils/matrix');
+import {Matrix} from '../Utils/matrix';
+import { ActivationFunction } from './../Utils/activation';
 
-
-class Perceptron {
+export class Perceptron {
+    options:any;
+    error:any;
+    input:any;
+    output:any;
+    weights:any;
+    activation:any;
     constructor(options) {
         const defaults = {
             learningRate: 0.1,
@@ -21,7 +26,8 @@ class Perceptron {
         this.weights = new Matrix(this.options.inputSize, this.options.outputSize);
         this.weights.randomize();
         console.log('STARTING WEIGHTS', this.weights.data)
-        this.activation = this.options.activation ? this.options.activation : 'sigmoid';
+        const acvt = new ActivationFunction();
+        this.activation = this.options.activation ? acvt[this.options.activation] : acvt['sigmoid'];
     }
 
     getConfiguration() {
@@ -34,7 +40,7 @@ class Perceptron {
             input = new Matrix(input.length, input[0].length).map((_, i, j) => input[i][j]);
         }
         output = Matrix.multiply(input, this.weights);
-        return Matrix.map(output, (e, i, j) => ActivationFunction['sigmoid'](e) );
+        return Matrix.map(output, (e, i, j) => this.activation['sigmoid'](e) );
     }
 
     train(input, output) {
@@ -43,7 +49,7 @@ class Perceptron {
         this.output = new Matrix(output.length, output[0].length).map((e, i, j) => output[i][j]);
         while (epoch < this.options.iterations) {
             var predictions = Matrix.multiply(this.input, this.weights)
-                                    .map((e, i, j) => ActivationFunction['sigmoid'](e));
+                                    .map((e, i, j) => this.activation['sigmoid'](e));
             var loss = Matrix.subtract(this.output, predictions);
             // get gradient
             var gradients = Matrix.multiply(this.input, loss)
@@ -55,5 +61,3 @@ class Perceptron {
         }
     }
 }
-
-module.exports = Perceptron;
