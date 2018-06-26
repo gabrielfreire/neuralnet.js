@@ -7,9 +7,10 @@ class AudioGenerator {
         this.numpyLoaded = false;
         this.cache = {};
         pyodide.loadPackage('numpy').then(() => {
-            py(`import json\nimport numpy as np\nfrom numpy.lib.stride_tricks import as_strided`);
+            py(`import numpy as np\nfrom numpy.lib.stride_tricks import as_strided`);
             py(this._spectrogram());
             this.pySpectrogram = pyodide.pyimport('spectrogram');
+            // this.pyPlotSpectrogramFeature = pyodide.pyimport('plot_spectrogram_feature');
             this.numpyLoaded = true;
             console.log('numpy loaded');
         });
@@ -33,6 +34,16 @@ class AudioGenerator {
             };
             request.send(null);
           });
+    }
+    _plotSpectrogramFeature() {
+        return `def plot_spectrogram_feature(spectrogram):
+        fig = plt.figure(figsize=(12,5))
+        ax = fig.add_subplot(111)
+        im = ax.imshow(spectrogram, cmap=plt.cm.jet, aspect='auto')
+        plt.title('Normalized Spectrogram')
+        plt.ylabel('Time')
+        plt.xlabel('Frequency')
+        plt.show()`
     }
     _spectrogram () {
         return `def spectrogram(audioBuffer, step, wind, sample_rate):
@@ -91,6 +102,10 @@ class AudioGenerator {
             });
             
         });
+    }
+
+    plot(spectrogram) {
+
     }
     
 
