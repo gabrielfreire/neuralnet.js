@@ -1,0 +1,222 @@
+<html>
+  <head>
+    <!--Load the AJAX API-->
+    <script type="text/javascript" src="lib/pyodide.js"></script>
+    <script type="text/javascript" src="lib/Tone.js"></script>
+    <script type="text/javascript" src="lib/dsp.js"></script>
+    <script type="text/javascript" src="lib/AudioGenerator.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="lib/d3.min.js"></script>
+    <script src="http://d3js.org/d3.v3.min.js"></script>
+    <script type="text/javascript" src="lib/decoder.js"></script>
+    <script type="text/javascript" src="lib/wavdecoder.js"></script>
+    <script type="text/javascript" src="lib/spectrogram.js"></script>
+    <script type="text/javascript">
+      // Load the Visualization API and the corechart package.
+      google.charts.load('current', {'packages':['corechart']});
+
+      // Set a callback to run when the Google Visualization API is loaded.
+      google.charts.setOnLoadCallback(drawChart);
+
+      // Callback that creates and populates a data table,
+      // instantiates the pie chart, passes in the data and
+      // draws it.
+      function drawChart() {
+        // Create the data table.
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Topping');
+        data.addColumn('number', 'Slices');
+        data.addRows([
+          ['Mushrooms', 3],
+          ['Onions', 1],
+          ['Olives', 1],
+          ['Zucchini', 1],
+          ['Pepperoni', 2]
+        ]);
+        // Set chart options
+        var options = {'title':'How Much Pizza I Ate Last Night', 'width':400, 'height':300};
+        // Instantiate and draw our chart, passing in some options.
+        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+        // chart.draw(data, options);
+      }
+      var trainingData = [];
+      // d3.csv('data/train.csv').then(function(r) {
+      //   console.log(r.length);
+      // });
+
+      
+      
+      
+      const sampleRate = 256;
+      
+      function playAudio(decodedAudioBuffer) {
+        let isPlaying = false;
+        return new Promise((resolve, reject) => {
+          console.info('playAudio()');
+          if(!decodedAudioBuffer) reject( {error: 'No audio buffer was found'} );
+          const audioContext = new AudioContext();
+          const source = audioContext.createBufferSource();
+          const javascriptNode = audioContext.createScriptProcessor(512, 1, 1);
+          const analyser = audioContext.createAnalyser();
+          analyser.smoothingTimeConstant = 0.0;
+          analyser.fftSize = 256;
+
+          let startTime = audioContext.currentTime;
+          let maxCount = (audioContext.sampleRate / sampleRate) * decodedAudioBuffer.duration;
+
+          let spectrogram = [];
+          let startOffset = 0;
+          let count = 0;
+          let currSecond = 0;
+          
+          isPlaying = true;
+  
+          javascriptNode.onaudioprocess = function(event) {
+            if(isPlaying) {
+              count++;
+              currSecond = (sampleRate * count) / decodedAudioBuffer.sampleRate;
+              startOffset += audioContext.currentTime - startTime;
+              let freqs = new Uint8Array(analyser.frequencyBinCount);
+              analyser.getByteFrequencyData(freqs);
+              spectrogram.push({key: currSecond, value: new Uint8Array(freqs)});
+              if(count > maxCount){
+                if(isPlaying) {
+                  console.log('Ended');
+                  resolve(spectrogram);
+                }
+                source.stop();
+                isPlaying = false; 
+              }
+            }
+          }
+          try {
+            source.buffer = decodedAudioBuffer;
+            analyser.buffer = decodedAudioBuffer;
+            source.connect(analyser);
+            analyser.connect(javascriptNode);
+            source.connect(audioContext.destination);
+            source.loop = false;
+            source.start(0, startOffset % decodedAudioBuffer.duration);
+          } catch(e) {
+            reject({ error: `Something wrong happened: ${e}` });
+          }
+        })
+      }
+
+      function bufferToWavBlob(audioBuffer) {
+        let dataView = new DataView(audioBuffer);
+        let blob = new Blob([dataView], {type: 'audio/wav'});
+        return blob;
+      }
+
+      function blobToBuffer(wavBlob, callback) {
+        let reader = new FileReader();
+        reader.readAsArrayBuffer(wavBlob);
+        reader.onload = function() {
+          callback(reader.result);
+        }
+      }
+
+      /**
+       * @param {Object} options : {
+       *  url: '',
+       *  responseType: ''
+       * }
+       * @param {Function} callback : Function(){}
+       * 
+       */
+      function getWavBuffer(options) {
+        return new Promise((resolve, reject) => {
+          console.info('getWavBuffer()');
+          const request = new XMLHttpRequest();
+          request.open('GET', options.url, true);
+          // request.overrideMimeType('plain/text; charset=x-user-defined');
+          request.responseType = options.responseType || 'arraybuffer';
+          // request.overrideMimeType('audio/wav');
+          request.onreadystatechange = function(event) {
+            if (request.readyState == 4) {
+              if (request.status == 200 || request.status == 0) {
+                resolve(request.response); 
+              } else {
+                reject({error: '404 Not found'});
+              }
+            }
+          };
+          request.send(null);
+        });
+      }
+
+      const screamAudioUrl = 'https://raw.githubusercontent.com/oampo/audiofile.js/master/example/audio/WilhelmScream.wav';
+      const exampleAudioUrl = 'data/example.wav';
+      const paths = [ screamAudioUrl, exampleAudioUrl ];
+      function action (path) {
+        return new Promise((resolve, reject) => {
+          console.info(`action(${path})`);
+          getWavBuffer({ url: path, responseType: 'arraybuffer' }).then((audioBuffer) => {
+            let _tempAudioContext = new AudioContext();
+            _tempAudioContext.decodeAudioData(audioBuffer, (decodedAudioBuffer) => {
+              resolve(decodedAudioBuffer.getChannelData(0));
+              playAudio(decodedAudioBuffer).then((spectrogram) => {
+                console.log('resolved for ' + path, spectrogram);
+                resolve(spectrogram);
+              }).catch((e) => reject('error' + e));
+            });
+          });
+        });
+      }
+      
+      // const sample = new Spectrogram(exampleAudioUrl, "#vis", {width:500, height:200, maxFrequency:8000});
+
+      // load Python language
+      languagePluginLoader.then(() => {
+        console.warn('Python initialized');
+        let audioGen = new AudioGenerator();
+        let numpyBtn = document.querySelector('#numpy_btn');
+        let numpyResBtn = document.querySelector('#numpy_result');
+        numpyBtn.onclick = function(evt) {
+          let startTime = new Date().getTime();
+          audioGen.spectrogramFromFile(screamAudioUrl, 10, 20, 16000).then((spectrogram) => {
+            let now = new Date().getTime();
+            let elapsedTime = (now - startTime) / 1000;
+            console.log(`Success!! finished in ${elapsedTime} seconds`);
+            numpyResBtn.textContent = `Success!! finished in ${elapsedTime} seconds`;
+          });
+        }
+        
+      });
+    </script>
+    <style>
+      canvas, svg {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      .spectrogram {
+        position: relative;
+      }
+      .axis {
+        font: 14px sans-serif;
+      }
+      .axis path,
+      .axis line {
+        fill: none;
+      }
+      .axis line {
+        shape-rendering: crispEdges;
+        stroke: #444;
+        stroke-width: 1.0px;
+        stroke-dasharray: 2,4;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--Div that will hold the pie chart-->
+    <div id="chart_div"></div>
+    <p>Visualize sounds using a spectrogram - right in your browser!</p>
+    <div id="vis" class="spectrogram"></div>
+    <button id="numpy_btn">Generate Spectrogram</button>
+    <p style="width: 100%; white-space: pre-wrap;" id="numpy_result"></p>
+  </body>
+</html>

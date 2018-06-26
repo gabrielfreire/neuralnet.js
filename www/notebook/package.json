@@ -1,0 +1,9 @@
+{
+  "name": "test",
+  "main": "test.js",
+  "version": "3.0.0",
+  "author": {
+    "name": "Gabriel Freire",
+    "url": "https://beta.observablehq.com/@gabrielfreire"
+  }
+}
