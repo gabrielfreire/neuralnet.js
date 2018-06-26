@@ -40,7 +40,7 @@ class AudioGenerator {
         eps = 1e-14
         samples = np.frombuffer(audioBuffer, dtype='float32')
         samples = np.nan_to_num(samples, copy=True)
-        
+
         assert not np.iscomplexobj(samples), "Must not pass in complex numbers"
         
         hop_length = int(0.001 * step * sample_rate)
@@ -73,7 +73,7 @@ class AudioGenerator {
         let spectrogram = this.pySpectrogram(audioBuffer, step, wind, sampleRate);
         return { spectrogram: spectrogram };
     }
-    spectrogramFromFile (filePath, step, wind, sampleRate) {
+    spectrogramFromFile (filePath, step, wind) {
         const self = this;
         let spec = null;
         return new Promise((resolve, reject) => {
@@ -81,9 +81,10 @@ class AudioGenerator {
                 let audioBuffer = this.wavDecoder.decode(arrayBuffer);
                 console.log(audioBuffer);
                 let buffer = audioBuffer.channelData[0];
+                let sampleRate = audioBuffer.sampleRate;
                 this.cache[filePath] = buffer;
                 if(!this.numpyLoaded) reject({ message: "Numpy was not loaded yet, try again in a few seconds" });
-                spec = this._spectrogramFromAudioBuffer(buffer, step, wind, 16000);
+                spec = this._spectrogramFromAudioBuffer(buffer, step, wind, sampleRate);
                 console.log(spec);
                 resolve(spec);
                 

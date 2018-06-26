@@ -132,7 +132,7 @@
         let numpyResBtn = document.querySelector('#numpy_result');
         numpyBtn.onclick = function(evt) {
           let startTime = new Date().getTime();
-          audioGen.spectrogramFromFile(exampleAudioUrl, 10, 20, 16000).then((spectrogram) => {
+          audioGen.spectrogramFromFile(exampleAudioUrl, 10, 20).then((spectrogram) => {
             let now = new Date().getTime();
             let elapsedTime = (now - startTime) / 1000;
             console.log(`Success!! finished in ${elapsedTime} seconds`);
