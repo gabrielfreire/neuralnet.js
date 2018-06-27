@@ -7,7 +7,7 @@ class AudioGenerator {
         this.numpyLoaded = false;
         this.cache = {};
         pyodide.loadPackage('numpy').then(() => {
-            py(`import numpy as np\nfrom numpy.lib.stride_tricks import as_strided`);
+            py(`import numpy as np\nfrom numpy.lib.stride_tricks import as_strided\nimport ast`);
             py(this._spectrogram());
             this.pySpectrogram = pyodide.pyimport('spectrogram');
             // this.pyPlotSpectrogramFeature = pyodide.pyimport('plot_spectrogram_feature');
@@ -35,25 +35,14 @@ class AudioGenerator {
             request.send(null);
           });
     }
-    _plotSpectrogramFeature() {
-        return `def plot_spectrogram_feature(spectrogram):
-        fig = plt.figure(figsize=(12,5))
-        ax = fig.add_subplot(111)
-        im = ax.imshow(spectrogram, cmap=plt.cm.jet, aspect='auto')
-        plt.title('Normalized Spectrogram')
-        plt.ylabel('Time')
-        plt.xlabel('Frequency')
-        plt.show()`
-    }
     _spectrogram () {
         return `def spectrogram(audioBuffer, step, wind, sample_rate):
         max_freq = 8000
         eps = 1e-14
-        samples = np.frombuffer(audioBuffer, dtype='float32')
-        samples = np.nan_to_num(samples, copy=True)
+        samples = np.fromstring(audioBuffer, dtype='float32', sep=',')
 
         assert not np.iscomplexobj(samples), "Must not pass in complex numbers"
-        
+
         hop_length = int(0.001 * step * sample_rate)
         fft_length = int(0.001 * wind * sample_rate)
         window = np.hanning(fft_length)[:, None]
@@ -61,13 +50,12 @@ class AudioGenerator {
         scale = window_norm * sample_rate
         trunc = (len(samples) - fft_length) % hop_length
         x = samples[:len(samples) - trunc]
-        
         nshape = (fft_length, (len(x) - fft_length) // hop_length + 1)
         nstrides = (x.strides[0], x.strides[0] * hop_length)
         x = as_strided(x, shape=nshape, strides=nstrides)
-        
+
         assert np.all(x[:, 1] == samples[hop_length:(hop_length + fft_length)])
-        
+
         x = np.fft.rfft(x * window, axis=0)
         x = np.absolute(x)**2
         x[1:-1, :] *= (2.0 / scale)
@@ -81,7 +69,8 @@ class AudioGenerator {
 
     // http://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html
     _spectrogramFromAudioBuffer (audioBuffer, step, wind, sampleRate) {
-        let spectrogram = this.pySpectrogram(audioBuffer, step, wind, sampleRate);
+        let buff = audioBuffer.toString();
+        let spectrogram = this.pySpectrogram(buff, step, wind, sampleRate);
         return { spectrogram: spectrogram };
     }
     spectrogramFromFile (filePath, step, wind) {
