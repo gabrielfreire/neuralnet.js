@@ -38,7 +38,7 @@ class AudioGenerator {
         return `def spectrogram(audioBuffer, step, wind, sample_rate):
         max_freq = 8000
         eps = 1e-14
-        samples = np.fromstring(audioBuffer, dtype='float32', sep=',')
+        samples = np.frombuffer(audioBuffer, dtype='float32')
 
         assert not np.iscomplexobj(samples), "Must not pass in complex numbers"
 
@@ -68,8 +68,8 @@ class AudioGenerator {
 
     // http://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html
     _spectrogramFromAudioBuffer (audioBuffer, step, wind, sampleRate) {
-        let buff = audioBuffer.toString();
-        let spectrogram = this.pySpectrogram(buff, step, wind, sampleRate);
+        // let buff = audioBuffer.toString();
+        let spectrogram = this.pySpectrogram(audioBuffer, step, wind, sampleRate);
         return { spectrogram: spectrogram };
     }
     spectrogramFromFile (filePath, step, wind) {
