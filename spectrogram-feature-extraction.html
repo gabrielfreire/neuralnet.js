@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Spectrogram feature extraction - iodide</title>
+<link rel="stylesheet" type="text/css" href="https://iodide.io/master/iodide.master.css">
+</head>
+<body>
+<script id="jsmd" type="text/jsmd">
+%% meta
+{
+  "title": "Spectrogram feature extraction",
+  "viewMode": "presentation",
+  "lastSaved": "2018-06-27T15:19:02.691Z",
+  "languages": {
+    "js": {
+      "pluginType": "language",
+      "languageId": "js",
+      "displayName": "Javascript",
+      "codeMirrorMode": "javascript",
+      "module": "window",
+      "evaluator": "eval",
+      "keybinding": "j",
+      "url": ""
+    },
+    "py": {
+      "languageId": "py",
+      "displayName": "python",
+      "codeMirrorMode": "python",
+      "keybinding": "p",
+      "url": "https://iodide.io/pyodide-demo/pyodide.js",
+      "module": "pyodide",
+      "evaluator": "runPython",
+      "pluginType": "language"
+    }
+  },
+  "lastExport": "2018-06-27T15:31:03.006Z"
+}
+
+%% md
+# Spectrogram Feature Extraction
+
+In this experiment, we'll attempt to extract a spectrogram feature from a .wav audio file encoded as pcm 16
+
+To do this we will only use javascript cells to demonstrate the pyodide API and how you could apply this same code to any project
+
+
+%% md
+## Loading Python
+
+The first thing we want to do is load the Pyodide plugin for Iodide, which will
+give us Python support. (Don't worry too much about the details here. This
+is just a snippet of JSON that describes how to load and use the language
+plugin.)
+
+%% plugin
+{
+  "languageId": "py",
+  "displayName": "python",
+  "codeMirrorMode": "python",
+  "keybinding": "p",
+  "url": "https://iodide.io/pyodide-demo/pyodide.js",
+  "module": "pyodide",
+  "evaluator": "runPython",
+  "pluginType": "language"
+}
+
+%% md
+We now have a Python environment loaded and ready to go.  Let's test it.
+
+%% js
+pyodide.runPython('import sys\nsys.version')
+
+%% md
+## Loading Numpy
+
+Pyodide doesn't automatically load all of the third party packages, so we first
+need to load numpy into the browsers virtual file system:
+
+%% js
+pyodide.loadPackage('numpy')
+
+%% md
+# Let's make things small
+
+Let's just encapsulate some of the API so we write less because we were born lazy
+
+%% js
+function py(code) {
+  return pyodide.runPython(code);
+}
+
+%% md
+## Load the python packages needed
+
+Let's load numpy and as_strided because we will need them below
+
+%% js
+py(`import numpy as np\nfrom numpy.lib.stride_tricks import as_strided`);
+
+%% md
+## Define the spectrogram python function
+define the spectrogram python function in one big string and run it using `py(_spectrogram())`
+
+%% js
+function _spectrogram () {
+    return `def spectrogram(audioBuffer, step, wind, sample_rate):
+    max_freq = 8000
+    eps = 1e-14
+
+    # get the string buffer and make an np.array
+    samples = np.fromstring(audioBuffer, dtype='float32', sep=',')
+
+    assert not np.iscomplexobj(samples), "Must not pass in complex numbers"
+
+    hop_length = int(0.001 * step * sample_rate)
+    fft_length = int(0.001 * wind * sample_rate)
+    window = np.hanning(fft_length)[:, None]
+    window_norm = np.sum(window ** 2)
+    scale = window_norm * sample_rate
+    trunc = (len(samples) - fft_length) % hop_length
+    x = samples[:len(samples) - trunc]
+    nshape = (fft_length, (len(x) - fft_length) // hop_length + 1)
+    nstrides = (x.strides[0], x.strides[0] * hop_length)
+    x = as_strided(x, shape=nshape, strides=nstrides)
+
+    assert np.all(x[:, 1] == samples[hop_length:(hop_length + fft_length)])
+
+    x = np.fft.rfft(x * window, axis=0)
+    x = np.absolute(x)**2
+    x[1:-1, :] *= (2.0 / scale)
+    x[(0, -1), :] /= scale
+    freqs = float(sample_rate) / fft_length * np.arange(x.shape[0])
+    ind = np.where(freqs <= max_freq)[0][-1] + 1
+    result = np.transpose(np.log(x[:ind, :] + eps))
+
+    return result`
+}
+py(_spectrogram());
+// store this in a variable
+const pySpectrogram = pyodide.pyimport('spectrogram');
+
+%% md
+# Decode wav utilities
+
+This is utility code to decode our .wav file and get channel data and sample rate
+
+%% js
+// decode wav
+function pcm16(buffer, offset, output, channels, samples){
+  let input = new Int16Array(buffer, offset);
+  let pos = 0;
+  for (let i = 0; i < samples; ++i) {
+    for (let ch = 0; ch < channels; ++ch) {
+      let data = input[pos++];
+      output[ch][i] = data < 0 ? data / 32768 : data / 32767;
+    }
+  }
+}
+function decode(buffer) {
+  let pos = 0, end = 0;
+  if (buffer.buffer) {
+    // If we are handed a typed array or a buffer, then we have to consider the
+    // offset and length into the underlying array buffer.
+    pos = buffer.byteOffset;
+    end = buffer.length;
+    buffer = buffer.buffer;
+  } else {
+    // If we are handed a straight up array buffer, start at offset 0 and use
+    // the full length of the buffer.
+    pos = 0;
+    end = buffer.byteLength;
+  }
+
+  let v = new DataView(buffer);
+
+  function u8() {
+    let x = v.getUint8(pos);
+    pos++;
+    return x;
+  }
+
+  function u16() {
+    let x = v.getUint16(pos, true);
+    pos += 2;
+    return x;
+  }
+
+  function u32() {
+    let x = v.getUint32(pos, true);
+    pos += 4;
+    return x;
+  }
+
+  function string(len) {
+    let str = '';
+    for (let i = 0; i < len; ++i)
+      str += String.fromCharCode(u8());
+    return str;
+  }
+
+  if (string(4) !== 'RIFF')
+    throw new TypeError('Invalid WAV file');
+  u32();
+  if (string(4) !== 'WAVE')
+    throw new TypeError('Invalid WAV file');
+
+  let fmt;
+
+  while (pos < end) {
+    let type = string(4);
+    let size = u32();
+    let next = pos + size;
+    switch (type) {
+    case 'fmt ':
+      let formatId = u16();
+      if (formatId !== 0x0001 && formatId !== 0x0003)
+        throw new TypeError('Unsupported format in WAV file: ' + formatId.toString(16));
+      fmt = {
+        format: 'lpcm',
+        floatingPoint: formatId === 0x0003,
+        channels: u16(),
+        sampleRate: u32(),
+        byteRate: u32(),
+        blockSize: u16(),
+        bitDepth: u16(),
+      };
+      break;
+    case 'data':
+      if (!fmt)
+        throw new TypeError('Missing "fmt " chunk.');
+      let samples = Math.floor(size / fmt.blockSize);
+      let channels = fmt.channels;
+      let sampleRate = fmt.sampleRate;
+      let channelData = [];
+      for (let ch = 0; ch < channels; ++ch)
+        channelData[ch] = new Float32Array(samples);
+      pcm16(buffer, pos, channelData, channels, samples);
+      return {
+        sampleRate: sampleRate,
+        channelData: channelData
+      };
+      break;
+    }
+    pos = next;
+  }
+}
+
+%% md
+# Fecth an audio file
+
+let's define a function that fetches an audio file from an url and returns a promise with our arrayBuffer
+
+%% js
+function getAudioBuffer(url) {
+  return new Promise((resolve, reject) => {
+    const request = new XMLHttpRequest();
+    request.open('GET', url, true);
+    request.responseType = 'arraybuffer';
+    request.onreadystatechange = function(event) {
+      if (request.readyState == 4) {
+        if (request.status == 200 || request.status == 0) {
+          resolve(request.response);
+        } else {
+          reject({error: '404 Not found'});
+        }
+      }
+    };
+    request.send(null);
+  })
+}
+
+%% md
+## Fecth and extract
+
+Now we fetch our audio from some URL, decode and extract the feature using our python function
+
+%% js
+let url = 'https://raw.githubusercontent.com/gabrielfreire/neuralnet.js/more_experimentation/www/data/example.wav';
+getAudioBuffer(url).then((arrayBuffer) => {
+  let audioBuffer = decode(arrayBuffer);
+  // pass the audioBuffer as a string to python
+  let buff = audioBuffer.channelData[0].toString();
+  let spectrogram = pySpectrogram(buff, 10, 20, 16000)
+  console.log(spectrogram);
+})
+
+%% md
+# TODO
+plot the spectrogram using plotly/matplotlib?
+
+%% js
+</script>
+<div id='page'></div>
+<script src='https://iodide.io/master/iodide.master.js'></script>
+</body>
+</html>

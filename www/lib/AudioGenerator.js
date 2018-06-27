@@ -5,9 +5,8 @@ class AudioGenerator {
     constructor() {
         this.context = new AudioContext();
         this.numpyLoaded = false;
-        this.cache = {};
         pyodide.loadPackage('numpy').then(() => {
-            py(`import numpy as np\nfrom numpy.lib.stride_tricks import as_strided\nimport ast`);
+            py(`import numpy as np\nfrom numpy.lib.stride_tricks import as_strided`);
             py(this._spectrogram());
             this.pySpectrogram = pyodide.pyimport('spectrogram');
             // this.pyPlotSpectrogramFeature = pyodide.pyimport('plot_spectrogram_feature');
@@ -82,7 +81,6 @@ class AudioGenerator {
                 console.log(audioBuffer);
                 let buffer = audioBuffer.channelData[0];
                 let sampleRate = audioBuffer.sampleRate;
-                this.cache[filePath] = buffer;
                 if(!this.numpyLoaded) reject({ message: "Numpy was not loaded yet, try again in a few seconds" });
                 spec = this._spectrogramFromAudioBuffer(buffer, step, wind, sampleRate);
                 console.log(spec);
