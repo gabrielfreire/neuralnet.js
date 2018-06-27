@@ -11,7 +11,7 @@
 {
   "title": "Spectrogram feature extraction",
   "viewMode": "presentation",
-  "lastSaved": "2018-06-27T15:19:02.691Z",
+  "lastSaved": "2018-06-27T15:35:57.115Z",
   "languages": {
     "js": {
       "pluginType": "language",
@@ -34,7 +34,7 @@
       "pluginType": "language"
     }
   },
-  "lastExport": "2018-06-27T15:31:03.006Z"
+  "lastExport": "2018-06-27T15:36:00.734Z"
 }
 
 %% md
@@ -43,7 +43,6 @@
 In this experiment, we'll attempt to extract a spectrogram feature from a .wav audio file encoded as pcm 16
 
 To do this we will only use javascript cells to demonstrate the pyodide API and how you could apply this same code to any project
-
 
 %% md
 ## Loading Python
@@ -107,9 +106,7 @@ function _spectrogram () {
     return `def spectrogram(audioBuffer, step, wind, sample_rate):
     max_freq = 8000
     eps = 1e-14
-
-    # get the string buffer and make an np.array
-    samples = np.fromstring(audioBuffer, dtype='float32', sep=',')
+    samples = np.frombuffer(audioBuffer, dtype='float32')
 
     assert not np.iscomplexobj(samples), "Must not pass in complex numbers"
 
@@ -279,8 +276,7 @@ Now we fetch our audio from some URL, decode and extract the feature using our p
 let url = 'https://raw.githubusercontent.com/gabrielfreire/neuralnet.js/more_experimentation/www/data/example.wav';
 getAudioBuffer(url).then((arrayBuffer) => {
   let audioBuffer = decode(arrayBuffer);
-  // pass the audioBuffer as a string to python
-  let buff = audioBuffer.channelData[0].toString();
+  let buff = audioBuffer.channelData[0];
   let spectrogram = pySpectrogram(buff, 10, 20, 16000)
   console.log(spectrogram);
 })
