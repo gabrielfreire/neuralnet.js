@@ -11,7 +11,7 @@
 {
   "title": "Spectrogram feature extraction",
   "viewMode": "presentation",
-  "lastSaved": "2018-06-27T15:35:57.115Z",
+  "lastSaved": "2018-06-28T09:42:27.565Z",
   "languages": {
     "js": {
       "pluginType": "language",
@@ -34,13 +34,13 @@
       "pluginType": "language"
     }
   },
-  "lastExport": "2018-06-27T15:36:00.734Z"
+  "lastExport": "2018-06-28T10:04:40.874Z"
 }
 
 %% md
 # Spectrogram Feature Extraction
 
-In this experiment, we'll attempt to extract a spectrogram feature from a .wav audio file encoded as pcm 16
+In this experiment, we'll attempt to extract a spectrogram feature from a .wav audio file encoded as pcm 16 and then we will record our own audio to extract the spectrogram
 
 To do this we will only use javascript cells to demonstrate the pyodide API and how you could apply this same code to any project
 
@@ -95,7 +95,8 @@ function py(code) {
 Let's load numpy and as_strided because we will need them below
 
 %% js
-py(`import numpy as np\nfrom numpy.lib.stride_tricks import as_strided`);
+py(`import numpy as np
+from numpy.lib.stride_tricks import as_strided`);
 
 %% md
 ## Define the spectrogram python function
@@ -134,8 +135,6 @@ function _spectrogram () {
     return result`
 }
 py(_spectrogram());
-// store this in a variable
-const pySpectrogram = pyodide.pyimport('spectrogram');
 
 %% md
 # Decode wav utilities
@@ -277,9 +276,185 @@ let url = 'https://raw.githubusercontent.com/gabrielfreire/neuralnet.js/more_exp
 getAudioBuffer(url).then((arrayBuffer) => {
   let audioBuffer = decode(arrayBuffer);
   let buff = audioBuffer.channelData[0];
-  let spectrogram = pySpectrogram(buff, 10, 20, 16000)
+  // import python function
+  let getSpectrogram = pyodide.pyimport('spectrogram');
+  let spectrogram = getSpectrogram(buff, 10, 20, 16000)
   console.log(spectrogram);
 })
+
+%% md
+## Now we will record our own audio using the Web Audio API
+Let's create a button that records audio from the browser, apply a recording event on it, also take care of the fancy people who uses an iPad for everything.
+
+%% md
+## Utilities
+First we need some utility functions that will help us model our audio buffer, we can't use the raw audio buffer from the browser.
+- we will need to handle mobile devices
+- we will need to merge the buffers because the raw one comes as a 2d matrix from the browser, so we will need to flat it
+- then we will interpolate the whole array to downsample from 44100mhz to 16000mhz
+
+%% js
+function isMobile() {
+    let usrAgt = window.navigator.userAgent;
+    return usrAgt.indexOf('iPhone') > -1 ||
+        usrAgt.indexOf('Android') > -1 ||
+        usrAgt.indexOf('iPad') > -1;
+}
+function mergeBuffers(recBuffers, recLength) {
+    var result = new Float32Array(recLength);
+    var offset = 0;
+    for (var i = 0; i < recBuffers.length; i++) {
+        result.set(recBuffers[i], offset);
+        offset += recBuffers[i].length;
+    }
+    return result;
+}
+function interpolateArray(data, newSampleRate, oldSampleRate) {
+    var fitCount = Math.round(data.length*(newSampleRate/oldSampleRate));
+    var newData = new Array();
+    var springFactor = new Number((data.length - 1) / (fitCount - 1));
+    newData[0] = data[0]; // for new allocation
+    for ( var i = 1; i < fitCount - 1; i++) {
+        var tmp = i * springFactor;
+        var before = new Number(Math.floor(tmp)).toFixed();
+        var after = new Number(Math.ceil(tmp)).toFixed();
+        var atPoint = tmp - before;
+        newData[i] = this.linearInterpolate(data[before], data[after], atPoint);
+    }
+    newData[fitCount - 1] = data[data.length - 1]; // for new allocation
+    return newData;
+};
+function linearInterpolate(before, after, atPoint) {
+    return before + (after - before) * atPoint;
+};
+
+%% md
+## Buffer modeling function
+
+Now we create our awesome buffer modeling function that will receive the raw recorded buffer and output our usable buffer for spectrogram extraction
+
+%% js
+function getWAV(rawBuffer, recordingLength, desiredSampleRate, context) {
+  let merged = mergeBuffers(rawBuffer[0], recordingLength);
+  merged = interpolateArray(merged, desiredSampleRate, context.sampleRate); 
+  return new Float32Array(merged);
+}
+
+%% md
+## Recording Time
+Now we can implement our recording functionality using the Web Audio API
+
+
+%% js
+const mouseDownEvent = isMobile() ? 'touchstart' : 'mousedown';
+// ***
+// HTML elements
+// ****
+const instructions = iodide.output.element('p');
+instructions.textContent = 'Click once to start recording then click again to stop';
+// record button
+const micBtn = iodide.output.element('button');
+micBtn.setAttribute('type', 'button');
+micBtn.textContent = "Record";
+// our result
+const result = iodide.output.element('p');
+result.textContent = '';
+
+// add click/touch event
+micBtn.addEventListener(mouseDownEvent, speak);
+
+// ***
+// HTML elements end
+// ***
+
+// define our audio processing global variables
+const context = new AudioContext();
+let audioBuffer = []; // this is where we will store all recorded buffers
+audioBuffer[0] = []; // initialize our 1 channel buffer
+let micInput, scriptProcessor;
+let isRecording = false;
+let recordingLength = 0;
+let nav = window.navigator;
+
+
+// speak function
+function speak(evt) {
+  if(isRecording) {
+    stop();
+    return;
+  }
+  nav.getUserMedia = (nav.getUserMedia ||
+        nav.webkitGetUserMedia ||
+        nav.mozGetUserMedia ||
+        nav.msGetUserMedia);
+  isRecording = true;
+  nav.getUserMedia({
+    audio: true // we will only capture audio
+  }, function(stream) {
+    // we will use a 16000 sampleRate buffer to extract the spectrogram
+    const desiredSampleRate = 16 * 1000; 
+    
+    const bufferSize = 0;
+    // here we create an input source which is our microphone
+    micInput = context.createMediaStreamSource(stream); 
+    
+    // the script processor is important to capture the audio buffer from what's being recorded
+    scriptProcessor = context.createScriptProcessor(bufferSize, 1, 1);
+    
+    // onaudioprocess will be called every frame so we can process our input
+    scriptProcessor.onaudioprocess = function(event) {
+      if(!isRecording) return;
+      
+      // let's assume this is a 1 channel audio, in case of multiple channels we would have to loop throught each channel
+      let inputFrame = event.inputBuffer.getChannelData(0); 
+      
+      let buffer = [];
+      
+      for(let i = 0; i < inputFrame.length; i++) {
+        buffer.push(inputFrame[i]);
+      }
+      
+      audioBuffer[0].push(buffer);
+      recordingLength += buffer.length;
+    }
+    
+    // Connect everything
+    // Microphone -> scriptProcessor -> audio context destination
+    micInput.connect(scriptProcessor);
+    scriptProcessor.connect(context.destination);
+  
+  }, function(error) {
+    console.log(`Something bad ocurred ${JSON.stringify(error, null, 2)}`);
+  });
+}
+
+// stop speaking function
+function stop(){
+  let sampleRate = 16*1000;
+  // Get our final WAV audioBuffer
+  let finalWavBuffer = getWAV(audioBuffer, recordingLength, sampleRate, context);
+  
+  // Get our spectrogram from python
+  const getSpectrogram = pyodide.pyimport('spectrogram');
+  
+  let startTime = new Date().getTime();
+  
+  let spectrogram = getSpectrogram(finalWavBuffer, 10, 20, sampleRate)
+  
+  let endTime = new Date().getTime();
+  let elapsedTime = (endTime - startTime) / 1000;
+  
+  console.log(spectrogram);
+  
+  // show results
+  result.textContent = `Spectrogram feature was successfully extracted in ${elapsedTime} seconds`;
+  
+  // restart the variables
+  audioBuffer = [];
+  audioBuffer[0] = [];
+  isRecording = false;
+  recordingLength = 0;
+}
 
 %% md
 # TODO
