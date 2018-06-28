@@ -46,7 +46,8 @@
         "isomorphic-fetch": "^2.2.1",
         "node-fetch": "^2.1.2",
         "sound-parameters-extractor": "^1.4.0",
-        "tone": "^0.12.80"
+        "tone": "^0.12.80",
+        "webassembly": "^0.11.0"
     },
     "devDependencies": {
         "typescript": "^2.8.3"

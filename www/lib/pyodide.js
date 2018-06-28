@@ -83,6 +83,7 @@ var languagePluginLoader = new Promise((resolve, reject) => {
 
     let wasm_promise = WebAssembly.compileStreaming(fetch(wasmURL));
     Module.instantiateWasm = (info, receiveInstance) => {
+        console.log(info.env.setTempRet0)
         wasm_promise
             .then(module => WebAssembly.instantiate(module, info))
             .then(instance => receiveInstance(instance));
