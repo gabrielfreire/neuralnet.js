@@ -8,14 +8,16 @@ Module.expectedDataFileDownloads++;
 (function() {
     var loadPackage = function(metadata) {
         var PACKAGE_PATH;
-        if (typeof window === "object") {
-            PACKAGE_PATH = window["encodeURIComponent"](window.location.pathname.toString().substring(0, window.location.pathname.toString().lastIndexOf("/")) + "/")
-        } else if (typeof location !== "undefined") {
-            PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf("/")) + "/")
-        } else {
-            // throw "using preloaded data can only be done on a web page or in a web worker"
-        }
-        var PACKAGE_NAME = "pyodide.asm.data";
+
+        // unecessary since we're going to use NodeJs
+        // if (typeof window === "object") {
+        //     PACKAGE_PATH = window["encodeURIComponent"](window.location.pathname.toString().substring(0, window.location.pathname.toString().lastIndexOf("/")) + "/")
+        // } else if (typeof location !== "undefined") {
+        //     PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf("/")) + "/")
+        // } else {
+        //     // throw "using preloaded data can only be done on a web page or in a web worker"
+        // }
+        var PACKAGE_NAME = "build/pyodide.asm.data";
         var REMOTE_PACKAGE_BASE = "pyodide.asm.data";
         if (typeof Module["locateFilePackage"] === "function" && !Module["locateFile"]) {
             Module["locateFile"] = Module["locateFilePackage"];
@@ -25,6 +27,7 @@ Module.expectedDataFileDownloads++;
         var REMOTE_PACKAGE_SIZE = metadata.remote_package_size;
         var PACKAGE_UUID = metadata.package_uuid;
 
+        // Gabriel Freire added support for NodeJS
         function fetchRemotePackage(packageName, packageSize, callback, errback) {
             if(typeof XMLHttpRequest !== 'undefined'){
                 var xhr = new XMLHttpRequest;
@@ -73,8 +76,7 @@ Module.expectedDataFileDownloads++;
                 };
                 xhr.send(null)
             }
-            else {
-                console.log('its nodejs');
+            else { // nodejs fallback
                 var fs = require('fs');
                 var path = require('path');
                 if(!fs) throw 'No fs module was found';
@@ -86,7 +88,7 @@ Module.expectedDataFileDownloads++;
                 fetch_node(packageName).then((buffer) => buffer.arrayBuffer()).then((packageData) => {
                     if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
                     Module.dataFileDownloads[packageName] = {
-                        loaded: true,
+                        loaded: packageSize,
                         total: packageSize
                     }
                     var total = 0;
@@ -99,9 +101,8 @@ Module.expectedDataFileDownloads++;
                         num++
                     }
                     total = Math.ceil(total * Module.expectedDataFileDownloads / num);
-                    console.log("Downloading data... (" + total + "/" + total + ")");
-                    if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + total + "/" + total + ")");
                     callback(packageData);
+                    if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + total + "/" + total + ")");
                 }).catch((err) => {
                     throw new Error(`Something wrong happened ${err}`);
                 })
@@ -127,13 +128,9 @@ Module.expectedDataFileDownloads++;
                 console.log(`ERROR ${msg}`);
                 if (!check) throw msg + (new Error).stack
             }
-            console.log('1');
             Module["FS_createPath"]("/", "lib", true, true);
-            console.log('2');
             Module["FS_createPath"]("/lib", "python3.6", true, true);
-            console.log('3');
             Module["FS_createPath"]("/lib/python3.6", "site-packages", true, true);
-            console.log('4');
             Module["FS_createPath"]("/lib/python3.6", "xml", true, true);
             Module["FS_createPath"]("/lib/python3.6/xml", "etree", true, true);
             Module["FS_createPath"]("/lib/python3.6/xml", "sax", true, true);
@@ -203,8 +200,9 @@ Module.expectedDataFileDownloads++;
                 if(!arrayBuffer) return;
                 Module.finishedDataFileDownloads++;
                 // assert(arrayBuffer, "Loading data file failed.");
-                // assert(arrayBuffer instanceof ArrayBuffer, "bad input to processPackageData");
-                if(!arrayBuffer instanceof ArrayBuffer) arrayBuffer = arrayBuffer.buffer;
+                // assert(arrayBuffer instanceof ArrayBuffer, "bad input to processPackageData"); <- this pissed me off for a long time
+                if(!arrayBuffer instanceof ArrayBuffer) arrayBuffer = arrayBuffer.buffer ? arrayBuffer.buffer : arrayBuffer; // <- this is better
+                
                 var byteArray = new Uint8Array(arrayBuffer);
                 var curr;
                 if (Module["SPLIT_MEMORY"]) Module.printErr("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");

@@ -6,19 +6,6 @@
 // import { MultiLayerNeuralNetwork, Perceptron } from './neuralnet';
 import * as express from 'express';
 
-// import * as path from 'path';
-// import * as wa from 'webassembly';
-
-// const wasmPath = path.join(__dirname, '/wasm/pyodide.asm.wasm');
-// const memory = new WebAssembly.Memory({initial:8192, maximum:8192});
-// const table = new WebAssembly.Table({ initial: 16384, element: "anyfunc" });
-// const importObj = { imports: { i: arg => console.log(arg) }, memory: memory, table: table };
-// wa.load(wasmPath, {imports: importObj}).then((module) => {
-//     console.log(module.exports);
-// }).catch((err) => {
-//     console.log(`some error: ${err}`);
-// });
-
 // const features: number[][] = [
 //     [1.0, 0.7, 0.5],
 //     [0.16, 1.0, 0.2],

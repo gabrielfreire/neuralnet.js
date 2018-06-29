@@ -46,10 +46,12 @@
         "isomorphic-fetch": "^2.2.1",
         "node-fetch": "^2.1.2",
         "sound-parameters-extractor": "^1.4.0",
+        "text-encoding": "^0.6.4",
         "tone": "^0.12.80",
         "webassembly": "^0.11.0"
     },
     "devDependencies": {
+        "js-beautify": "^1.7.5",
         "typescript": "^2.8.3"
     }
 }
