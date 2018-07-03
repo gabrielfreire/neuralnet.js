@@ -75,12 +75,9 @@ Module.expectedDataFileDownloads++;
                     }
                 };
                 xhr.send(null)
-            }
-            else { // nodejs fallback
+            }else { // nodejs fallback
                 var fs = require('fs');
                 var path = require('path');
-                if(!fs) throw 'No fs module was found';
-                if(!path) throw 'No path module was found';
                 function fetch_node(file) {
                     return new Promise((resolve, reject) => 
                     fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
@@ -101,6 +98,7 @@ Module.expectedDataFileDownloads++;
                         num++
                     }
                     total = Math.ceil(total * Module.expectedDataFileDownloads / num);
+                    console.log(`Downloaded ${packageName} data... (${total}/${total})`);
                     callback(packageData);
                     if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + total + "/" + total + ")");
                 }).catch((err) => {
@@ -199,13 +197,15 @@ Module.expectedDataFileDownloads++;
             function processPackageData(arrayBuffer) {
                 if(!arrayBuffer) return;
                 Module.finishedDataFileDownloads++;
-                // assert(arrayBuffer, "Loading data file failed.");
-                // assert(arrayBuffer instanceof ArrayBuffer, "bad input to processPackageData"); <- this pissed me off for a long time
-                if(!arrayBuffer instanceof ArrayBuffer) arrayBuffer = arrayBuffer.buffer ? arrayBuffer.buffer : arrayBuffer; // <- this is better
-                
+                if(!arrayBuffer) throw "No input to processPackageData";
+                if(!arrayBuffer instanceof ArrayBuffer) arrayBuffer = arrayBuffer.buffer ? arrayBuffer.buffer : null; // <- this is better
+                if(!arrayBuffer) throw "bad input to processPackageData";
                 var byteArray = new Uint8Array(arrayBuffer);
                 var curr;
-                if (Module["SPLIT_MEMORY"]) Module.printErr("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");
+                if (Module["SPLIT_MEMORY"]) {
+                    console.warn("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");
+                    Module.printErr("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");
+                }
                 var ptr = Module["getMemory"](byteArray.length);
                 Module["HEAPU8"].set(byteArray, ptr);
                 DataRequest.prototype.byteArray = Module["HEAPU8"].subarray(ptr, ptr + byteArray.length);
@@ -228,10 +228,8 @@ Module.expectedDataFileDownloads++;
             }
         }
         if (Module["calledRun"]) {
-            console.log('runWithFS()');
             runWithFS();
         } else {
-            console.log('NO runWithFS() preRun()');
             if (!Module["preRun"]) Module["preRun"] = [];
             Module["preRun"].push(runWithFS)
         }
