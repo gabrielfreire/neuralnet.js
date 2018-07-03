@@ -195,9 +195,8 @@ Module.expectedDataFileDownloads++;
             }
 
             function processPackageData(arrayBuffer) {
-                if(!arrayBuffer) return;
-                Module.finishedDataFileDownloads++;
                 if(!arrayBuffer) throw "No input to processPackageData";
+                Module.finishedDataFileDownloads++;
                 if(!arrayBuffer instanceof ArrayBuffer) arrayBuffer = arrayBuffer.buffer ? arrayBuffer.buffer : null; // <- this is better
                 if(!arrayBuffer) throw "bad input to processPackageData";
                 var byteArray = new Uint8Array(arrayBuffer);
