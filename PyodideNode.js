@@ -44,6 +44,7 @@ class PyodideNode {
                 }
 
                 let promise = new Promise((resolve, reject) => {
+                    console.log('Loading packages...');
                     if (toLoad.size === 0) {
                         resolve('No new packages to load');
                     }
@@ -64,6 +65,7 @@ class PyodideNode {
                         for(let i = 0; i < necessaryTypes.length; i++) {
                             (async function(fileType, idx) {
                                 let p = path.join(pyodidePackagesURL, `/${fileType}`);
+                                let pckgURL = path.join(pyodidePackagesURL, `/${pckg}.js`);
                                 if(!fs.existsSync(p)){
                                     // fetch
                                     let file = await fetch(`${packagesURL}${fileType}`);
@@ -71,10 +73,10 @@ class PyodideNode {
                                     if(!buffer) reject();
                                     fs.writeFileSync(p, buffer);
                                     // load dependencies
-                                    require(path.join(pyodidePackagesURL, `/${pckg}.js`));
+                                    require(pckgURL);
                                 } else {
                                     // load dependencies
-                                    require(path.join(pyodidePackagesURL, `/${pckg}.js`));
+                                    require(pckgURL);
                                 }
                                 if(idx == necessaryTypes.length - 1) {
                                     console.warn(`Warning: Finished loading all ${toLoad.length} modules`);
@@ -111,7 +113,9 @@ class PyodideNode {
                 };
                 Module.filePackagePrefixURL = pyodideBaseURL;
                 Module.postRun = () => {
+                    // remove module from the process
                     Module = null;
+                    process['Module'] = null;
                     // setup pyodide and add to the process
                     pyodide.filePackagePrefixURL = pyodideBaseURL
                     pyodide.loadPackage = loadPackage;
