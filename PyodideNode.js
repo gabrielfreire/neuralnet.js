@@ -72,14 +72,14 @@ class PyodideNode {
                                     let buffer = await file.buffer();
                                     if(!buffer) reject();
                                     fs.writeFileSync(p, buffer);
-                                    // load dependencies
-                                    require(pckgURL);
                                 } else {
                                     // load dependencies
                                     require(pckgURL);
                                 }
                                 if(idx == necessaryTypes.length - 1) {
                                     console.warn(`Warning: Finished loading all ${toLoad.length} modules`);
+                                    // load dependencies
+                                    require(pckgURL);
                                 }
                             })(necessaryTypes[i], i);
                         }
