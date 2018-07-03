@@ -6,7 +6,7 @@ const pyodideBaseURL = path.join(__dirname, '/');
 const pyodidePackagesURL = path.join(__dirname, '/');
 const fetch = require('isomorphic-fetch');
 let pyodide = null;
-const packagesURL = 'https://iodide.io/pyodide-demo/';
+const externalPackagesURL = 'https://iodide.io/pyodide-demo/';
 const packages = {
     'dateutil': [],
     'matplotlib': ['numpy', 'dateutil', 'pytz'],
@@ -107,7 +107,7 @@ class PyodideNode {
                         let pckgURL = path.join(pyodidePackagesURL, `/${pckg}.js`);
                         if(!fs.existsSync(p)){
                             // fetch
-                            let file = await fetch(`${packagesURL}${fileType}`);
+                            let file = await fetch(`${externalPackagesURL}${fileType}`);
                             let buffer = await file.buffer();
                             if(!buffer) reject();
                             fs.writeFileSync(p, buffer);
