@@ -133,7 +133,7 @@ async function loadLanguage(willDownloadFiles) {
                     if (toLoad.size === 0) {
                         resolve('No new packages to load');
                     }
-        
+                    
                     pyodide.monitorRunDependencies = (n) => {
                         if (n === 0) {
                             toLoad.forEach((package) => loadedPackages.add(package));
@@ -193,7 +193,6 @@ async function init() {
             pyodide.runPython('a = np.array([1, 2, 3])');
             pyodide.runPython('print(a)');
         }
-
     })
     console.log('Python loaded');
 }

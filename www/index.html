@@ -3,6 +3,7 @@
     <!--Load the AJAX API-->
     <script type="text/javascript" src="lib/pyodide.js"></script>
     <script type="text/javascript" src="lib/wavdecoder.js"></script>
+    <script type="text/javascript" src="lib/Wav.js"></script>
     <script type="text/javascript" src="lib/AudioGenerator.js"></script>
     <script type="text/javascript">
 
@@ -128,16 +129,20 @@
       languagePluginLoader.then(() => {
         console.warn('Python initialized');
         let audioGen = new AudioGenerator();
-        let numpyBtn = document.querySelector('#numpy_btn');
-        let numpyResBtn = document.querySelector('#numpy_result');
-        numpyBtn.onclick = function(evt) {
+        let specBtn = document.querySelector('#spec_btn');
+        let mfccBtn = document.querySelector('#mfcc_btn');
+        let resultBtn = document.querySelector('#result_btn');
+        specBtn.onclick = function(evt) {
           let startTime = new Date().getTime();
           audioGen.spectrogramFromFile(exampleAudioUrl, 10, 20).then((spectrogram) => {
             let now = new Date().getTime();
             let elapsedTime = (now - startTime) / 1000;
             console.log(`Success!! finished in ${elapsedTime} seconds`);
-            numpyResBtn.textContent = `Success!! finished in ${elapsedTime} seconds`;
+            resultBtn.textContent = `Success!! finished in ${elapsedTime} seconds`;
           });
+        }
+        mfccBtn.onclick = function(evt) {
+          // TODO mfcc extraction
         }
         
       });
@@ -146,7 +151,8 @@
 
   <body>
     <div id="vis" class="spectrogram"></div>
-    <button id="numpy_btn">Generate Spectrogram</button>
-    <p style="width: 100%; white-space: pre-wrap;" id="numpy_result"></p>
+    <button id="spec_btn">Generate Spectrogram</button>
+    <button id="mfcc_btn">Generate MFCC</button>
+    <p style="width: 100%; white-space: pre-wrap;" id="result_btn"></p>
   </body>
 </html>
