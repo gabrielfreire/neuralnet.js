@@ -14,7 +14,7 @@ const labels = [
 ];
 function _buildModel() {
     const nn = new neuralnet_1.MultiLayerNeuralNetwork({
-        verbose: true,
+        verbose: false,
         frequency: 100
     });
     nn.add(nn.Layer({ input: 3, output: 3, activation: 'sigmoid' }));

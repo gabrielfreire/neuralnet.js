@@ -16,8 +16,7 @@ export class Layer {
         this.weights = new Matrix(options.output, options.input);
         this.weights_delta = new Matrix(options.output, options.input); //change of weights in the previous iterations
         this.bias = new Matrix(options.output, 1);
-        const acvt = new ActivationFunction();
-        this.activation = options.activation ? acvt[options.activation] : acvt['sigmoid'];
+        this.activation = options.activation ? ActivationFunction[options.activation] : ActivationFunction['sigmoid'];
         this.weights.randomize();
         this.bias.randomize();
     }
@@ -36,6 +35,7 @@ export class Layer {
     optimize(loss: Matrix, learningRate: number): Matrix {
         let nextLoss = new Matrix(this.options.input, 1);
         // Calculate Gradient
+        // OUTPUT_DERIVATIVE = SIGMOID(LAST_OUTPUT)
         // GRADIENT = LEARNING_RATE * LOSS * SIGMOID(OUTPUT_DERIVATIVE)
         let gradients = this.output.map((e, i, j) => this.activation(e, true));
         gradients.multiply(loss);
