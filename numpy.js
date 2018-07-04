@@ -1,5 +1,5 @@
-var Module = typeof process.pyodide !== "undefined" ? process.pyodide : {};
-
+var Module = typeof Module !== "undefined" ? Module : typeof process.pyodide !== 'undefined' ? process.pyodide : {};
+var fetch = require('isomorphic-fetch');
 if (!Module.expectedDataFileDownloads) {
   Module.expectedDataFileDownloads = 0;
   Module.finishedDataFileDownloads = 0
@@ -20,12 +20,12 @@ Module.expectedDataFileDownloads++;
     var REMOTE_PACKAGE_BASE = "numpy.data";
     if (typeof Module["locateFilePackage"] === "function" && !Module["locateFile"]) {
       Module["locateFile"] = Module["locateFilePackage"];
+      console.warn("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
       Module.printErr("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
     }
     var REMOTE_PACKAGE_NAME = typeof Module["locateFile"] === "function" ? Module["locateFile"](REMOTE_PACKAGE_BASE) : (Module["filePackagePrefixURL"] || "") + REMOTE_PACKAGE_BASE;
     var REMOTE_PACKAGE_SIZE = metadata.remote_package_size;
     var PACKAGE_UUID = metadata.package_uuid;
-
     // add support for nodejs
     function fetchRemotePackage(packageName, packageSize, callback, errback) {
       if(typeof XMLHttpRequest !== 'undefined') {
@@ -78,34 +78,34 @@ Module.expectedDataFileDownloads++;
       } else { // nodejs fallback
         var fs = require('fs');
         var path = require('path');
-        if(!fs) throw 'No fs module was found';
-        if(!path) throw 'No path module was found';
         function fetch_node(file) {
             return new Promise((resolve, reject) => 
             fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
         }
-        fetch_node(packageName).then((buffer) => buffer.arrayBuffer()).then((packageData) => {
-            if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
-            Module.dataFileDownloads[packageName] = {
-                loaded: packageSize,
-                total: packageSize
-            }
-            var total = 0;
-            var loaded = 0;
-            var num = 0;
-            for (var download in Module.dataFileDownloads) {
-                var data = Module.dataFileDownloads[download];
-                total += data.total;
-                loaded += data.loaded;
-                num++
-            }
-            total = Math.ceil(total * Module.expectedDataFileDownloads / num);
-            callback(packageData);
-            if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + total + "/" + total + ")");
+        fetch(packageName).then((buffer) => buffer.buffer()).then((packageData) => {
+          if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
+          Module.dataFileDownloads[packageName] = {
+              loaded: packageSize,
+              total: packageSize
+          }
+          var total = 0;
+          var loaded = 0;
+          var num = 0;
+          for (var download in Module.dataFileDownloads) {
+              var data = Module.dataFileDownloads[download];
+              total += data.total;
+              loaded += data.loaded;
+              num++
+          }
+          total = Math.ceil(total * Module.expectedDataFileDownloads / num);
+          console.log(`Downloaded ${packageName} data... (${total}/${total})`);
+          if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + total + "/" + total + ")");
+          callback(packageData);
         }).catch((err) => {
-            throw new Error(`Something wrong happened ${err}`);
-        })
-      } 
+          console.error(`Something wrong happened ${err}`);
+          throw new Error(`Something wrong happened ${err}`);
+        });
+      }
     }
 
     function handleError(error) {
@@ -170,6 +170,7 @@ Module.expectedDataFileDownloads++;
           Module["FS_createPreloadedFile"](this.name, null, byteArray, true, true, function() {
             Module["removeRunDependency"]("fp " + that.name)
           }, function() {
+            console.error(`Error, creation of preloaded file failed`);
             if (that.audio) {
               Module["removeRunDependency"]("fp " + that.name)
             } else {
@@ -185,10 +186,10 @@ Module.expectedDataFileDownloads++;
       }
 
       function processPackageData(arrayBuffer) {
+        if(!arrayBuffer) throw "No input to processPackageData";
         Module.finishedDataFileDownloads++;
-        // assert(arrayBuffer, "Loading data file failed.");
-        // assert(arrayBuffer instanceof ArrayBuffer, "bad input to processPackageData");
-        if(!arrayBuffer instanceof ArrayBuffer) arrayBuffer = arrayBuffer.buffer ? arrayBuffer.buffer : arrayBuffer; // <- this is better
+        if(!arrayBuffer instanceof ArrayBuffer) arrayBuffer = arrayBuffer.buffer ? arrayBuffer.buffer : null; // <- this is better
+        if(!arrayBuffer) throw "bad input to processPackageData";
         var byteArray = new Uint8Array(arrayBuffer);
         var curr;
         if (Module["SPLIT_MEMORY"]) Module.printErr("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");

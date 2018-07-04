@@ -1,12 +1,5 @@
 var pyodide = function(pyodide) {
   pyodide = pyodide || {};
-  var __fs = require('fs');
-  var fetch = function(file, opts) {
-    return new Promise((resolve, reject) =>
-      __fs.readFile(file, (err, data) => err ? reject(err) : resolve({
-        arrayBuffer: () => data
-      })));
-  }
   var Module = typeof pyodide !== "undefined" ? pyodide : {};
   var moduleOverrides = {};
   var key;
