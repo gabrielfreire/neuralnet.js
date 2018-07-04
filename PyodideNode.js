@@ -2,11 +2,10 @@ const path = require('path');
 const fs = require('fs');
 const pyodideModuleInitializer = require('./pyodide.asm.js');
 const pyodideWasmURL = path.join(__dirname, '/pyodide.asm.wasm');
-const pyodideBaseURL = path.join(__dirname, '/');
 const pyodidePackagesURL = path.join(__dirname, '/');
+const externalPackagesURL = 'https://iodide.io/pyodide-demo/';
 const fetch = require('isomorphic-fetch');
 let pyodide = null;
-const externalPackagesURL = 'https://iodide.io/pyodide-demo/';
 const packages = {
     'dateutil': [],
     'matplotlib': ['numpy', 'dateutil', 'pytz'],
