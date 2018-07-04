@@ -1,5 +1,5 @@
 var Module = typeof Module !== "undefined" ? Module : typeof process.Module !== 'undefined' ? process.Module : {};
-
+var fetch = require('isomorphic-fetch');
 if (!Module.expectedDataFileDownloads) {
     Module.expectedDataFileDownloads = 0;
     Module.finishedDataFileDownloads = 0
@@ -82,7 +82,7 @@ Module.expectedDataFileDownloads++;
                     return new Promise((resolve, reject) => 
                     fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
                 }
-                fetch_node(packageName).then((buffer) => buffer.arrayBuffer()).then((packageData) => {
+                fetch(packageName).then((buffer) => buffer.buffer()).then((packageData) => {
                     if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
                     Module.dataFileDownloads[packageName] = {
                         loaded: packageSize,

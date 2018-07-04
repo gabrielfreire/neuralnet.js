@@ -24,27 +24,23 @@ class PyodideNode {
             let Module = {};
             pyodide = {};
             this._fetch_node(pyodideWasmURL).then((buffer) => buffer.arrayBuffer()).then((arrayBuffer) => {
-                let wasm_promise = WebAssembly.compile(arrayBuffer);
                 Module.instantiateWasm = (info, receiveInstance) => {
-                    wasm_promise
-                    .then(module => {
+                    WebAssembly.compile(arrayBuffer).then(module => {
                         // add Module to the process
                         process['Module'] = Module;
                         // load pyodide.asm.data.js (python standard libraries)
                         require('./pyodide.asm.data.js');
                         return WebAssembly.instantiate(module, info)
-                    }).then(instance => {
-                        return receiveInstance(instance)
-                    });
+                    }).then(instance => receiveInstance(instance));
                     return {};
                 };
-                Module.filePackagePrefixURL = pyodideBaseURL;
+                Module.filePackagePrefixURL = externalPackagesURL;
                 Module.postRun = () => {
                     // remove module from the process
                     Module = null;
                     process['Module'] = null;
                     // setup pyodide and add to the process
-                    pyodide.filePackagePrefixURL = pyodideBaseURL
+                    pyodide.filePackagePrefixURL = externalPackagesURL
                     pyodide.loadPackage = self._loadPackage;
                     process['pyodide'] = pyodide;
                     resolve();
@@ -98,29 +94,21 @@ class PyodideNode {
                 }
             };
 
-            toLoad.forEach((pckg) => {
-                let necessaryTypes = [`${pckg}.js`, `${pckg}.data`];
-                // async for loop
-                for(let i = 0; i < necessaryTypes.length; i++) {
-                    (async function(fileType, idx) {
-                        let p = path.join(pyodidePackagesURL, `/${fileType}`);
-                        let pckgURL = path.join(pyodidePackagesURL, `/${pckg}.js`);
-                        if(!fs.existsSync(p)){
-                            // fetch
-                            let file = await fetch(`${externalPackagesURL}${fileType}`);
-                            let buffer = await file.buffer();
-                            if(!buffer) reject();
-                            fs.writeFileSync(p, buffer);
-                        } else {
-                            // load dependencies
-                            require(pckgURL);
-                        }
-                        if(idx == necessaryTypes.length - 1) {
-                            console.warn(`Warning: Finished loading all ${toLoad.length} modules`);
-                            // load dependencies
-                            require(pckgURL);
-                        }
-                    })(necessaryTypes[i], i);
+            toLoad.forEach(async (pckg) => {                   
+                let pckgURL = path.join(pyodidePackagesURL, `/${pckg}.js`);
+                if(!fs.existsSync(pckgURL)){
+                    // fetch
+                    let file = await fetch(`${externalPackagesURL}${pckg}.js`);
+                    if(!file) reject(`ERROR 404, package ${pckg} was not found`);
+                    let buffer = await file.buffer();
+                    if(!buffer) reject();
+                    fs.writeFileSync(pckgURL, buffer);
+                }
+                // load dependency
+                try {
+                    require(pckgURL);
+                } catch (e) {
+                    reject ("This data.js file does not support NodeJS, please write the support by hand");
                 }
             });
 
