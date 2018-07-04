@@ -94,18 +94,19 @@ class PyodideNode {
             };
 
             toLoad.forEach(async (pckg) => {                   
-                let pckgURL = path.join(pyodidePackagesURL, `/${pckg}.js`);
-                if(!fs.existsSync(pckgURL)){
+                const pckgLocalURL = path.join(pyodidePackagesURL, `/${pckg}.js`);
+                const pckgExternalURL = `${externalPackagesURL}${pckg}.js`;
+                if(!fs.existsSync(pckgLocalURL)){
                     // fetch
-                    let file = await fetch(`${externalPackagesURL}${pckg}.js`);
+                    const file = await fetch(pckgExternalURL);
                     if(!file) reject(`ERROR 404, package ${pckg} was not found`);
-                    let buffer = await file.buffer();
+                    const buffer = await file.buffer();
                     if(!buffer) reject();
-                    fs.writeFileSync(pckgURL, buffer);
+                    fs.writeFileSync(pckgLocalURL, buffer);
                 }
                 // load dependency
                 try {
-                    require(pckgURL);
+                    require(pckgLocalURL);
                 } catch (e) {
                     reject ("This data.js file does not support NodeJS, please write the support by hand");
                 }
