@@ -108,7 +108,7 @@ class PyodideNode {
                 try {
                     require(pckgLocalURL);
                 } catch (e) {
-                    reject ("This data.js file does not support NodeJS, please write the support by hand");
+                    reject (`${pckg}.js file does not support NodeJS, please write the support by hand`);
                 }
             });
 
