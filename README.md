@@ -76,12 +76,13 @@ input: R[0.16], G[1.09], B[0.2] > output:  [ 0.700076276624251 ]
 input: R[0.5], G[0.5], B[1] > output:  [ 0.9833677371274795 ]
 ```
 # Run
-- `git clone https://github.com/gabrielfreire/neuralnet.js.git`
-- `cd neuralnet.js`
-- `npm install`
-- `npm run tsc`
-- `npm start`
-
+```
+git clone https://github.com/gabrielfreire/neuralnet.js.git
+cd neuralnet.js
+npm install
+npm run tsc
+npm start
+```
 
 # Neural Network Types
 - [x] neuralnet.BackpropagationNeuralNetwork - Feedforward Neural Network with backpropagation
