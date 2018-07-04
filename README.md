@@ -1,5 +1,5 @@
-# neuralnet.js
-Fast Neural Networks for node.js
+# Neuralnet.js
+Fast Multi-Layer Neural Network for node.js
 
 # Usage
 ### Train a simple Neural Network using Back-propagation and Gradient Descent
