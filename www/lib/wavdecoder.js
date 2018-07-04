@@ -63,7 +63,7 @@ const data_decoders = {
 class WAVDecoder {
     constructor(){}
 
-    decode(buffer) {
+    static decode(buffer) {
         let pos = 0, end = 0;
         if (buffer.buffer) {
           // If we are handed a typed array or a buffer, then we have to consider the
@@ -141,7 +141,7 @@ class WAVDecoder {
             let channelData = [];
             for (let ch = 0; ch < channels; ++ch)
               channelData[ch] = new Float32Array(samples);
-            this._lookup(data_decoders, fmt.bitDepth, fmt.floatingPoint)(buffer, pos, channelData, channels, samples);
+            WAVDecoder._lookup(data_decoders, fmt.bitDepth, fmt.floatingPoint)(buffer, pos, channelData, channels, samples);
             return {
               sampleRate: sampleRate,
               channelData: channelData
@@ -151,7 +151,7 @@ class WAVDecoder {
           pos = next;
         }
       }
-      _lookup(table, bitDepth, floatingPoint) {
+      static _lookup(table, bitDepth, floatingPoint) {
         let name = 'pcm' + bitDepth + (floatingPoint ? 'f' : '');
         let fn = table[name];
         if (!fn)
