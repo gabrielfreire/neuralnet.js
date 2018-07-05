@@ -17,6 +17,12 @@ let loadedPackages = new Set();
 
 class PyodideNode {
     constructor() {}
+
+    getModule() {
+        if(!pyodide) throw "Pyodide wasn't loaded yet"
+        return pyodide;
+    }
+    
     loadLanguage() {
         let self = this;
         return new Promise((resolve, reject) => {
@@ -50,10 +56,7 @@ class PyodideNode {
             });
         });
     }
-    getModule() {
-        if(!pyodide) throw "Pyodide wasn't loaded yet"
-        return pyodide;
-    }
+    
     _loadPackage(names) {
         if (Array.isArray(names)) {
             names = [names];
@@ -120,6 +123,7 @@ class PyodideNode {
                     '_importlib.invalidate_caches()\n');
         });
     }
+    
     _fetch_node(file) {
         return new Promise((resolve, reject) => 
         fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));

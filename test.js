@@ -3,9 +3,9 @@ const pyodideNode = require('./PyodideNode.js');
 async function init() {
     pyodideNode.loadLanguage().then(() => {
         console.log('Python loaded');
-        
+
         let pyodide = pyodideNode.getModule();
-        
+
         pyodide.runPython('pa = 123 + 3231');
         pyodide.runPython('print(pa)');
         pyodide.loadPackage('numpy').then(() => {
@@ -21,7 +21,6 @@ async function init() {
     }).catch((e) => {
         console.log(`ERROR: ${e}`);
     });
-
 }
 
 init();
