@@ -72,7 +72,6 @@ Module.expectedDataFileDownloads++;
             return new Promise((resolve, reject) => 
             fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
         }
-        console.log(packageName);
         fetch(packageName).then((buffer) => buffer.buffer()).then((packageData) => {
           if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
           Module.dataFileDownloads[packageName] = {
