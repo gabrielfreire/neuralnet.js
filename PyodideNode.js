@@ -95,7 +95,6 @@ class PyodideNode {
                     resolve(`Loaded ${packageList}`);
                 }
             };
-
             toLoad.forEach(async (pckg) => {                   
                 const pckgLocalURL = path.join(pyodidePackagesURL, `/${pckg}.js`);
                 const pckgExternalURL = `${externalPackagesURL}${pckg}.js`;

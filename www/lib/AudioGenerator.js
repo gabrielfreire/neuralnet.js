@@ -71,8 +71,5 @@ class AudioGenerator {
     plot(spectrogram) {
 
     }
-    
-
-      
 }
 
