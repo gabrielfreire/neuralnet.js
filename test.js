@@ -27,7 +27,7 @@ init();
 
 // beautify minified js files
 function beaut() {
-    var beautify = require('js-beautify').js;
+    const beautify = require('js-beautify').js;
     fs.readFile('lib/numpy.js', 'utf8', function (err, data) {
         if (err) {
             throw err;

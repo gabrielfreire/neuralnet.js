@@ -2,7 +2,4 @@
 node_modules
 # package
 package-lock.json
-
-
-/dist/
-/dist
+dist
