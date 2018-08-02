@@ -4,19 +4,18 @@ async function init() {
     try {
         await pyodideNode.loadLanguage();
         console.log('Python loaded');
-
         const pyodide = pyodideNode.getModule();
 
-        pyodide.runPython('pa = 123 + 3231');
-        pyodide.runPython('print(pa)');
         await pyodide.loadPackage('numpy')
         console.log('numpy loaded');
+
         pyodide.runPython('import numpy as np'); 
-        pyodide.runPython(`def test():
-        a = np.array([1, 2, 3])
-        b = np.arange(0, 100, 5)
-        print(a)
-        print(b)`);
+        pyodide.runPython(
+            'def test():\n'+
+            '   a = np.array([1, 2, 3])\n' +
+            '   b = np.arange(0, 100, 5)\n' +
+            '   print(a)\n' +
+            '   print(b)');
         const test = pyodide.pyimport('test');
         test();
     } catch (e) {
