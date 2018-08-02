@@ -19,56 +19,8 @@ Module.expectedDataFileDownloads++;
     var PACKAGE_UUID = metadata.package_uuid;
 
     function fetchRemotePackage(packageName, packageSize, callback, errback) {
-      if(typeof XMLHttpRequest !== 'undefined'){
-        var xhr = new XMLHttpRequest;
-        xhr.open("GET", packageName, true);
-        xhr.responseType = "arraybuffer";
-        xhr.onprogress = function(event) {
-          var url = packageName;
-          var size = packageSize;
-          if (event.total) size = event.total;
-          if (event.loaded) {
-            if (!xhr.addedTotal) {
-              xhr.addedTotal = true;
-              if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
-              Module.dataFileDownloads[url] = {
-                loaded: event.loaded,
-                total: size
-              }
-            } else {
-              Module.dataFileDownloads[url].loaded = event.loaded
-            }
-            var total = 0;
-            var loaded = 0;
-            var num = 0;
-            for (var download in Module.dataFileDownloads) {
-              var data = Module.dataFileDownloads[download];
-              total += data.total;
-              loaded += data.loaded;
-              num++
-            }
-            total = Math.ceil(total * Module.expectedDataFileDownloads / num);
-            if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + loaded + "/" + total + ")")
-          } else if (!Module.dataFileDownloads) {
-            if (Module["setStatus"]) Module["setStatus"]("Downloading data...")
-          }
-        };
-        xhr.onerror = function(event) {
-          throw new Error("NetworkError for: " + packageName)
-        };
-        xhr.onload = function(event) {
-          if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || xhr.status == 0 && xhr.response) {
-            var packageData = xhr.response;
-            callback(packageData)
-          } else {
-            throw new Error(xhr.statusText + " : " + xhr.responseURL)
-          }
-        };
-        xhr.send(null)
-      }else {
-        var fs = require('fs');
-        var path = require('path');
         function fetch_node(file) { // <-- for local resources
+            var fs = require('fs');
             return new Promise((resolve, reject) => 
             fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
         }
@@ -92,9 +44,9 @@ Module.expectedDataFileDownloads++;
             callback(packageData);
             if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + total + "/" + total + ")");
         }).catch((err) => {
+            console.error(`Something wrong happened ${err}`);
             throw new Error(`Something wrong happened ${err}`);
         });
-      }
     }
 
     function handleError(error) {

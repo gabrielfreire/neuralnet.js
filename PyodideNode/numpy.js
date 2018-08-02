@@ -19,25 +19,25 @@ Module.expectedDataFileDownloads++;
     var PACKAGE_UUID = metadata.package_uuid;
 
     function fetchRemotePackage(packageName, packageSize, callback, errback) {
-      var fs = require('fs');
       function fetch_node(file) { // <-- for local resources
-          return new Promise((resolve, reject) => 
-          fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
+        var fs = require('fs');
+        return new Promise((resolve, reject) => 
+        fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
       }
       fetch(packageName).then((buffer) => buffer.buffer()).then((packageData) => {
         if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
         Module.dataFileDownloads[packageName] = {
-            loaded: packageSize,
-            total: packageSize
+          loaded: packageSize,
+          total: packageSize
         }
         var total = 0;
         var loaded = 0;
         var num = 0;
         for (var download in Module.dataFileDownloads) {
-            var data = Module.dataFileDownloads[download];
-            total += data.total;
-            loaded += data.loaded;
-            num++
+          var data = Module.dataFileDownloads[download];
+          total += data.total;
+          loaded += data.loaded;
+          num++
         }
         total = Math.ceil(total * Module.expectedDataFileDownloads / num);
         console.log(`Downloaded ${packageName} data... (${total}/${total})`);
