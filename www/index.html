@@ -1,45 +1,67 @@
-<html>
+<!DOCTYPE html>
   <head>
+    <link rel='stylesheet' href='style.css'>
     <!--Load the AJAX API-->
     <script type="text/javascript" src="lib/pyodide.js"></script>
     <script type="text/javascript" src="lib/wavdecoder.js"></script>
     <script type="text/javascript" src="lib/Wav.js"></script>
     <script type="text/javascript" src="lib/AudioGenerator.js"></script>
-    <script type="text/javascript">
-      
+  </head>
 
+  <body>
+    <h1>Generate Spectrogram or MFCC features from Audio files</h1>
+    <p>Select the audio</p>
+    <button id="opt1"><span xid='audioFile1'></span></button>
+    <button id="opt2"><span xid='audioFile2'></span></button>
+    <p>Current audio file: <span xid='audioFile'></span></p>
+    <div class='loading'><p>Loading the Python language.<small> Please wait...</small></p></div>
+    <div id="vis" class="spectrogram"></div>
+    <button id="spec_btn">Generate Spectrogram</button>
+    <button id="mfcc_btn">Generate MFCC [not implemented yet]</button>
+    <p style="width: 100%; white-space: pre-wrap; font-size: 24px; font-weight: 700;" id="spec_result_btn"></p>
+    <p style="width: 100%; white-space: pre-wrap; font-size: 24px; font-weight: 700;" id="mfcc_result_btn"></p>
+    <script>
+      const loading = document.querySelector('.loading');
+      const option1btn = document.querySelector('#opt1');
+      const option2btn = document.querySelector('#opt2');
+      const audioFileLabel = document.querySelector('span[xid="audioFile"]');
       const screamAudioUrl = 'https://raw.githubusercontent.com/oampo/audiofile.js/master/example/audio/WilhelmScream.wav';
       const exampleAudioUrl = 'data/example.wav';
+      option1btn.firstChild.textContent = exampleAudioUrl;
+      option2btn.firstChild.textContent = screamAudioUrl;
+      option1btn.onclick = (event) => audioFileLabel.textContent = event.target.firstChild.textContent; 
+      option2btn.onclick = (event) => audioFileLabel.textContent = event.target.firstChild.textContent; 
       
       // load Python language
+      loading.style.display = 'block';
       languagePluginLoader.then(() => {
         console.warn('Python initialized');
-        let audioGen = new AudioGenerator();
+        let audioGen = new AudioGenerator(loading);
         let specBtn = document.querySelector('#spec_btn');
         let mfccBtn = document.querySelector('#mfcc_btn');
-        let resultBtn = document.querySelector('#result_btn');
+        let specResultLabel = document.querySelector('#spec_result_btn');
+        let mfccResultLabel = document.querySelector('#mfcc_result_btn');
         specBtn.onclick = function(evt) {
           let startTime = new Date().getTime();
-          audioGen.spectrogramFromFile(exampleAudioUrl, 10, 20).then((spectrogram) => {
+          audioGen.spectrogramFromFile(audioFileLabel.textContent, 10, 20).then((spectrogram) => {
             let now = new Date().getTime();
             let elapsedTime = (now - startTime) / 1000;
-            console.log(`Success!! finished in ${elapsedTime} seconds`);
-            resultBtn.textContent = `Success!! finished in ${elapsedTime} seconds`;
+            console.log(`Success!! Generated Spectrogram in ${elapsedTime} seconds`);
+            specResultLabel.textContent = `Success!! Generated Spectrogram in ${elapsedTime} seconds`;
           });
         }
         mfccBtn.onclick = function(evt) {
           // TODO mfcc extraction
-          audioGen.mfccFromFile(exampleAudioUrl).then((mfcc) => console.log(mfcc));
+          let startTime = new Date().getTime();
+          audioGen.mfccFromFile(audioFileLabel.textContent).then((mfcc) => {
+            let now = new Date().getTime();
+            let elapsedTime = (now - startTime) / 1000;
+            console.log(`Success!! Generated MFCC in ${elapsedTime} seconds`);
+            mfccResultLabel.textContent = `Success!! Generated MFCC in ${elapsedTime} seconds`;
+          });
         }
         
       });
     </script>
-  </head>
-
-  <body>
-    <div id="vis" class="spectrogram"></div>
-    <button id="spec_btn">Generate Spectrogram</button>
-    <button id="mfcc_btn">Generate MFCC [not implemented yet]</button>
-    <p style="width: 100%; white-space: pre-wrap;" id="result_btn"></p>
   </body>
 </html>

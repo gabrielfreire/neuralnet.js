@@ -2,7 +2,8 @@ const py = (code) => {
     return pyodide.runPython(code);
 }
 class AudioGenerator {
-    constructor() {
+    constructor(loading) {
+        this.uiLoading = loading;
         this.context = new AudioContext();
         this.numpyLoaded = false;
         this.wavDecoder = new WAVDecoder();
@@ -16,6 +17,7 @@ class AudioGenerator {
         this.mfcc = this._generatePythonFunction({ code: this._mfcc(), name: 'mfcc' });
         this.numpyLoaded = true;
         console.log('numpy loaded');
+        this.uiLoading.style.display = 'none';
     }
     /**
      * Generate a python function
