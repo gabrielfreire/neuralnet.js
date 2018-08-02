@@ -6,63 +6,6 @@
     <script type="text/javascript" src="lib/Wav.js"></script>
     <script type="text/javascript" src="lib/AudioGenerator.js"></script>
     <script type="text/javascript">
-
-      const sampleRate = 256;
-      
-      function playAudio(decodedAudioBuffer) {
-        let isPlaying = false;
-        return new Promise((resolve, reject) => {
-          console.info('playAudio()');
-          if(!decodedAudioBuffer) reject( {error: 'No audio buffer was found'} );
-          const audioContext = new AudioContext();
-          const source = audioContext.createBufferSource();
-          const javascriptNode = audioContext.createScriptProcessor(512, 1, 1);
-          const analyser = audioContext.createAnalyser();
-          analyser.smoothingTimeConstant = 0.0;
-          analyser.fftSize = 256;
-
-          let startTime = audioContext.currentTime;
-          let maxCount = (audioContext.sampleRate / sampleRate) * decodedAudioBuffer.duration;
-
-          let spectrogram = [];
-          let startOffset = 0;
-          let count = 0;
-          let currSecond = 0;
-          
-          isPlaying = true;
-  
-          javascriptNode.onaudioprocess = function(event) {
-            if(isPlaying) {
-              count++;
-              currSecond = (sampleRate * count) / decodedAudioBuffer.sampleRate;
-              startOffset += audioContext.currentTime - startTime;
-              let freqs = new Uint8Array(analyser.frequencyBinCount);
-              analyser.getByteFrequencyData(freqs);
-              spectrogram.push({key: currSecond, value: new Uint8Array(freqs)});
-              if(count > maxCount){
-                if(isPlaying) {
-                  console.log('Ended');
-                  resolve(spectrogram);
-                }
-                source.stop();
-                isPlaying = false; 
-              }
-            }
-          }
-          try {
-            source.buffer = decodedAudioBuffer;
-            analyser.buffer = decodedAudioBuffer;
-            source.connect(analyser);
-            analyser.connect(javascriptNode);
-            source.connect(audioContext.destination);
-            source.loop = false;
-            source.start(0, startOffset % decodedAudioBuffer.duration);
-          } catch(e) {
-            reject({ error: `Something wrong happened: ${e}` });
-          }
-        })
-      }
-
       function bufferToWavBlob(audioBuffer) {
         let dataView = new DataView(audioBuffer);
         let blob = new Blob([dataView], {type: 'audio/wav'});
@@ -77,53 +20,9 @@
         }
       }
 
-      /**
-       * @param {Object} options : {
-       *  url: '',
-       *  responseType: ''
-       * }
-       * @param {Function} callback : Function(){}
-       * 
-       */
-      function getWavBuffer(options) {
-        return new Promise((resolve, reject) => {
-          console.info('getWavBuffer()');
-          const request = new XMLHttpRequest();
-          request.open('GET', options.url, true);
-          // request.overrideMimeType('plain/text; charset=x-user-defined');
-          request.responseType = options.responseType || 'arraybuffer';
-          // request.overrideMimeType('audio/wav');
-          request.onreadystatechange = function(event) {
-            if (request.readyState == 4) {
-              if (request.status == 200 || request.status == 0) {
-                resolve(request.response); 
-              } else {
-                reject({error: '404 Not found'});
-              }
-            }
-          };
-          request.send(null);
-        });
-      }
-
       const screamAudioUrl = 'https://raw.githubusercontent.com/oampo/audiofile.js/master/example/audio/WilhelmScream.wav';
       const exampleAudioUrl = 'data/example.wav';
       const paths = [ screamAudioUrl, exampleAudioUrl ];
-      function action (path) {
-        return new Promise((resolve, reject) => {
-          console.info(`action(${path})`);
-          getWavBuffer({ url: path, responseType: 'arraybuffer' }).then((audioBuffer) => {
-            let _tempAudioContext = new AudioContext();
-            _tempAudioContext.decodeAudioData(audioBuffer, (decodedAudioBuffer) => {
-              resolve(decodedAudioBuffer.getChannelData(0));
-              playAudio(decodedAudioBuffer).then((spectrogram) => {
-                console.log('resolved for ' + path, spectrogram);
-                resolve(spectrogram);
-              }).catch((e) => reject('error' + e));
-            });
-          });
-        });
-      }
       
       // load Python language
       languagePluginLoader.then(() => {

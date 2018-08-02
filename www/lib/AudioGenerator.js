@@ -20,7 +20,7 @@ class AudioGenerator {
         return `def spectrogram(audioBuffer, step, wind, sample_rate):
         max_freq = 8000
         eps = 1e-14
-        samples = np.frombuffer(audioBuffer, dtype='float32')
+        samples = np.array(audioBuffer)
 
         assert not np.iscomplexobj(samples), "Must not pass in complex numbers"
 
