@@ -6,19 +6,7 @@
     <script type="text/javascript" src="lib/Wav.js"></script>
     <script type="text/javascript" src="lib/AudioGenerator.js"></script>
     <script type="text/javascript">
-      function bufferToWavBlob(audioBuffer) {
-        let dataView = new DataView(audioBuffer);
-        let blob = new Blob([dataView], {type: 'audio/wav'});
-        return blob;
-      }
-
-      function blobToBuffer(wavBlob, callback) {
-        let reader = new FileReader();
-        reader.readAsArrayBuffer(wavBlob);
-        reader.onload = function() {
-          callback(reader.result);
-        }
-      }
+      
 
       const screamAudioUrl = 'https://raw.githubusercontent.com/oampo/audiofile.js/master/example/audio/WilhelmScream.wav';
       const exampleAudioUrl = 'data/example.wav';
@@ -41,6 +29,7 @@
         }
         mfccBtn.onclick = function(evt) {
           // TODO mfcc extraction
+          audioGen.mfccFromFile(exampleAudioUrl).then((mfcc) => console.log(mfcc));
         }
         
       });
@@ -50,7 +39,7 @@
   <body>
     <div id="vis" class="spectrogram"></div>
     <button id="spec_btn">Generate Spectrogram</button>
-    <button id="mfcc_btn">Generate MFCC</button>
+    <button id="mfcc_btn">Generate MFCC [not implemented yet]</button>
     <p style="width: 100%; white-space: pre-wrap;" id="result_btn"></p>
   </body>
 </html>
