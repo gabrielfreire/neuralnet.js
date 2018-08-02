@@ -5,17 +5,27 @@ class AudioGenerator {
     constructor() {
         this.context = new AudioContext();
         this.numpyLoaded = false;
-        pyodide.loadPackage('numpy').then(() => {
-            py(`import numpy as np\nfrom numpy.lib.stride_tricks import as_strided`);
-            py(this._spectrogram());
-            this.spectrogram = pyodide.pyimport('spectrogram');
-            this.numpyLoaded = true;
-            console.log('numpy loaded');
-        });
-        
         this.wavDecoder = new WAVDecoder();
+        this._init();
     }
-    
+    async _init() {
+        await pyodide.loadPackage('numpy');
+        py('import numpy as np\n' + 
+            'from numpy.lib.stride_tricks import as_strided');
+        this.spectrogram = this._generatePythonFunction({ code: this._spectrogram(), name: 'spectrogram' });
+        this.numpyLoaded = true;
+        console.log('numpy loaded');
+    }
+    /**
+     * Generate a python function
+     * options { code, name }
+     */
+    _generatePythonFunction(options) {
+        let code = options.code;
+        let methodName = options.name;
+        py(code);
+        return pyodide.pyimport(methodName);
+    }
     _spectrogram () {
         return `def spectrogram(audioBuffer, step, wind, sample_rate):
         max_freq = 8000
@@ -45,7 +55,7 @@ class AudioGenerator {
         ind = np.where(freqs <= max_freq)[0][-1] + 1
         result = np.transpose(np.log(x[:ind, :] + eps))
         
-        return result`
+        return result`;
     }
 
     // http://haythamfayek.com/2016/04/21/speech-processing-for-machine-learning.html
