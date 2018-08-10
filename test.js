@@ -28,11 +28,11 @@ init();
 // beautify minified js files
 function beaut() {
     var beautify = require('js-beautify').js;
-    fs.readFile('pyodide.asm.data2.js', 'utf8', function (err, data) {
+    fs.readFile(__dirname + '/PyodideNode/numpy2.js', 'utf8', function (err, data) {
         if (err) {
             throw err;
         }
-        fs.writeFileSync('pyodide.asm.data3.js', beautify(data, { indent_size: 2, space_in_empty_paren: true }));
+        fs.writeFileSync(__dirname + '/PyodideNode/numpy3.js', beautify(data, { indent_size: 2, space_in_empty_paren: true }));
     });
 }
 // beaut();

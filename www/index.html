@@ -6,6 +6,8 @@
     <script type="text/javascript" src="lib/wavdecoder.js"></script>
     <script type="text/javascript" src="lib/Wav.js"></script>
     <script type="text/javascript" src="lib/AudioGenerator.js"></script>
+    <!-- Load TensorFlow.js -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@0.12.4"> </script>
   </head>
   
   <body>
@@ -22,7 +24,26 @@
     <p style="width: 100%; white-space: pre-wrap; font-size: 24px; font-weight: 700;" id="mfcc_result_btn"></p>
     <script type="text/javascript" src="lib/ui.js"></script>
     <script>
-      
+      console.log(tf.loadFrozenModel);
+      const TEXT2MEL_MODEL_URL = 'data/dctts_text2mel_model/tensorflowjs_model.pb';
+      const TEXT2MEL_WEIGHTS_URL = 'data/dctts_text2mel_model/weights_manifest.json';
+      const SSRN_MODEL_URL = 'data/dctts_ssrn_model/tensorflowjs_model.pb';
+      const SSRN_WEIGHTS_URL = 'data/dctts_ssrn_model/weights_manifest.json';
+      const TACOTRON_MODEL_URL = 'data/tacotron_model/tensorflowjs_model.pb';
+      const TACOTRON_WEIGHTS_URL = 'data/tacotron_model/weights_manifest.json';
+      async function loadModel() {
+        try {
+          const t2mModel = await tf.loadFrozenModel(TEXT2MEL_MODEL_URL, TEXT2MEL_WEIGHTS_URL);
+          console.log(t2mModel);
+          const ssrnModel = await tf.loadFrozenModel(SSRN_MODEL_URL, SSRN_WEIGHTS_URL);
+          console.log(ssrnModel);
+          const tacotronModel = await tf.loadFrozenModel(TACOTRON_MODEL_URL, TACOTRON_WEIGHTS_URL);
+          console.log(tacotronModel);
+        }catch(e) {
+          console.log(e);
+        }
+      }
+      loadModel();
       const _ui = ui();
       // load Python language
       _ui.showLoading();

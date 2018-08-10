@@ -12,41 +12,41 @@ Module.expectedDataFileDownloads++;
     var REMOTE_PACKAGE_BASE = "pyodide.asm.data";
     if (typeof Module["locateFilePackage"] === "function" && !Module["locateFile"]) {
       Module["locateFile"] = Module["locateFilePackage"];
-      Module.printErr("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
+      err("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
     }
-    var REMOTE_PACKAGE_NAME = typeof Module["locateFile"] === "function" ? Module["locateFile"](REMOTE_PACKAGE_BASE) : (Module["filePackagePrefixURL"] || "") + REMOTE_PACKAGE_BASE;
+    var REMOTE_PACKAGE_NAME = Module["locateFile"] ? Module["locateFile"](REMOTE_PACKAGE_BASE, "") : REMOTE_PACKAGE_BASE;
     var REMOTE_PACKAGE_SIZE = metadata.remote_package_size;
     var PACKAGE_UUID = metadata.package_uuid;
-
+    console.log(REMOTE_PACKAGE_NAME)
     function fetchRemotePackage(packageName, packageSize, callback, errback) {
-        function fetch_node(file) { // <-- for local resources
-            var fs = require('fs');
-            return new Promise((resolve, reject) => 
-            fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
-        }
-        fetch(packageName).then((buffer) => buffer.buffer()).then((packageData) => {
-            if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
-            Module.dataFileDownloads[packageName] = {
-                loaded: packageSize,
-                total: packageSize
-            }
-            var total = 0;
-            var loaded = 0;
-            var num = 0;
-            for (var download in Module.dataFileDownloads) {
-                var data = Module.dataFileDownloads[download];
-                total += data.total;
-                loaded += data.loaded;
-                num++
-            }
-            total = Math.ceil(total * Module.expectedDataFileDownloads / num);
-            console.log(`Downloaded ${packageName} data... (${total}/${total})`);
-            callback(packageData);
-            if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + total + "/" + total + ")");
-        }).catch((err) => {
-            console.error(`Something wrong happened ${err}`);
-            throw new Error(`Something wrong happened ${err}`);
-        });
+      function fetch_node(file) { // <-- for local resources
+        var fs = require('fs');
+        return new Promise((resolve, reject) => 
+        fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
+      }
+      fetch(packageName).then((buffer) => buffer.buffer()).then((packageData) => {
+          if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
+          Module.dataFileDownloads[packageName] = {
+              loaded: packageSize,
+              total: packageSize
+          }
+          var total = 0;
+          var loaded = 0;
+          var num = 0;
+          for (var download in Module.dataFileDownloads) {
+              var data = Module.dataFileDownloads[download];
+              total += data.total;
+              loaded += data.loaded;
+              num++
+          }
+          total = Math.ceil(total * Module.expectedDataFileDownloads / num);
+          console.log(`Downloaded ${packageName} data... (${total}/${total})`);
+          callback(packageData);
+          if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + total + "/" + total + ")");
+      }).catch((err) => {
+          console.error(`Something wrong happened ${err}`);
+          throw new Error(`Something wrong happened ${err}`);
+      });
     }
 
     function handleError(error) {
@@ -98,10 +98,9 @@ Module.expectedDataFileDownloads++;
       Module["FS_createPath"]("/lib/python3.6/distutils", "command", true, true);
       Module["FS_createPath"]("/lib/python3.6", "encodings", true, true);
 
-      function DataRequest(start, end, crunched, audio) {
+      function DataRequest(start, end, audio) {
         this.start = start;
         this.end = end;
-        this.crunched = crunched;
         this.audio = audio
       }
       DataRequest.prototype = {
@@ -124,7 +123,7 @@ Module.expectedDataFileDownloads++;
             if (that.audio) {
               Module["removeRunDependency"]("fp " + that.name)
             } else {
-              Module.printErr("Preloading file " + that.name + " failed")
+              err("Preloading file " + that.name + " failed")
             }
           }, false, true);
           this.requests[this.name] = null
@@ -132,7 +131,7 @@ Module.expectedDataFileDownloads++;
       };
       var files = metadata.files;
       for (var i = 0; i < files.length; ++i) {
-        new DataRequest(files[i].start, files[i].end, files[i].crunched, files[i].audio).open("GET", files[i].filename)
+        new DataRequest(files[i].start, files[i].end, files[i].audio).open("GET", files[i].filename)
       }
 
       function processPackageData(arrayBuffer) {
@@ -142,7 +141,7 @@ Module.expectedDataFileDownloads++;
         if(!arrayBuffer) throw "bad input to processPackageData";
         var byteArray = new Uint8Array(arrayBuffer);
         var curr;
-        if (Module["SPLIT_MEMORY"]) Module.printErr("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");
+        if (Module["SPLIT_MEMORY"]) err("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");
         var ptr = Module["getMemory"](byteArray.length);
         Module["HEAPU8"].set(byteArray, ptr);
         DataRequest.prototype.byteArray = Module["HEAPU8"].subarray(ptr, ptr + byteArray.length);
@@ -173,3361 +172,2857 @@ Module.expectedDataFileDownloads++;
   };
   loadPackage({
     files: [{
-      audio: 0,
       start: 0,
-      crunched: 0,
+      audio: 0,
       end: 23354,
       filename: "/lib/python3.6/bdb.py"
     }, {
-      audio: 0,
       start: 23354,
-      crunched: 0,
+      audio: 0,
       end: 23720,
       filename: "/lib/python3.6/webbrowser.py"
     }, {
-      audio: 0,
       start: 23720,
-      crunched: 0,
+      audio: 0,
       end: 29032,
       filename: "/lib/python3.6/linecache.py"
     }, {
-      audio: 0,
       start: 29032,
-      crunched: 0,
+      audio: 0,
       end: 52180,
       filename: "/lib/python3.6/ntpath.py"
     }, {
-      audio: 0,
       start: 52180,
-      crunched: 0,
+      audio: 0,
       end: 64937,
       filename: "/lib/python3.6/LICENSE.txt"
     }, {
-      audio: 0,
       start: 64937,
-      crunched: 0,
+      audio: 0,
       end: 65194,
       filename: "/lib/python3.6/struct.py"
     }, {
-      audio: 0,
       start: 65194,
-      crunched: 0,
+      audio: 0,
       end: 71188,
       filename: "/lib/python3.6/codeop.py"
     }, {
-      audio: 0,
       start: 71188,
-      crunched: 0,
+      audio: 0,
       end: 87846,
       filename: "/lib/python3.6/tracemalloc.py"
     }, {
-      audio: 0,
       start: 87846,
-      crunched: 0,
+      audio: 0,
       end: 98709,
       filename: "/lib/python3.6/operator.py"
     }, {
-      audio: 0,
       start: 98709,
-      crunched: 0,
+      audio: 0,
       end: 104022,
       filename: "/lib/python3.6/cProfile.py"
     }, {
-      audio: 0,
       start: 104022,
-      crunched: 0,
+      audio: 0,
       end: 110843,
       filename: "/lib/python3.6/sre_constants.py"
     }, {
-      audio: 0,
       start: 110843,
-      crunched: 0,
+      audio: 0,
       end: 114009,
       filename: "/lib/python3.6/fnmatch.py"
     }, {
-      audio: 0,
       start: 114009,
-      crunched: 0,
+      audio: 0,
       end: 115873,
       filename: "/lib/python3.6/crypt.py"
     }, {
-      audio: 0,
       start: 115873,
-      crunched: 0,
+      audio: 0,
       end: 123054,
       filename: "/lib/python3.6/py_compile.py"
     }, {
-      audio: 0,
       start: 123054,
-      crunched: 0,
+      audio: 0,
       end: 160579,
       filename: "/lib/python3.6/os.py"
     }, {
-      audio: 0,
       start: 160579,
-      crunched: 0,
+      audio: 0,
       end: 166573,
       filename: "/lib/python3.6/getpass.py"
     }, {
-      audio: 0,
       start: 166573,
-      crunched: 0,
+      audio: 0,
       end: 220147,
       filename: "/lib/python3.6/configparser.py"
     }, {
-      audio: 0,
       start: 220147,
-      crunched: 0,
-      end: 240763,
+      audio: 0,
+      end: 240639,
       filename: "/lib/python3.6/_sysconfigdata__emscripten_.py"
     }, {
+      start: 240639,
       audio: 0,
-      start: 240763,
-      crunched: 0,
-      end: 302075,
+      end: 301951,
       filename: "/lib/python3.6/pdb.py"
     }, {
+      start: 301951,
       audio: 0,
-      start: 302075,
-      crunched: 0,
-      end: 321513,
+      end: 321389,
       filename: "/lib/python3.6/selectors.py"
     }, {
+      start: 321389,
       audio: 0,
-      start: 321513,
-      crunched: 0,
-      end: 346374,
+      end: 346250,
       filename: "/lib/python3.6/sysconfig.py"
     }, {
+      start: 346250,
       audio: 0,
-      start: 346374,
-      crunched: 0,
-      end: 352012,
+      end: 351888,
       filename: "/lib/python3.6/glob.py"
     }, {
+      start: 351888,
       audio: 0,
-      start: 352012,
-      crunched: 0,
-      end: 398155,
+      end: 398031,
       filename: "/lib/python3.6/platform.py"
     }, {
+      start: 398031,
       audio: 0,
-      start: 398155,
-      crunched: 0,
-      end: 404666,
+      end: 404542,
       filename: "/lib/python3.6/sched.py"
     }, {
+      start: 404542,
       audio: 0,
-      start: 404666,
-      crunched: 0,
-      end: 412770,
+      end: 412646,
       filename: "/lib/python3.6/mailcap.py"
     }, {
+      start: 412646,
       audio: 0,
-      start: 412770,
-      crunched: 0,
-      end: 441740,
+      end: 441616,
       filename: "/lib/python3.6/trace.py"
     }, {
+      start: 441616,
       audio: 0,
-      start: 441740,
-      crunched: 0,
-      end: 453654,
+      end: 453530,
       filename: "/lib/python3.6/compileall.py"
     }, {
+      start: 453530,
       audio: 0,
-      start: 453654,
-      crunched: 0,
-      end: 493881,
+      end: 493757,
       filename: "/lib/python3.6/shutil.py"
     }, {
+      start: 493757,
       audio: 0,
-      start: 493881,
-      crunched: 0,
-      end: 569515,
+      end: 569391,
       filename: "/lib/python3.6/zipfile.py"
     }, {
+      start: 569391,
       audio: 0,
-      start: 569515,
-      crunched: 0,
-      end: 593149,
+      end: 593025,
       filename: "/lib/python3.6/uuid.py"
     }, {
+      start: 593025,
       audio: 0,
-      start: 593149,
-      crunched: 0,
-      end: 708989,
+      end: 708865,
       filename: "/lib/python3.6/inspect.py"
     }, {
+      start: 708865,
       audio: 0,
-      start: 708989,
-      crunched: 0,
-      end: 723951,
+      end: 723827,
       filename: "/lib/python3.6/poplib.py"
     }, {
+      start: 723827,
       audio: 0,
-      start: 723951,
-      crunched: 0,
-      end: 728792,
+      end: 728668,
       filename: "/lib/python3.6/__future__.py"
     }, {
+      start: 728668,
       audio: 0,
-      start: 728792,
-      crunched: 0,
-      end: 731236,
+      end: 731112,
       filename: "/lib/python3.6/nturl2path.py"
     }, {
+      start: 731112,
       audio: 0,
-      start: 731236,
-      crunched: 0,
-      end: 779038,
+      end: 778914,
       filename: "/lib/python3.6/pathlib.py"
     }, {
+      start: 778914,
       audio: 0,
-      start: 779038,
-      crunched: 0,
-      end: 786135,
+      end: 786011,
       filename: "/lib/python3.6/rlcompleter.py"
     }, {
+      start: 786011,
       audio: 0,
-      start: 786135,
-      crunched: 0,
-      end: 795005,
+      end: 794881,
       filename: "/lib/python3.6/types.py"
     }, {
+      start: 794881,
       audio: 0,
-      start: 795005,
-      crunched: 0,
-      end: 798522,
+      end: 798398,
       filename: "/lib/python3.6/io.py"
     }, {
+      start: 798398,
       audio: 0,
-      start: 798522,
-      crunched: 0,
-      end: 802317,
+      end: 802193,
       filename: "/lib/python3.6/imghdr.py"
     }, {
+      start: 802193,
       audio: 0,
-      start: 802317,
-      crunched: 0,
-      end: 810965,
+      end: 810841,
       filename: "/lib/python3.6/abc.py"
     }, {
+      start: 810841,
       audio: 0,
-      start: 810965,
-      crunched: 0,
-      end: 811112,
+      end: 810988,
       filename: "/lib/python3.6/_testcapi.py"
     }, {
+      start: 810988,
       audio: 0,
-      start: 811112,
-      crunched: 0,
-      end: 824095,
+      end: 823971,
       filename: "/lib/python3.6/lzma.py"
     }, {
+      start: 823971,
       audio: 0,
-      start: 824095,
-      crunched: 0,
-      end: 829133,
+      end: 829009,
       filename: "/lib/python3.6/stat.py"
     }, {
+      start: 829009,
       audio: 0,
-      start: 829133,
-      crunched: 0,
-      end: 858092,
+      end: 857968,
       filename: "/lib/python3.6/tokenize.py"
     }, {
+      start: 857968,
       audio: 0,
-      start: 858092,
-      crunched: 0,
-      end: 871426,
+      end: 871302,
       filename: "/lib/python3.6/timeit.py"
     }, {
+      start: 871302,
       audio: 0,
-      start: 871426,
-      crunched: 0,
-      end: 895065,
+      end: 894941,
       filename: "/lib/python3.6/fractions.py"
     }, {
+      start: 894941,
       audio: 0,
-      start: 895065,
-      crunched: 0,
-      end: 928537,
+      end: 928413,
       filename: "/lib/python3.6/enum.py"
     }, {
+      start: 928413,
       audio: 0,
-      start: 928537,
-      crunched: 0,
-      end: 931612,
+      end: 931488,
       filename: "/lib/python3.6/token.py"
     }, {
+      start: 931488,
       audio: 0,
-      start: 931612,
-      crunched: 0,
-      end: 943407,
+      end: 943283,
       filename: "/lib/python3.6/string.py"
     }, {
+      start: 943283,
       audio: 0,
-      start: 943407,
-      crunched: 0,
-      end: 953237,
+      end: 953113,
       filename: "/lib/python3.6/filecmp.py"
     }, {
+      start: 953113,
       audio: 0,
-      start: 953237,
-      crunched: 0,
-      end: 989773,
+      end: 989649,
       filename: "/lib/python3.6/sre_parse.py"
     }, {
+      start: 989649,
       audio: 0,
-      start: 989773,
-      crunched: 0,
-      end: 1033889,
+      end: 1033765,
       filename: "/lib/python3.6/smtplib.py"
     }, {
+      start: 1033765,
       audio: 0,
-      start: 1033889,
-      crunched: 0,
-      end: 1036e3,
+      end: 1035876,
       filename: "/lib/python3.6/symbol.py"
     }, {
+      start: 1035876,
       audio: 0,
-      start: 1036e3,
-      crunched: 0,
-      end: 1056860,
+      end: 1056736,
       filename: "/lib/python3.6/pprint.py"
     }, {
+      start: 1056736,
       audio: 0,
-      start: 1056860,
-      crunched: 0,
-      end: 1161251,
+      end: 1161127,
       filename: "/lib/python3.6/doctest.py"
     }, {
+      start: 1161127,
       audio: 0,
-      start: 1161251,
-      crunched: 0,
-      end: 1184278,
+      end: 1184154,
       filename: "/lib/python3.6/modulefinder.py"
     }, {
+      start: 1184154,
       audio: 0,
-      start: 1184278,
-      crunched: 0,
-      end: 1191532,
+      end: 1191408,
       filename: "/lib/python3.6/quopri.py"
     }, {
+      start: 1191408,
       audio: 0,
-      start: 1191532,
-      crunched: 0,
-      end: 1214648,
+      end: 1214524,
       filename: "/lib/python3.6/traceback.py"
     }, {
+      start: 1214524,
       audio: 0,
-      start: 1214648,
-      crunched: 0,
-      end: 1235135,
+      end: 1235011,
       filename: "/lib/python3.6/base64.py"
     }, {
+      start: 1235011,
       audio: 0,
-      start: 1235135,
-      crunched: 0,
-      end: 1242142,
+      end: 1242018,
       filename: "/lib/python3.6/copyreg.py"
     }, {
+      start: 1242018,
       audio: 0,
-      start: 1242142,
-      crunched: 0,
-      end: 1263138,
+      end: 1263014,
       filename: "/lib/python3.6/mimetypes.py"
     }, {
+      start: 1263014,
       audio: 0,
-      start: 1263138,
-      crunched: 0,
-      end: 1264017,
+      end: 1263893,
       filename: "/lib/python3.6/tty.py"
     }, {
+      start: 1263893,
       audio: 0,
-      start: 1264017,
-      crunched: 0,
-      end: 1270772,
+      end: 1270648,
       filename: "/lib/python3.6/uu.py"
     }, {
+      start: 1270648,
       audio: 0,
-      start: 1270772,
-      crunched: 0,
-      end: 1276685,
+      end: 1276561,
       filename: "/lib/python3.6/xdrlib.py"
     }, {
+      start: 1276561,
       audio: 0,
-      start: 1276685,
-      crunched: 0,
-      end: 1299898,
+      end: 1299774,
       filename: "/lib/python3.6/calendar.py"
     }, {
+      start: 1299774,
       audio: 0,
-      start: 1299898,
-      crunched: 0,
-      end: 1304955,
+      end: 1304831,
       filename: "/lib/python3.6/hmac.py"
     }, {
+      start: 1304831,
       audio: 0,
-      start: 1304955,
-      crunched: 0,
-      end: 1340210,
+      end: 1340086,
       filename: "/lib/python3.6/ftplib.py"
     }, {
+      start: 1340086,
       audio: 0,
-      start: 1340210,
-      crunched: 0,
-      end: 1340686,
+      end: 1340562,
       filename: "/lib/python3.6/antigravity.py"
     }, {
+      start: 1340562,
       audio: 0,
-      start: 1340686,
-      crunched: 0,
-      end: 1346593,
+      end: 1346469,
       filename: "/lib/python3.6/macpath.py"
     }, {
+      start: 1346469,
       audio: 0,
-      start: 1346593,
-      crunched: 0,
-      end: 1368614,
+      end: 1368490,
       filename: "/lib/python3.6/profile.py"
     }, {
+      start: 1368490,
       audio: 0,
-      start: 1368614,
-      crunched: 0,
-      end: 1388948,
+      end: 1388824,
       filename: "/lib/python3.6/gzip.py"
     }, {
+      start: 1388824,
       audio: 0,
-      start: 1388948,
-      crunched: 0,
-      end: 1396105,
+      end: 1395981,
       filename: "/lib/python3.6/zipapp.py"
     }, {
+      start: 1395981,
       audio: 0,
-      start: 1396105,
-      crunched: 0,
-      end: 1398920,
+      end: 1398796,
       filename: "/lib/python3.6/dummy_threading.py"
     }, {
+      start: 1398796,
       audio: 0,
-      start: 1398920,
-      crunched: 0,
-      end: 1418478,
+      end: 1418354,
       filename: "/lib/python3.6/textwrap.py"
     }, {
+      start: 1418354,
       audio: 0,
-      start: 1418478,
-      crunched: 0,
-      end: 1432036,
+      end: 1431912,
       filename: "/lib/python3.6/pyclbr.py"
     }, {
+      start: 1431912,
       audio: 0,
-      start: 1432036,
-      crunched: 0,
-      end: 1433039,
+      end: 1432915,
       filename: "/lib/python3.6/this.py"
     }, {
+      start: 1432915,
       audio: 0,
-      start: 1433039,
-      crunched: 0,
-      end: 1446201,
+      end: 1446077,
       filename: "/lib/python3.6/contextlib.py"
     }, {
+      start: 1446077,
       audio: 0,
-      start: 1446201,
-      crunched: 0,
-      end: 1501892,
+      end: 1501768,
       filename: "/lib/python3.6/pickle.py"
     }, {
+      start: 1501768,
       audio: 0,
-      start: 1501892,
-      crunched: 0,
-      end: 1507597,
+      end: 1507473,
       filename: "/lib/python3.6/_weakrefset.py"
     }, {
+      start: 1507473,
       audio: 0,
-      start: 1507597,
-      crunched: 0,
-      end: 1510329,
+      end: 1510205,
       filename: "/lib/python3.6/macurl2path.py"
     }, {
+      start: 1510205,
       audio: 0,
-      start: 1510329,
-      crunched: 0,
-      end: 1598390,
+      end: 1598266,
       filename: "/lib/python3.6/_pyio.py"
     }, {
+      start: 1598266,
       audio: 0,
-      start: 1598390,
-      crunched: 0,
-      end: 1624246,
+      end: 1624122,
       filename: "/lib/python3.6/socketserver.py"
     }, {
+      start: 1624122,
       audio: 0,
-      start: 1624246,
-      crunched: 0,
-      end: 1643584,
+      end: 1643460,
       filename: "/lib/python3.6/sre_compile.py"
     }, {
+      start: 1643460,
       audio: 0,
-      start: 1643584,
-      crunched: 0,
-      end: 1649268,
+      end: 1649144,
       filename: "/lib/python3.6/netrc.py"
     }, {
+      start: 1649144,
       audio: 0,
-      start: 1649268,
-      crunched: 0,
-      end: 1667400,
+      end: 1667276,
       filename: "/lib/python3.6/dis.py"
     }, {
+      start: 1667276,
       audio: 0,
-      start: 1667400,
-      crunched: 0,
-      end: 1676215,
+      end: 1676091,
       filename: "/lib/python3.6/copy.py"
     }, {
+      start: 1676091,
       audio: 0,
-      start: 1676215,
-      crunched: 0,
-      end: 1681551,
+      end: 1681427,
       filename: "/lib/python3.6/reprlib.py"
     }, {
+      start: 1681427,
       audio: 0,
-      start: 1681551,
-      crunched: 0,
-      end: 1734581,
+      end: 1734457,
       filename: "/lib/python3.6/imaplib.py"
     }, {
+      start: 1734457,
       audio: 0,
-      start: 1734581,
-      crunched: 0,
-      end: 1769292,
+      end: 1769168,
       filename: "/lib/python3.6/smtpd.py"
     }, {
+      start: 1769168,
       audio: 0,
-      start: 1769292,
-      crunched: 0,
-      end: 1792428,
+      end: 1792304,
       filename: "/lib/python3.6/telnetlib.py"
     }, {
+      start: 1792304,
       audio: 0,
-      start: 1792428,
-      crunched: 0,
-      end: 1804451,
+      end: 1804327,
       filename: "/lib/python3.6/cgitb.py"
     }, {
+      start: 1804327,
       audio: 0,
-      start: 1804451,
-      crunched: 0,
-      end: 1879175,
+      end: 1879051,
       filename: "/lib/python3.6/locale.py"
     }, {
+      start: 1879051,
       audio: 0,
-      start: 1879175,
-      crunched: 0,
-      end: 1886452,
+      end: 1886328,
       filename: "/lib/python3.6/symtable.py"
     }, {
+      start: 1886328,
       audio: 0,
-      start: 1886452,
-      crunched: 0,
-      end: 1898618,
+      end: 1898494,
       filename: "/lib/python3.6/ast.py"
     }, {
+      start: 1898494,
       audio: 0,
-      start: 1898618,
-      crunched: 0,
-      end: 1903736,
+      end: 1903612,
       filename: "/lib/python3.6/_dummy_thread.py"
     }, {
+      start: 1903612,
       audio: 0,
-      start: 1903736,
-      crunched: 0,
-      end: 1936158,
+      end: 1936034,
       filename: "/lib/python3.6/aifc.py"
     }, {
+      start: 1936034,
       audio: 0,
-      start: 1936158,
-      crunched: 0,
-      end: 1972202,
+      end: 1972078,
       filename: "/lib/python3.6/cgi.py"
     }, {
+      start: 1972078,
       audio: 0,
-      start: 1972202,
-      crunched: 0,
-      end: 1993732,
+      end: 1993608,
       filename: "/lib/python3.6/gettext.py"
     }, {
+      start: 1993608,
       audio: 0,
-      start: 1993732,
-      crunched: 0,
-      end: 1998495,
+      end: 1998371,
       filename: "/lib/python3.6/pty.py"
     }, {
+      start: 1998371,
       audio: 0,
-      start: 1998495,
-      crunched: 0,
-      end: 2012449,
+      end: 2012325,
       filename: "/lib/python3.6/binhex.py"
     }, {
+      start: 2012325,
       audio: 0,
-      start: 2012449,
-      crunched: 0,
-      end: 2014572,
+      end: 2014448,
       filename: "/lib/python3.6/signal.py"
     }, {
+      start: 2014448,
       audio: 0,
-      start: 2014572,
-      crunched: 0,
-      end: 2094717,
+      end: 2094593,
       filename: "/lib/python3.6/datetime.py"
     }, {
+      start: 2094593,
       audio: 0,
-      start: 2094717,
-      crunched: 0,
-      end: 2106120,
+      end: 2105996,
       filename: "/lib/python3.6/tabnanny.py"
     }, {
+      start: 2105996,
       audio: 0,
-      start: 2106120,
-      crunched: 0,
-      end: 2108158,
+      end: 2108034,
       filename: "/lib/python3.6/secrets.py"
     }, {
+      start: 2108034,
       audio: 0,
-      start: 2108158,
-      crunched: 0,
-      end: 2151236,
+      end: 2151112,
       filename: "/lib/python3.6/nntplib.py"
     }, {
+      start: 2151112,
       audio: 0,
-      start: 2151236,
-      crunched: 0,
-      end: 2159985,
+      end: 2159861,
       filename: "/lib/python3.6/_compat_pickle.py"
     }, {
+      start: 2159861,
       audio: 0,
-      start: 2159985,
-      crunched: 0,
-      end: 2172941,
+      end: 2172817,
       filename: "/lib/python3.6/shlex.py"
     }, {
+      start: 2172817,
       audio: 0,
-      start: 2172941,
-      crunched: 0,
-      end: 2263209,
+      end: 2263085,
       filename: "/lib/python3.6/argparse.py"
     }, {
+      start: 2263085,
       audio: 0,
-      start: 2263209,
-      crunched: 0,
-      end: 2265804,
+      end: 2265680,
       filename: "/lib/python3.6/bisect.py"
     }, {
+      start: 2265680,
       audio: 0,
-      start: 2265804,
-      crunched: 0,
-      end: 2276418,
+      end: 2276294,
       filename: "/lib/python3.6/code.py"
     }, {
+      start: 2276294,
       audio: 0,
-      start: 2276418,
-      crunched: 0,
-      end: 2297091,
+      end: 2296967,
       filename: "/lib/python3.6/statistics.py"
     }, {
+      start: 2296967,
       audio: 0,
-      start: 2297091,
-      crunched: 0,
-      end: 2307334,
+      end: 2307210,
       filename: "/lib/python3.6/numbers.py"
     }, {
+      start: 2307210,
       audio: 0,
-      start: 2307334,
-      crunched: 0,
-      end: 2325822,
+      end: 2325698,
       filename: "/lib/python3.6/warnings.py"
     }, {
+      start: 2325698,
       audio: 0,
-      start: 2325822,
-      crunched: 0,
-      end: 2401603,
+      end: 2401479,
       filename: "/lib/python3.6/ipaddress.py"
     }, {
+      start: 2401479,
       audio: 0,
-      start: 2401603,
-      crunched: 0,
-      end: 2481445,
+      end: 2481321,
       filename: "/lib/python3.6/typing.py"
     }, {
+      start: 2481321,
       audio: 0,
-      start: 2481445,
-      crunched: 0,
-      end: 2530481,
+      end: 2530357,
       filename: "/lib/python3.6/threading.py"
     }, {
+      start: 2530357,
       audio: 0,
-      start: 2530481,
-      crunched: 0,
-      end: 2551796,
+      end: 2551672,
       filename: "/lib/python3.6/pkgutil.py"
     }, {
+      start: 2551672,
       audio: 0,
-      start: 2551796,
-      crunched: 0,
-      end: 2560576,
+      end: 2560452,
       filename: "/lib/python3.6/queue.py"
     }, {
+      start: 2560452,
       audio: 0,
-      start: 2560576,
-      crunched: 0,
-      end: 2622375,
+      end: 2622251,
       filename: "/lib/python3.6/subprocess.py"
     }, {
+      start: 2622251,
       audio: 0,
-      start: 2622375,
-      crunched: 0,
-      end: 2682746,
+      end: 2682622,
       filename: "/lib/python3.6/optparse.py"
     }, {
+      start: 2682622,
       audio: 0,
-      start: 2682746,
-      crunched: 0,
-      end: 2683066,
+      end: 2682942,
       filename: "/lib/python3.6/decimal.py"
     }, {
+      start: 2682942,
       audio: 0,
-      start: 2683066,
-      crunched: 0,
-      end: 2705995,
+      end: 2705871,
       filename: "/lib/python3.6/heapq.py"
     }, {
+      start: 2705871,
       audio: 0,
-      start: 2705995,
-      crunched: 0,
-      end: 2737137,
+      end: 2737013,
       filename: "/lib/python3.6/functools.py"
     }, {
+      start: 2737013,
       audio: 0,
-      start: 2737137,
-      crunched: 0,
-      end: 2742562,
+      end: 2742438,
       filename: "/lib/python3.6/chunk.py"
     }, {
+      start: 2742438,
       audio: 0,
-      start: 2742562,
-      crunched: 0,
-      end: 2770005,
+      end: 2769881,
       filename: "/lib/python3.6/socket.py"
     }, {
+      start: 2769881,
       audio: 0,
-      start: 2770005,
-      crunched: 0,
-      end: 2790164,
+      end: 2790040,
       filename: "/lib/python3.6/asyncore.py"
     }, {
+      start: 2790040,
       audio: 0,
-      start: 2790164,
-      crunched: 0,
-      end: 2805513,
+      end: 2805389,
       filename: "/lib/python3.6/posixpath.py"
     }, {
+      start: 2805389,
       audio: 0,
-      start: 2805513,
-      crunched: 0,
-      end: 2821693,
+      end: 2821569,
       filename: "/lib/python3.6/csv.py"
     }, {
+      start: 2821569,
       audio: 0,
-      start: 2821693,
-      crunched: 0,
-      end: 2830609,
+      end: 2830485,
       filename: "/lib/python3.6/pipes.py"
     }, {
+      start: 2830485,
       audio: 0,
-      start: 2830609,
-      crunched: 0,
-      end: 2875073,
+      end: 2874949,
       filename: "/lib/python3.6/ssl.py"
     }, {
+      start: 2874949,
       audio: 0,
-      start: 2875073,
-      crunched: 0,
-      end: 2889933,
+      end: 2889809,
       filename: "/lib/python3.6/cmd.py"
     }, {
+      start: 2889809,
       audio: 0,
-      start: 2889933,
-      crunched: 0,
-      end: 2968557,
+      end: 2968433,
       filename: "/lib/python3.6/mailbox.py"
     }, {
+      start: 2968433,
       audio: 0,
-      start: 2968557,
-      crunched: 0,
-      end: 2989023,
+      end: 2988899,
       filename: "/lib/python3.6/weakref.py"
     }, {
+      start: 2988899,
       audio: 0,
-      start: 2989023,
-      crunched: 0,
-      end: 3015326,
+      end: 3015202,
       filename: "/lib/python3.6/_collections_abc.py"
     }, {
+      start: 3015202,
       audio: 0,
-      start: 3015326,
-      crunched: 0,
-      end: 3016627,
+      end: 3016503,
       filename: "/lib/python3.6/_bootlocale.py"
     }, {
+      start: 3016503,
       audio: 0,
-      start: 3016627,
-      crunched: 0,
-      end: 3021967,
+      end: 3021843,
       filename: "/lib/python3.6/_compression.py"
     }, {
+      start: 3021843,
       audio: 0,
-      start: 3021967,
-      crunched: 0,
-      end: 3113776,
+      end: 3113652,
       filename: "/lib/python3.6/pickletools.py"
     }, {
+      start: 3113652,
       audio: 0,
-      start: 3113776,
-      crunched: 0,
-      end: 3206962,
+      end: 3206838,
       filename: "/lib/python3.6/tarfile.py"
     }, {
+      start: 3206838,
       audio: 0,
-      start: 3206962,
-      crunched: 0,
-      end: 3214372,
+      end: 3214248,
       filename: "/lib/python3.6/_threading_local.py"
     }, {
+      start: 3214248,
       audio: 0,
-      start: 3214372,
-      crunched: 0,
-      end: 3250648,
+      end: 3250524,
       filename: "/lib/python3.6/codecs.py"
     }, {
+      start: 3250524,
       audio: 0,
-      start: 3250648,
-      crunched: 0,
-      end: 3257736,
+      end: 3257612,
       filename: "/lib/python3.6/sndhdr.py"
     }, {
+      start: 3257612,
       audio: 0,
-      start: 3257736,
-      crunched: 0,
-      end: 3341937,
+      end: 3341813,
       filename: "/lib/python3.6/difflib.py"
     }, {
+      start: 3341813,
       audio: 0,
-      start: 3341937,
-      crunched: 0,
-      end: 3360032,
+      end: 3359908,
       filename: "/lib/python3.6/sunau.py"
     }, {
+      start: 3359908,
       audio: 0,
-      start: 3360032,
-      crunched: 0,
-      end: 3386667,
+      end: 3386543,
       filename: "/lib/python3.6/tempfile.py"
     }, {
+      start: 3386543,
       audio: 0,
-      start: 3386667,
-      crunched: 0,
-      end: 3404376,
+      end: 3404252,
       filename: "/lib/python3.6/wave.py"
     }, {
+      start: 3404252,
       audio: 0,
-      start: 3404376,
-      crunched: 0,
-      end: 3634604,
+      end: 3634480,
       filename: "/lib/python3.6/_pydecimal.py"
     }, {
+      start: 3634480,
       audio: 0,
-      start: 3634604,
-      crunched: 0,
-      end: 3642258,
+      end: 3642134,
       filename: "/lib/python3.6/pystone.py"
     }, {
+      start: 3642134,
       audio: 0,
-      start: 3642258,
-      crunched: 0,
-      end: 3647014,
+      end: 3646890,
       filename: "/lib/python3.6/genericpath.py"
     }, {
+      start: 3646890,
       audio: 0,
-      start: 3647014,
-      crunched: 0,
-      end: 3647078,
+      end: 3646954,
       filename: "/lib/python3.6/__phello__.foo.py"
     }, {
+      start: 3646954,
       audio: 0,
-      start: 3647078,
-      crunched: 0,
-      end: 3659995,
+      end: 3659871,
       filename: "/lib/python3.6/stringprep.py"
     }, {
+      start: 3659871,
       audio: 0,
-      start: 3659995,
-      crunched: 0,
-      end: 3671323,
+      end: 3671199,
       filename: "/lib/python3.6/asynchat.py"
     }, {
+      start: 3671199,
       audio: 0,
-      start: 3671323,
-      crunched: 0,
-      end: 3686466,
+      end: 3686342,
       filename: "/lib/python3.6/formatter.py"
     }, {
+      start: 3686342,
       audio: 0,
-      start: 3686466,
-      crunched: 0,
-      end: 3718446,
+      end: 3718322,
       filename: "/lib/python3.6/plistlib.py"
     }, {
+      start: 3718322,
       audio: 0,
-      start: 3718446,
-      crunched: 0,
-      end: 3724279,
+      end: 3724155,
       filename: "/lib/python3.6/opcode.py"
     }, {
+      start: 3724155,
       audio: 0,
-      start: 3724279,
-      crunched: 0,
-      end: 3733756,
+      end: 3733632,
       filename: "/lib/python3.6/hashlib.py"
     }, {
+      start: 3733632,
       audio: 0,
-      start: 3733756,
-      crunched: 0,
-      end: 3837539,
+      end: 3837415,
       filename: "/lib/python3.6/pydoc.py"
     }, {
+      start: 3837415,
       audio: 0,
-      start: 3837539,
-      crunched: 0,
-      end: 3839750,
+      end: 3839626,
       filename: "/lib/python3.6/keyword.py"
     }, {
+      start: 3839626,
       audio: 0,
-      start: 3839750,
-      crunched: 0,
-      end: 3855302,
+      end: 3855178,
       filename: "/lib/python3.6/re.py"
     }, {
+      start: 3855178,
       audio: 0,
-      start: 3855302,
-      crunched: 0,
-      end: 3882612,
+      end: 3882488,
       filename: "/lib/python3.6/random.py"
     }, {
+      start: 3882488,
       audio: 0,
-      start: 3882612,
-      crunched: 0,
-      end: 3907359,
+      end: 3907235,
       filename: "/lib/python3.6/_strptime.py"
     }, {
+      start: 3907235,
       audio: 0,
-      start: 3907359,
-      crunched: 0,
-      end: 3911423,
+      end: 3911299,
       filename: "/lib/python3.6/colorsys.py"
     }, {
+      start: 3911299,
       audio: 0,
-      start: 3911423,
-      crunched: 0,
-      end: 3923382,
+      end: 3923258,
       filename: "/lib/python3.6/runpy.py"
     }, {
+      start: 3923258,
       audio: 0,
-      start: 3923382,
-      crunched: 0,
-      end: 3937980,
+      end: 3937856,
       filename: "/lib/python3.6/_markupbase.py"
     }, {
+      start: 3937856,
       audio: 0,
-      start: 3937980,
-      crunched: 0,
-      end: 3948649,
+      end: 3948525,
       filename: "/lib/python3.6/imp.py"
     }, {
+      start: 3948525,
       audio: 0,
-      start: 3948649,
-      crunched: 0,
-      end: 3969082,
+      end: 3968958,
       filename: "/lib/python3.6/site.py"
     }, {
+      start: 3968958,
       audio: 0,
-      start: 3969082,
-      crunched: 0,
-      end: 3972197,
+      end: 3972073,
       filename: "/lib/python3.6/_sitebuiltins.py"
     }, {
+      start: 3972073,
       audio: 0,
-      start: 3972197,
-      crunched: 0,
-      end: 3984675,
+      end: 3984551,
       filename: "/lib/python3.6/bz2.py"
     }, {
+      start: 3984551,
       audio: 0,
-      start: 3984675,
-      crunched: 0,
-      end: 4011239,
+      end: 4011115,
       filename: "/lib/python3.6/pstats.py"
     }, {
+      start: 4011115,
       audio: 0,
-      start: 4011239,
-      crunched: 0,
-      end: 4019767,
+      end: 4019643,
       filename: "/lib/python3.6/shelve.py"
     }, {
+      start: 4019643,
       audio: 0,
-      start: 4019767,
-      crunched: 0,
-      end: 4034238,
+      end: 4034114,
       filename: "/lib/python3.6/fileinput.py"
     }, {
+      start: 4034114,
       audio: 0,
-      start: 4034238,
-      crunched: 0,
-      end: 4041727,
+      end: 4041603,
       filename: "/lib/python3.6/getopt.py"
     }, {
+      start: 4041603,
       audio: 0,
-      start: 4041727,
-      crunched: 0,
-      end: 4041846,
+      end: 4041722,
       filename: "/lib/python3.6/site-packages/README.txt"
     }, {
+      start: 4041722,
       audio: 0,
-      start: 4041846,
-      crunched: 0,
-      end: 4042094,
+      end: 4041970,
       filename: "/lib/python3.6/site-packages/sitecustomize.py"
     }, {
+      start: 4041970,
       audio: 0,
-      start: 4042094,
-      crunched: 0,
-      end: 4072982,
+      end: 4072858,
       filename: "/lib/python3.6/site-packages/six.py"
     }, {
+      start: 4072858,
       audio: 0,
-      start: 4072982,
-      crunched: 0,
-      end: 4073369,
+      end: 4073760,
       filename: "/lib/python3.6/site-packages/pyodide.py"
     }, {
+      start: 4073760,
       audio: 0,
-      start: 4073369,
-      crunched: 0,
-      end: 4073926,
+      end: 4074317,
       filename: "/lib/python3.6/xml/__init__.py"
     }, {
+      start: 4074317,
       audio: 0,
-      start: 4073926,
-      crunched: 0,
-      end: 4074008,
+      end: 4074399,
       filename: "/lib/python3.6/xml/etree/cElementTree.py"
     }, {
+      start: 4074399,
       audio: 0,
-      start: 4074008,
-      crunched: 0,
-      end: 4079159,
+      end: 4079550,
       filename: "/lib/python3.6/xml/etree/ElementInclude.py"
     }, {
+      start: 4079550,
       audio: 0,
-      start: 4079159,
-      crunched: 0,
-      end: 4089094,
+      end: 4089485,
       filename: "/lib/python3.6/xml/etree/ElementPath.py"
     }, {
+      start: 4089485,
       audio: 0,
-      start: 4089094,
-      crunched: 0,
-      end: 4146122,
+      end: 4146513,
       filename: "/lib/python3.6/xml/etree/ElementTree.py"
     }, {
+      start: 4146513,
       audio: 0,
-      start: 4146122,
-      crunched: 0,
-      end: 4147726,
+      end: 4148117,
       filename: "/lib/python3.6/xml/etree/__init__.py"
     }, {
+      start: 4148117,
       audio: 0,
-      start: 4147726,
-      crunched: 0,
-      end: 4161648,
+      end: 4162039,
       filename: "/lib/python3.6/xml/sax/handler.py"
     }, {
+      start: 4162039,
       audio: 0,
-      start: 4161648,
-      crunched: 0,
-      end: 4177352,
+      end: 4177743,
       filename: "/lib/python3.6/xml/sax/expatreader.py"
     }, {
+      start: 4177743,
       audio: 0,
-      start: 4177352,
-      crunched: 0,
-      end: 4182137,
+      end: 4182528,
       filename: "/lib/python3.6/xml/sax/_exceptions.py"
     }, {
+      start: 4182528,
       audio: 0,
-      start: 4182137,
-      crunched: 0,
-      end: 4194342,
+      end: 4194733,
       filename: "/lib/python3.6/xml/sax/saxutils.py"
     }, {
+      start: 4194733,
       audio: 0,
-      start: 4194342,
-      crunched: 0,
-      end: 4207026,
+      end: 4207417,
       filename: "/lib/python3.6/xml/sax/xmlreader.py"
     }, {
+      start: 4207417,
       audio: 0,
-      start: 4207026,
-      crunched: 0,
-      end: 4210619,
+      end: 4211010,
       filename: "/lib/python3.6/xml/sax/__init__.py"
     }, {
+      start: 4211010,
       audio: 0,
-      start: 4210619,
-      crunched: 0,
-      end: 4211555,
+      end: 4211946,
       filename: "/lib/python3.6/xml/dom/NodeFilter.py"
     }, {
+      start: 4211946,
       audio: 0,
-      start: 4211555,
-      crunched: 0,
-      end: 4278374,
+      end: 4278765,
       filename: "/lib/python3.6/xml/dom/minidom.py"
     }, {
+      start: 4278765,
       audio: 0,
-      start: 4278374,
-      crunched: 0,
-      end: 4291370,
+      end: 4291761,
       filename: "/lib/python3.6/xml/dom/xmlbuilder.py"
     }, {
+      start: 4291761,
       audio: 0,
-      start: 4291370,
-      crunched: 0,
-      end: 4303131,
+      end: 4303522,
       filename: "/lib/python3.6/xml/dom/pulldom.py"
     }, {
+      start: 4303522,
       audio: 0,
-      start: 4303131,
-      crunched: 0,
-      end: 4338887,
+      end: 4339278,
       filename: "/lib/python3.6/xml/dom/expatbuilder.py"
     }, {
+      start: 4339278,
       audio: 0,
-      start: 4338887,
-      crunched: 0,
-      end: 4342254,
+      end: 4342645,
       filename: "/lib/python3.6/xml/dom/minicompat.py"
     }, {
+      start: 4342645,
       audio: 0,
-      start: 4342254,
-      crunched: 0,
-      end: 4346273,
+      end: 4346664,
       filename: "/lib/python3.6/xml/dom/__init__.py"
     }, {
+      start: 4346664,
       audio: 0,
-      start: 4346273,
-      crunched: 0,
-      end: 4349675,
+      end: 4350066,
       filename: "/lib/python3.6/xml/dom/domreg.py"
     }, {
+      start: 4350066,
       audio: 0,
-      start: 4349675,
-      crunched: 0,
-      end: 4349923,
+      end: 4350314,
       filename: "/lib/python3.6/xml/parsers/expat.py"
     }, {
+      start: 4350314,
       audio: 0,
-      start: 4349923,
-      crunched: 0,
-      end: 4350090,
+      end: 4350481,
       filename: "/lib/python3.6/xml/parsers/__init__.py"
     }, {
+      start: 4350481,
       audio: 0,
-      start: 4350090,
-      crunched: 0,
-      end: 4350128,
+      end: 4350519,
       filename: "/lib/python3.6/concurrent/__init__.py"
     }, {
+      start: 4350519,
       audio: 0,
-      start: 4350128,
-      crunched: 0,
-      end: 4370620,
+      end: 4371011,
       filename: "/lib/python3.6/concurrent/futures/process.py"
     }, {
+      start: 4371011,
       audio: 0,
-      start: 4370620,
-      crunched: 0,
-      end: 4376131,
+      end: 4376522,
       filename: "/lib/python3.6/concurrent/futures/thread.py"
     }, {
+      start: 4376522,
       audio: 0,
-      start: 4376131,
-      crunched: 0,
-      end: 4397346,
+      end: 4397737,
       filename: "/lib/python3.6/concurrent/futures/_base.py"
     }, {
+      start: 4397737,
       audio: 0,
-      start: 4397346,
-      crunched: 0,
-      end: 4398146,
+      end: 4398537,
       filename: "/lib/python3.6/concurrent/futures/__init__.py"
     }, {
+      start: 4398537,
       audio: 0,
-      start: 4398146,
-      crunched: 0,
-      end: 4435316,
+      end: 4435707,
       filename: "/lib/python3.6/xmlrpc/server.py"
     }, {
+      start: 4435707,
       audio: 0,
-      start: 4435316,
-      crunched: 0,
-      end: 4484303,
+      end: 4484694,
       filename: "/lib/python3.6/xmlrpc/client.py"
     }, {
+      start: 4484694,
       audio: 0,
-      start: 4484303,
-      crunched: 0,
-      end: 4484341,
+      end: 4484732,
       filename: "/lib/python3.6/xmlrpc/__init__.py"
     }, {
+      start: 4484732,
       audio: 0,
-      start: 4484341,
-      crunched: 0,
-      end: 4584339,
+      end: 4584730,
       filename: "/lib/python3.6/urllib/request.py"
     }, {
+      start: 4584730,
       audio: 0,
-      start: 4584339,
-      crunched: 0,
-      end: 4592826,
+      end: 4593217,
       filename: "/lib/python3.6/urllib/robotparser.py"
     }, {
+      start: 4593217,
       audio: 0,
-      start: 4592826,
-      crunched: 0,
-      end: 4629429,
+      end: 4629820,
       filename: "/lib/python3.6/urllib/parse.py"
     }, {
+      start: 4629820,
       audio: 0,
-      start: 4629429,
-      crunched: 0,
-      end: 4631728,
+      end: 4632119,
       filename: "/lib/python3.6/urllib/response.py"
     }, {
+      start: 4632119,
       audio: 0,
-      start: 4631728,
-      crunched: 0,
-      end: 4634369,
+      end: 4634760,
       filename: "/lib/python3.6/urllib/error.py"
     }, {
+      start: 4634760,
       audio: 0,
-      start: 4634369,
-      crunched: 0,
-      end: 4634369,
+      end: 4634760,
       filename: "/lib/python3.6/urllib/__init__.py"
     }, {
+      start: 4634760,
       audio: 0,
-      start: 4634369,
-      crunched: 0,
-      end: 4634465,
+      end: 4634856,
       filename: "/lib/python3.6/pydoc_data/_pydoc.css"
     }, {
+      start: 4634856,
       audio: 0,
-      start: 4634465,
-      crunched: 0,
-      end: 5271536,
+      end: 5271927,
       filename: "/lib/python3.6/pydoc_data/topics.py"
     }, {
+      start: 5271927,
       audio: 0,
-      start: 5271536,
-      crunched: 0,
-      end: 5271536,
+      end: 5271927,
       filename: "/lib/python3.6/pydoc_data/__init__.py"
     }, {
+      start: 5271927,
       audio: 0,
-      start: 5271536,
-      crunched: 0,
-      end: 5279287,
+      end: 5279678,
       filename: "/lib/python3.6/unittest/runner.py"
     }, {
+      start: 5279678,
       audio: 0,
-      start: 5279287,
-      crunched: 0,
-      end: 5301511,
+      end: 5301902,
       filename: "/lib/python3.6/unittest/loader.py"
     }, {
+      start: 5301902,
       audio: 0,
-      start: 5301511,
-      crunched: 0,
-      end: 5308953,
+      end: 5309344,
       filename: "/lib/python3.6/unittest/result.py"
     }, {
+      start: 5309344,
       audio: 0,
-      start: 5308953,
-      crunched: 0,
-      end: 5365914,
+      end: 5366305,
       filename: "/lib/python3.6/unittest/case.py"
     }, {
+      start: 5366305,
       audio: 0,
-      start: 5365914,
-      crunched: 0,
-      end: 5376466,
+      end: 5376857,
       filename: "/lib/python3.6/unittest/main.py"
     }, {
+      start: 5376857,
       audio: 0,
-      start: 5376466,
-      crunched: 0,
-      end: 5381899,
+      end: 5382290,
       filename: "/lib/python3.6/unittest/util.py"
     }, {
+      start: 5382290,
       audio: 0,
-      start: 5381899,
-      crunched: 0,
-      end: 5461399,
+      end: 5461790,
       filename: "/lib/python3.6/unittest/mock.py"
     }, {
+      start: 5461790,
       audio: 0,
-      start: 5461399,
-      crunched: 0,
-      end: 5463802,
+      end: 5464193,
       filename: "/lib/python3.6/unittest/signals.py"
     }, {
+      start: 5464193,
       audio: 0,
-      start: 5463802,
-      crunched: 0,
-      end: 5474281,
+      end: 5474672,
       filename: "/lib/python3.6/unittest/suite.py"
     }, {
+      start: 5474672,
       audio: 0,
-      start: 5474281,
-      crunched: 0,
-      end: 5477424,
+      end: 5477815,
       filename: "/lib/python3.6/unittest/__init__.py"
     }, {
+      start: 5477815,
       audio: 0,
-      start: 5477424,
-      crunched: 0,
-      end: 5477909,
+      end: 5478300,
       filename: "/lib/python3.6/unittest/__main__.py"
     }, {
+      start: 5478300,
       audio: 0,
-      start: 5477909,
-      crunched: 0,
-      end: 5550495,
+      end: 5550886,
       filename: "/lib/python3.6/unittest/test/test_case.py"
     }, {
+      start: 5550886,
       audio: 0,
-      start: 5550495,
-      crunched: 0,
-      end: 5574992,
+      end: 5575383,
       filename: "/lib/python3.6/unittest/test/test_result.py"
     }, {
+      start: 5575383,
       audio: 0,
-      start: 5574992,
-      crunched: 0,
-      end: 5592022,
+      end: 5592413,
       filename: "/lib/python3.6/unittest/test/test_assertions.py"
     }, {
+      start: 5592413,
       audio: 0,
-      start: 5592022,
-      crunched: 0,
-      end: 5594326,
+      end: 5594717,
       filename: "/lib/python3.6/unittest/test/_test_warnings.py"
     }, {
+      start: 5594717,
       audio: 0,
-      start: 5594326,
-      crunched: 0,
-      end: 5608047,
+      end: 5608438,
       filename: "/lib/python3.6/unittest/test/test_program.py"
     }, {
+      start: 5608438,
       audio: 0,
-      start: 5608047,
-      crunched: 0,
-      end: 5618044,
+      end: 5618435,
       filename: "/lib/python3.6/unittest/test/test_break.py"
     }, {
+      start: 5618435,
       audio: 0,
-      start: 5618044,
-      crunched: 0,
-      end: 5627360,
+      end: 5627751,
       filename: "/lib/python3.6/unittest/test/test_skipping.py"
     }, {
+      start: 5627751,
       audio: 0,
-      start: 5627360,
-      crunched: 0,
-      end: 5627410,
+      end: 5627801,
       filename: "/lib/python3.6/unittest/test/dummy.py"
     }, {
+      start: 5627801,
       audio: 0,
-      start: 5627410,
-      crunched: 0,
-      end: 5688179,
+      end: 5688570,
       filename: "/lib/python3.6/unittest/test/test_loader.py"
     }, {
+      start: 5688570,
       audio: 0,
-      start: 5688179,
-      crunched: 0,
-      end: 5693719,
+      end: 5694110,
       filename: "/lib/python3.6/unittest/test/test_functiontestcase.py"
     }, {
+      start: 5694110,
       audio: 0,
-      start: 5693719,
-      crunched: 0,
-      end: 5710222,
+      end: 5710613,
       filename: "/lib/python3.6/unittest/test/test_setups.py"
     }, {
+      start: 5710613,
       audio: 0,
-      start: 5710222,
-      crunched: 0,
-      end: 5722235,
+      end: 5722626,
       filename: "/lib/python3.6/unittest/test/test_runner.py"
     }, {
+      start: 5722626,
       audio: 0,
-      start: 5722235,
-      crunched: 0,
-      end: 5737419,
+      end: 5737810,
       filename: "/lib/python3.6/unittest/test/test_suite.py"
     }, {
+      start: 5737810,
       audio: 0,
-      start: 5737419,
-      crunched: 0,
-      end: 5741171,
+      end: 5741562,
       filename: "/lib/python3.6/unittest/test/support.py"
     }, {
+      start: 5741562,
       audio: 0,
-      start: 5741171,
-      crunched: 0,
-      end: 5774436,
+      end: 5774827,
       filename: "/lib/python3.6/unittest/test/test_discovery.py"
     }, {
+      start: 5774827,
       audio: 0,
-      start: 5774436,
-      crunched: 0,
-      end: 5775020,
+      end: 5775411,
       filename: "/lib/python3.6/unittest/test/__init__.py"
     }, {
+      start: 5775411,
       audio: 0,
-      start: 5775020,
-      crunched: 0,
-      end: 5775616,
+      end: 5776007,
       filename: "/lib/python3.6/unittest/test/__main__.py"
     }, {
+      start: 5776007,
       audio: 0,
-      start: 5775616,
-      crunched: 0,
-      end: 5803432,
+      end: 5803823,
       filename: "/lib/python3.6/unittest/test/testmock/testhelpers.py"
     }, {
+      start: 5803823,
       audio: 0,
-      start: 5803432,
-      crunched: 0,
-      end: 5813847,
+      end: 5814238,
       filename: "/lib/python3.6/unittest/test/testmock/testwith.py"
     }, {
+      start: 5814238,
       audio: 0,
-      start: 5813847,
-      crunched: 0,
-      end: 5814671,
+      end: 5815062,
       filename: "/lib/python3.6/unittest/test/testmock/testsentinel.py"
     }, {
+      start: 5815062,
       audio: 0,
-      start: 5814671,
-      crunched: 0,
-      end: 5829082,
+      end: 5829473,
       filename: "/lib/python3.6/unittest/test/testmock/testmagicmethods.py"
     }, {
+      start: 5829473,
       audio: 0,
-      start: 5829082,
-      crunched: 0,
-      end: 5829469,
+      end: 5829860,
       filename: "/lib/python3.6/unittest/test/testmock/support.py"
     }, {
+      start: 5829860,
       audio: 0,
-      start: 5829469,
-      crunched: 0,
-      end: 5879953,
+      end: 5880344,
       filename: "/lib/python3.6/unittest/test/testmock/testmock.py"
     }, {
+      start: 5880344,
       audio: 0,
-      start: 5879953,
-      crunched: 0,
-      end: 5935507,
+      end: 5935898,
       filename: "/lib/python3.6/unittest/test/testmock/testpatch.py"
     }, {
+      start: 5935898,
       audio: 0,
-      start: 5935507,
-      crunched: 0,
-      end: 5935972,
+      end: 5936363,
       filename: "/lib/python3.6/unittest/test/testmock/__init__.py"
     }, {
+      start: 5936363,
       audio: 0,
-      start: 5935972,
-      crunched: 0,
-      end: 5940255,
+      end: 5940646,
       filename: "/lib/python3.6/unittest/test/testmock/testcallable.py"
     }, {
+      start: 5940646,
       audio: 0,
-      start: 5940255,
-      crunched: 0,
-      end: 5940878,
+      end: 5941269,
       filename: "/lib/python3.6/unittest/test/testmock/__main__.py"
     }, {
+      start: 5941269,
       audio: 0,
-      start: 5940878,
-      crunched: 0,
-      end: 5946017,
+      end: 5946408,
       filename: "/lib/python3.6/wsgiref/simple_server.py"
     }, {
+      start: 5946408,
       audio: 0,
-      start: 5946017,
-      crunched: 0,
-      end: 5967018,
+      end: 5967409,
       filename: "/lib/python3.6/wsgiref/handlers.py"
     }, {
+      start: 5967409,
       audio: 0,
-      start: 5967018,
-      crunched: 0,
-      end: 5972652,
+      end: 5973043,
       filename: "/lib/python3.6/wsgiref/util.py"
     }, {
+      start: 5973043,
       audio: 0,
-      start: 5972652,
-      crunched: 0,
-      end: 5987815,
+      end: 5988206,
       filename: "/lib/python3.6/wsgiref/validate.py"
     }, {
+      start: 5988206,
       audio: 0,
-      start: 5987815,
-      crunched: 0,
-      end: 5994581,
+      end: 5994972,
       filename: "/lib/python3.6/wsgiref/headers.py"
     }, {
+      start: 5994972,
       audio: 0,
-      start: 5994581,
-      crunched: 0,
-      end: 5995168,
+      end: 5995559,
       filename: "/lib/python3.6/wsgiref/__init__.py"
     }, {
+      start: 5995559,
       audio: 0,
-      start: 5995168,
-      crunched: 0,
-      end: 6005234,
+      end: 6005625,
       filename: "/lib/python3.6/asyncio/transports.py"
     }, {
+      start: 6005625,
       audio: 0,
-      start: 6005234,
-      crunched: 0,
-      end: 6005777,
+      end: 6006168,
       filename: "/lib/python3.6/asyncio/compat.py"
     }, {
+      start: 6006168,
       audio: 0,
-      start: 6005777,
-      crunched: 0,
-      end: 6031669,
+      end: 6032060,
       filename: "/lib/python3.6/asyncio/sslproto.py"
     }, {
+      start: 6032060,
       audio: 0,
-      start: 6031669,
-      crunched: 0,
-      end: 6088421,
+      end: 6088812,
       filename: "/lib/python3.6/asyncio/base_events.py"
     }, {
+      start: 6088812,
       audio: 0,
-      start: 6088421,
-      crunched: 0,
-      end: 6099254,
+      end: 6099645,
       filename: "/lib/python3.6/asyncio/coroutines.py"
     }, {
+      start: 6099645,
       audio: 0,
-      start: 6099254,
-      crunched: 0,
-      end: 6127085,
+      end: 6127476,
       filename: "/lib/python3.6/asyncio/windows_events.py"
     }, {
+      start: 6127476,
       audio: 0,
-      start: 6127085,
-      crunched: 0,
-      end: 6142861,
+      end: 6143252,
       filename: "/lib/python3.6/asyncio/futures.py"
     }, {
+      start: 6143252,
       audio: 0,
-      start: 6142861,
-      crunched: 0,
-      end: 6149744,
+      end: 6150135,
       filename: "/lib/python3.6/asyncio/windows_utils.py"
     }, {
+      start: 6150135,
       audio: 0,
-      start: 6149744,
-      crunched: 0,
-      end: 6151818,
+      end: 6152209,
       filename: "/lib/python3.6/asyncio/base_futures.py"
     }, {
+      start: 6152209,
       audio: 0,
-      start: 6151818,
-      crunched: 0,
-      end: 6151942,
+      end: 6152333,
       filename: "/lib/python3.6/asyncio/log.py"
     }, {
+      start: 6152333,
       audio: 0,
-      start: 6151942,
-      crunched: 0,
-      end: 6166944,
+      end: 6167335,
       filename: "/lib/python3.6/asyncio/locks.py"
     }, {
+      start: 6167335,
       audio: 0,
-      start: 6166944,
-      crunched: 0,
-      end: 6190439,
+      end: 6190830,
       filename: "/lib/python3.6/asyncio/events.py"
     }, {
+      start: 6190830,
       audio: 0,
-      start: 6190439,
-      crunched: 0,
-      end: 6194951,
+      end: 6195342,
       filename: "/lib/python3.6/asyncio/protocols.py"
     }, {
+      start: 6195342,
       audio: 0,
-      start: 6194951,
-      crunched: 0,
-      end: 6236947,
+      end: 6237338,
       filename: "/lib/python3.6/asyncio/selector_events.py"
     }, {
+      start: 6237338,
       audio: 0,
-      start: 6236947,
-      crunched: 0,
-      end: 6246043,
+      end: 6246434,
       filename: "/lib/python3.6/asyncio/base_subprocess.py"
     }, {
+      start: 6246434,
       audio: 0,
-      start: 6246043,
-      crunched: 0,
-      end: 6282877,
+      end: 6283268,
       filename: "/lib/python3.6/asyncio/unix_events.py"
     }, {
+      start: 6283268,
       audio: 0,
-      start: 6282877,
-      crunched: 0,
-      end: 6285063,
+      end: 6285454,
       filename: "/lib/python3.6/asyncio/base_tasks.py"
     }, {
+      start: 6285454,
       audio: 0,
-      start: 6285063,
-      crunched: 0,
-      end: 6292689,
+      end: 6293080,
       filename: "/lib/python3.6/asyncio/subprocess.py"
     }, {
+      start: 6293080,
       audio: 0,
-      start: 6292689,
-      crunched: 0,
-      end: 6300646,
+      end: 6301037,
       filename: "/lib/python3.6/asyncio/queues.py"
     }, {
+      start: 6301037,
       audio: 0,
-      start: 6300646,
-      crunched: 0,
-      end: 6315329,
+      end: 6315720,
       filename: "/lib/python3.6/asyncio/test_utils.py"
     }, {
+      start: 6315720,
       audio: 0,
-      start: 6315329,
-      crunched: 0,
-      end: 6339801,
+      end: 6340192,
       filename: "/lib/python3.6/asyncio/streams.py"
     }, {
+      start: 6340192,
       audio: 0,
-      start: 6339801,
-      crunched: 0,
-      end: 6364445,
+      end: 6364836,
       filename: "/lib/python3.6/asyncio/tasks.py"
     }, {
+      start: 6364836,
       audio: 0,
-      start: 6364445,
-      crunched: 0,
-      end: 6384621,
+      end: 6385012,
       filename: "/lib/python3.6/asyncio/proactor_events.py"
     }, {
+      start: 6385012,
       audio: 0,
-      start: 6384621,
-      crunched: 0,
-      end: 6384992,
+      end: 6385383,
       filename: "/lib/python3.6/asyncio/constants.py"
     }, {
+      start: 6385383,
       audio: 0,
-      start: 6384992,
-      crunched: 0,
-      end: 6386428,
+      end: 6386819,
       filename: "/lib/python3.6/asyncio/__init__.py"
     }, {
+      start: 6386819,
       audio: 0,
-      start: 6386428,
-      crunched: 0,
-      end: 6485945,
+      end: 6486336,
       filename: "/lib/python3.6/email/_header_value_parser.py"
     }, {
+      start: 6486336,
       audio: 0,
-      start: 6485945,
-      crunched: 0,
-      end: 6495506,
+      end: 6495897,
       filename: "/lib/python3.6/email/architecture.rst"
     }, {
+      start: 6495897,
       audio: 0,
-      start: 6495506,
-      crunched: 0,
-      end: 6506178,
+      end: 6506569,
       filename: "/lib/python3.6/email/contentmanager.py"
     }, {
+      start: 6506569,
       audio: 0,
-      start: 6506178,
-      crunched: 0,
-      end: 6516037,
+      end: 6516428,
       filename: "/lib/python3.6/email/quoprimime.py"
     }, {
+      start: 6516428,
       audio: 0,
-      start: 6516037,
-      crunched: 0,
-      end: 6519572,
+      end: 6519963,
       filename: "/lib/python3.6/email/errors.py"
     }, {
+      start: 6519963,
       audio: 0,
-      start: 6519572,
-      crunched: 0,
-      end: 6536723,
+      end: 6537114,
       filename: "/lib/python3.6/email/charset.py"
     }, {
+      start: 6537114,
       audio: 0,
-      start: 6536723,
-      crunched: 0,
-      end: 6538858,
+      end: 6539249,
       filename: "/lib/python3.6/email/iterators.py"
     }, {
+      start: 6539249,
       audio: 0,
-      start: 6538858,
-      crunched: 0,
-      end: 6561633,
+      end: 6562024,
       filename: "/lib/python3.6/email/feedparser.py"
     }, {
+      start: 6562024,
       audio: 0,
-      start: 6561633,
-      crunched: 0,
-      end: 6585735,
+      end: 6586126,
       filename: "/lib/python3.6/email/header.py"
     }, {
+      start: 6586126,
       audio: 0,
-      start: 6585735,
-      crunched: 0,
-      end: 6587521,
+      end: 6587912,
       filename: "/lib/python3.6/email/encoders.py"
     }, {
+      start: 6587912,
       audio: 0,
-      start: 6587521,
-      crunched: 0,
-      end: 6595435,
+      end: 6595826,
       filename: "/lib/python3.6/email/_encoded_words.py"
     }, {
+      start: 6595826,
       audio: 0,
-      start: 6595435,
-      crunched: 0,
-      end: 6642154,
+      end: 6642545,
       filename: "/lib/python3.6/email/message.py"
     }, {
+      start: 6642545,
       audio: 0,
-      start: 6642154,
-      crunched: 0,
-      end: 6656051,
+      end: 6656442,
       filename: "/lib/python3.6/email/utils.py"
     }, {
+      start: 6656442,
       audio: 0,
-      start: 6656051,
-      crunched: 0,
-      end: 6676026,
+      end: 6676417,
       filename: "/lib/python3.6/email/generator.py"
     }, {
+      start: 6676417,
       audio: 0,
-      start: 6676026,
-      crunched: 0,
-      end: 6691099,
+      end: 6691490,
       filename: "/lib/python3.6/email/_policybase.py"
     }, {
+      start: 6691490,
       audio: 0,
-      start: 6691099,
-      crunched: 0,
-      end: 6696142,
+      end: 6696533,
       filename: "/lib/python3.6/email/parser.py"
     }, {
+      start: 6696533,
       audio: 0,
-      start: 6696142,
-      crunched: 0,
-      end: 6716369,
+      end: 6716760,
       filename: "/lib/python3.6/email/headerregistry.py"
     }, {
+      start: 6716760,
       audio: 0,
-      start: 6716369,
-      crunched: 0,
-      end: 6719927,
+      end: 6720318,
       filename: "/lib/python3.6/email/base64mime.py"
     }, {
+      start: 6720318,
       audio: 0,
-      start: 6719927,
-      crunched: 0,
-      end: 6737126,
+      end: 6737517,
       filename: "/lib/python3.6/email/_parseaddr.py"
     }, {
+      start: 6737517,
       audio: 0,
-      start: 6737126,
-      crunched: 0,
-      end: 6738892,
+      end: 6739283,
       filename: "/lib/python3.6/email/__init__.py"
     }, {
+      start: 6739283,
       audio: 0,
-      start: 6738892,
-      crunched: 0,
-      end: 6749265,
+      end: 6749656,
       filename: "/lib/python3.6/email/policy.py"
     }, {
+      start: 6749656,
       audio: 0,
-      start: 6749265,
-      crunched: 0,
-      end: 6750702,
+      end: 6751093,
       filename: "/lib/python3.6/email/mime/text.py"
     }, {
+      start: 6751093,
       audio: 0,
-      start: 6750702,
-      crunched: 0,
-      end: 6753441,
+      end: 6753832,
       filename: "/lib/python3.6/email/mime/audio.py"
     }, {
+      start: 6753832,
       audio: 0,
-      start: 6753441,
-      crunched: 0,
-      end: 6755062,
+      end: 6755453,
       filename: "/lib/python3.6/email/mime/multipart.py"
     }, {
+      start: 6755453,
       audio: 0,
-      start: 6755062,
-      crunched: 0,
-      end: 6756891,
+      end: 6757282,
       filename: "/lib/python3.6/email/mime/image.py"
     }, {
+      start: 6757282,
       audio: 0,
-      start: 6756891,
-      crunched: 0,
-      end: 6758208,
+      end: 6758599,
       filename: "/lib/python3.6/email/mime/message.py"
     }, {
+      start: 6758599,
       audio: 0,
-      start: 6758208,
-      crunched: 0,
-      end: 6759124,
+      end: 6759515,
       filename: "/lib/python3.6/email/mime/base.py"
     }, {
+      start: 6759515,
       audio: 0,
-      start: 6759124,
-      crunched: 0,
-      end: 6760445,
+      end: 6760836,
       filename: "/lib/python3.6/email/mime/application.py"
     }, {
+      start: 6760836,
       audio: 0,
-      start: 6760445,
-      crunched: 0,
-      end: 6761136,
+      end: 6761527,
       filename: "/lib/python3.6/email/mime/nonmultipart.py"
     }, {
+      start: 6761527,
       audio: 0,
-      start: 6761136,
-      crunched: 0,
-      end: 6761136,
+      end: 6761527,
       filename: "/lib/python3.6/email/mime/__init__.py"
     }, {
+      start: 6761527,
       audio: 0,
-      start: 6761136,
-      crunched: 0,
-      end: 6782393,
+      end: 6782784,
       filename: "/lib/python3.6/http/cookies.py"
     }, {
+      start: 6782784,
       audio: 0,
-      start: 6782393,
-      crunched: 0,
-      end: 6826185,
+      end: 6826576,
       filename: "/lib/python3.6/http/server.py"
     }, {
+      start: 6826576,
       audio: 0,
-      start: 6826185,
-      crunched: 0,
-      end: 6880574,
+      end: 6880965,
       filename: "/lib/python3.6/http/client.py"
     }, {
+      start: 6880965,
       audio: 0,
-      start: 6880574,
-      crunched: 0,
-      end: 6956958,
+      end: 6957349,
       filename: "/lib/python3.6/http/cookiejar.py"
     }, {
+      start: 6957349,
       audio: 0,
-      start: 6956958,
-      crunched: 0,
-      end: 6962911,
+      end: 6963302,
       filename: "/lib/python3.6/http/__init__.py"
     }, {
+      start: 6963302,
       audio: 0,
-      start: 6962911,
-      crunched: 0,
-      end: 6998855,
+      end: 6999246,
       filename: "/lib/python3.6/logging/config.py"
     }, {
+      start: 6999246,
       audio: 0,
-      start: 6998855,
-      crunched: 0,
-      end: 7056908,
+      end: 7057299,
       filename: "/lib/python3.6/logging/handlers.py"
     }, {
+      start: 7057299,
       audio: 0,
-      start: 7056908,
-      crunched: 0,
-      end: 7128060,
+      end: 7128451,
       filename: "/lib/python3.6/logging/__init__.py"
     }, {
+      start: 7128451,
       audio: 0,
-      start: 7128060,
-      crunched: 0,
-      end: 7203375,
+      end: 7203766,
       filename: "/lib/python3.6/html/entities.py"
     }, {
+      start: 7203766,
       audio: 0,
-      start: 7203375,
-      crunched: 0,
-      end: 7221104,
+      end: 7221495,
       filename: "/lib/python3.6/html/parser.py"
     }, {
+      start: 7221495,
       audio: 0,
-      start: 7221104,
-      crunched: 0,
-      end: 7225860,
+      end: 7226251,
       filename: "/lib/python3.6/html/__init__.py"
     }, {
+      start: 7226251,
       audio: 0,
-      start: 7225860,
-      crunched: 0,
-      end: 7225928,
+      end: 7226319,
       filename: "/lib/python3.6/collections/abc.py"
     }, {
+      start: 7226319,
       audio: 0,
-      start: 7225928,
-      crunched: 0,
-      end: 7271740,
+      end: 7272131,
       filename: "/lib/python3.6/collections/__init__.py"
     }, {
+      start: 7272131,
       audio: 0,
-      start: 7271740,
-      crunched: 0,
-      end: 7273385,
+      end: 7273776,
       filename: "/lib/python3.6/json/tool.py"
     }, {
+      start: 7273776,
       audio: 0,
-      start: 7273385,
-      crunched: 0,
-      end: 7285970,
+      end: 7286361,
       filename: "/lib/python3.6/json/decoder.py"
     }, {
+      start: 7286361,
       audio: 0,
-      start: 7285970,
-      crunched: 0,
-      end: 7301990,
+      end: 7302381,
       filename: "/lib/python3.6/json/encoder.py"
     }, {
+      start: 7302381,
       audio: 0,
-      start: 7301990,
-      crunched: 0,
-      end: 7304406,
+      end: 7304797,
       filename: "/lib/python3.6/json/scanner.py"
     }, {
+      start: 7304797,
       audio: 0,
-      start: 7304406,
-      crunched: 0,
-      end: 7318802,
+      end: 7319193,
       filename: "/lib/python3.6/json/__init__.py"
     }, {
+      start: 7319193,
       audio: 0,
-      start: 7318802,
-      crunched: 0,
-      end: 7319646,
+      end: 7320037,
       filename: "/lib/python3.6/importlib/machinery.py"
     }, {
+      start: 7320037,
       audio: 0,
-      start: 7319646,
-      crunched: 0,
-      end: 7330428,
+      end: 7330819,
       filename: "/lib/python3.6/importlib/abc.py"
     }, {
+      start: 7330819,
       audio: 0,
-      start: 7330428,
-      crunched: 0,
-      end: 7341311,
+      end: 7341702,
       filename: "/lib/python3.6/importlib/util.py"
     }, {
+      start: 7341702,
       audio: 0,
-      start: 7341311,
-      crunched: 0,
-      end: 7380154,
+      end: 7380545,
       filename: "/lib/python3.6/importlib/_bootstrap.py"
     }, {
+      start: 7380545,
       audio: 0,
-      start: 7380154,
-      crunched: 0,
-      end: 7434641,
+      end: 7435032,
       filename: "/lib/python3.6/importlib/_bootstrap_external.py"
     }, {
+      start: 7435032,
       audio: 0,
-      start: 7434641,
-      crunched: 0,
-      end: 7440511,
+      end: 7440902,
       filename: "/lib/python3.6/importlib/__init__.py"
     }, {
+      start: 7440902,
       audio: 0,
-      start: 7440511,
-      crunched: 0,
-      end: 7440650,
+      end: 7441041,
       filename: "/lib/python3.6/distutils/debug.py"
     }, {
+      start: 7441041,
       audio: 0,
-      start: 7440650,
-      crunched: 0,
-      end: 7445530,
+      end: 7445921,
       filename: "/lib/python3.6/distutils/config.py"
     }, {
+      start: 7445921,
       audio: 0,
-      start: 7445530,
-      crunched: 0,
-      end: 7452941,
+      end: 7453332,
       filename: "/lib/python3.6/distutils/spawn.py"
     }, {
+      start: 7453332,
       audio: 0,
-      start: 7452941,
-      crunched: 0,
-      end: 7474470,
+      end: 7474861,
       filename: "/lib/python3.6/distutils/_msvccompiler.py"
     }, {
+      start: 7474861,
       audio: 0,
-      start: 7474470,
-      crunched: 0,
-      end: 7498046,
+      end: 7498437,
       filename: "/lib/python3.6/distutils/msvccompiler.py"
     }, {
+      start: 7498437,
       audio: 0,
-      start: 7498046,
-      crunched: 0,
-      end: 7512981,
+      end: 7513372,
       filename: "/lib/python3.6/distutils/bcppcompiler.py"
     }, {
+      start: 7513372,
       audio: 0,
-      start: 7512981,
-      crunched: 0,
-      end: 7533042,
+      end: 7533433,
       filename: "/lib/python3.6/distutils/sysconfig.py"
     }, {
+      start: 7533433,
       audio: 0,
-      start: 7533042,
-      crunched: 0,
-      end: 7543557,
+      end: 7543948,
       filename: "/lib/python3.6/distutils/extension.py"
     }, {
+      start: 7543948,
       audio: 0,
-      start: 7543557,
-      crunched: 0,
-      end: 7556389,
+      end: 7556780,
       filename: "/lib/python3.6/distutils/filelist.py"
     }, {
+      start: 7556780,
       audio: 0,
-      start: 7556389,
-      crunched: 0,
-      end: 7606079,
+      end: 7606470,
       filename: "/lib/python3.6/distutils/dist.py"
     }, {
+      start: 7606470,
       audio: 0,
-      start: 7606079,
-      crunched: 0,
-      end: 7607987,
+      end: 7608378,
       filename: "/lib/python3.6/distutils/log.py"
     }, {
+      start: 7608378,
       audio: 0,
-      start: 7607987,
-      crunched: 0,
-      end: 7613120,
+      end: 7613511,
       filename: "/lib/python3.6/distutils/versionpredicate.py"
     }, {
+      start: 7613511,
       audio: 0,
-      start: 7613120,
-      crunched: 0,
-      end: 7627604,
+      end: 7627995,
       filename: "/lib/python3.6/distutils/unixccompiler.py"
     }, {
+      start: 7627995,
       audio: 0,
-      start: 7627604,
-      crunched: 0,
-      end: 7636480,
+      end: 7636871,
       filename: "/lib/python3.6/distutils/core.py"
     }, {
+      start: 7636871,
       audio: 0,
-      start: 7636480,
-      crunched: 0,
-      end: 7640057,
+      end: 7640448,
       filename: "/lib/python3.6/distutils/errors.py"
     }, {
+      start: 7640448,
       audio: 0,
-      start: 7640057,
-      crunched: 0,
-      end: 7648178,
+      end: 7648569,
       filename: "/lib/python3.6/distutils/archive_util.py"
     }, {
+      start: 7648569,
       audio: 0,
-      start: 7648178,
-      crunched: 0,
-      end: 7660661,
+      end: 7661052,
       filename: "/lib/python3.6/distutils/text_file.py"
     }, {
+      start: 7661052,
       audio: 0,
-      start: 7660661,
-      crunched: 0,
-      end: 7677136,
+      end: 7677527,
       filename: "/lib/python3.6/distutils/cygwinccompiler.py"
     }, {
+      start: 7677527,
       audio: 0,
-      start: 7677136,
-      crunched: 0,
-      end: 7707748,
+      end: 7708139,
       filename: "/lib/python3.6/distutils/msvc9compiler.py"
     }, {
+      start: 7708139,
       audio: 0,
-      start: 7707748,
-      crunched: 0,
-      end: 7715526,
+      end: 7715917,
       filename: "/lib/python3.6/distutils/dir_util.py"
     }, {
+      start: 7715917,
       audio: 0,
-      start: 7715526,
-      crunched: 0,
-      end: 7727871,
+      end: 7728262,
       filename: "/lib/python3.6/distutils/version.py"
     }, {
+      start: 7728262,
       audio: 0,
-      start: 7727871,
-      crunched: 0,
-      end: 7748660,
+      end: 7749051,
       filename: "/lib/python3.6/distutils/util.py"
     }, {
+      start: 7749051,
       audio: 0,
-      start: 7748660,
-      crunched: 0,
-      end: 7767789,
+      end: 7768180,
       filename: "/lib/python3.6/distutils/cmd.py"
     }, {
+      start: 7768180,
       audio: 0,
-      start: 7767789,
-      crunched: 0,
-      end: 7775937,
+      end: 7776328,
       filename: "/lib/python3.6/distutils/file_util.py"
     }, {
+      start: 7776328,
       audio: 0,
-      start: 7775937,
-      crunched: 0,
-      end: 7823352,
+      end: 7823743,
       filename: "/lib/python3.6/distutils/ccompiler.py"
     }, {
+      start: 7823743,
       audio: 0,
-      start: 7823352,
-      crunched: 0,
-      end: 7826843,
+      end: 7827234,
       filename: "/lib/python3.6/distutils/dep_util.py"
     }, {
+      start: 7827234,
       audio: 0,
-      start: 7826843,
-      crunched: 0,
-      end: 7827138,
+      end: 7827529,
       filename: "/lib/python3.6/distutils/README"
     }, {
+      start: 7827529,
       audio: 0,
-      start: 7827138,
-      crunched: 0,
-      end: 7844922,
+      end: 7845313,
       filename: "/lib/python3.6/distutils/fancy_getopt.py"
     }, {
+      start: 7845313,
       audio: 0,
-      start: 7844922,
-      crunched: 0,
-      end: 7845158,
+      end: 7845549,
       filename: "/lib/python3.6/distutils/__init__.py"
     }, {
+      start: 7845549,
       audio: 0,
-      start: 7845158,
-      crunched: 0,
-      end: 7849235,
+      end: 7849626,
       filename: "/lib/python3.6/distutils/tests/test_core.py"
     }, {
+      start: 7849626,
       audio: 0,
-      start: 7849235,
-      crunched: 0,
-      end: 7863566,
+      end: 7863957,
       filename: "/lib/python3.6/distutils/tests/test_archive_util.py"
     }, {
+      start: 7863957,
       audio: 0,
-      start: 7863566,
-      crunched: 0,
-      end: 7871532,
+      end: 7871923,
       filename: "/lib/python3.6/distutils/tests/test_sysconfig.py"
     }, {
+      start: 7871923,
       audio: 0,
-      start: 7871532,
-      crunched: 0,
-      end: 7876207,
+      end: 7876598,
       filename: "/lib/python3.6/distutils/tests/test_build_clib.py"
     }, {
+      start: 7876598,
       audio: 0,
-      start: 7876207,
-      crunched: 0,
-      end: 7878456,
+      end: 7878847,
       filename: "/lib/python3.6/distutils/tests/Setup.sample"
     }, {
+      start: 7878847,
       audio: 0,
-      start: 7878456,
-      crunched: 0,
-      end: 7880421,
+      end: 7880812,
       filename: "/lib/python3.6/distutils/tests/test_build.py"
     }, {
+      start: 7880812,
       audio: 0,
-      start: 7880421,
-      crunched: 0,
-      end: 7884264,
+      end: 7884655,
       filename: "/lib/python3.6/distutils/tests/test_config.py"
     }, {
+      start: 7884655,
       audio: 0,
-      start: 7884264,
-      crunched: 0,
-      end: 7890302,
+      end: 7890693,
       filename: "/lib/python3.6/distutils/tests/test_msvc9compiler.py"
     }, {
+      start: 7890693,
       audio: 0,
-      start: 7890302,
-      crunched: 0,
-      end: 7894276,
+      end: 7894667,
       filename: "/lib/python3.6/distutils/tests/test_install_lib.py"
     }, {
+      start: 7894667,
       audio: 0,
-      start: 7894276,
-      crunched: 0,
-      end: 7897058,
+      end: 7897449,
       filename: "/lib/python3.6/distutils/tests/test_config_cmd.py"
     }, {
+      start: 7897449,
       audio: 0,
-      start: 7897058,
-      crunched: 0,
-      end: 7908308,
+      end: 7908699,
       filename: "/lib/python3.6/distutils/tests/test_util.py"
     }, {
+      start: 7908699,
       audio: 0,
-      start: 7908308,
-      crunched: 0,
-      end: 7909851,
+      end: 7910242,
       filename: "/lib/python3.6/distutils/tests/test_bdist.py"
     }, {
+      start: 7910242,
       audio: 0,
-      start: 7909851,
-      crunched: 0,
-      end: 7914505,
+      end: 7914896,
       filename: "/lib/python3.6/distutils/tests/test_dir_util.py"
     }, {
+      start: 7914896,
       audio: 0,
-      start: 7914505,
-      crunched: 0,
-      end: 7915743,
+      end: 7916134,
       filename: "/lib/python3.6/distutils/tests/test_install_headers.py"
     }, {
+      start: 7916134,
       audio: 0,
-      start: 7915743,
-      crunched: 0,
-      end: 7916783,
+      end: 7917174,
       filename: "/lib/python3.6/distutils/tests/test_bdist_wininst.py"
     }, {
+      start: 7917174,
       audio: 0,
-      start: 7916783,
-      crunched: 0,
-      end: 7920376,
+      end: 7920767,
       filename: "/lib/python3.6/distutils/tests/test_build_scripts.py"
     }, {
+      start: 7920767,
       audio: 0,
-      start: 7920376,
-      crunched: 0,
-      end: 7921817,
+      end: 7922208,
       filename: "/lib/python3.6/distutils/tests/test_clean.py"
     }, {
+      start: 7922208,
       audio: 0,
-      start: 7921817,
-      crunched: 0,
-      end: 7938304,
+      end: 7938695,
       filename: "/lib/python3.6/distutils/tests/test_sdist.py"
     }, {
+      start: 7938695,
       audio: 0,
-      start: 7938304,
-      crunched: 0,
-      end: 7943176,
+      end: 7943567,
       filename: "/lib/python3.6/distutils/tests/test_msvccompiler.py"
     }, {
+      start: 7943567,
       audio: 0,
-      start: 7943176,
-      crunched: 0,
-      end: 7946075,
+      end: 7946466,
       filename: "/lib/python3.6/distutils/tests/test_bdist_dumb.py"
     }, {
+      start: 7946466,
       audio: 0,
-      start: 7946075,
-      crunched: 0,
-      end: 7946355,
+      end: 7946746,
       filename: "/lib/python3.6/distutils/tests/test_versionpredicate.py"
     }, {
+      start: 7946746,
       audio: 0,
-      start: 7946355,
-      crunched: 0,
-      end: 7948980,
+      end: 7949371,
       filename: "/lib/python3.6/distutils/tests/test_install_scripts.py"
     }, {
+      start: 7949371,
       audio: 0,
-      start: 7948980,
-      crunched: 0,
-      end: 7950840,
+      end: 7951231,
       filename: "/lib/python3.6/distutils/tests/test_spawn.py"
     }, {
+      start: 7951231,
       audio: 0,
-      start: 7950840,
-      crunched: 0,
-      end: 7956096,
+      end: 7956487,
       filename: "/lib/python3.6/distutils/tests/test_check.py"
     }, {
+      start: 7956487,
       audio: 0,
-      start: 7956096,
-      crunched: 0,
-      end: 7961620,
+      end: 7962011,
       filename: "/lib/python3.6/distutils/tests/test_upload.py"
     }, {
+      start: 7962011,
       audio: 0,
-      start: 7961620,
-      crunched: 0,
-      end: 7977670,
+      end: 7978061,
       filename: "/lib/python3.6/distutils/tests/test_dist.py"
     }, {
+      start: 7978061,
       audio: 0,
-      start: 7977670,
-      crunched: 0,
-      end: 7980490,
+      end: 7980881,
       filename: "/lib/python3.6/distutils/tests/test_dep_util.py"
     }, {
+      start: 7980881,
       audio: 0,
-      start: 7980490,
-      crunched: 0,
-      end: 7986126,
+      end: 7986517,
       filename: "/lib/python3.6/distutils/tests/test_cygwinccompiler.py"
     }, {
+      start: 7986517,
       audio: 0,
-      start: 7986126,
-      crunched: 0,
-      end: 7990229,
+      end: 7990620,
       filename: "/lib/python3.6/distutils/tests/test_file_util.py"
     }, {
+      start: 7990620,
       audio: 0,
-      start: 7990229,
-      crunched: 0,
-      end: 7996564,
+      end: 7996955,
       filename: "/lib/python3.6/distutils/tests/test_build_py.py"
     }, {
+      start: 7996955,
       audio: 0,
-      start: 7996564,
-      crunched: 0,
-      end: 8006329,
+      end: 8006720,
       filename: "/lib/python3.6/distutils/tests/test_register.py"
     }, {
+      start: 8006720,
       audio: 0,
-      start: 8006329,
-      crunched: 0,
-      end: 8007618,
+      end: 8008009,
       filename: "/lib/python3.6/distutils/tests/test_log.py"
     }, {
+      start: 8008009,
       audio: 0,
-      start: 8007618,
-      crunched: 0,
-      end: 8012626,
+      end: 8013017,
       filename: "/lib/python3.6/distutils/tests/test_bdist_rpm.py"
     }, {
+      start: 8013017,
       audio: 0,
-      start: 8012626,
-      crunched: 0,
-      end: 8021161,
+      end: 8021552,
       filename: "/lib/python3.6/distutils/tests/test_install.py"
     }, {
+      start: 8021552,
       audio: 0,
-      start: 8021161,
-      crunched: 0,
-      end: 8032636,
+      end: 8033027,
       filename: "/lib/python3.6/distutils/tests/test_filelist.py"
     }, {
+      start: 8033027,
       audio: 0,
-      start: 8032636,
-      crunched: 0,
-      end: 8035250,
+      end: 8035641,
       filename: "/lib/python3.6/distutils/tests/test_version.py"
     }, {
+      start: 8035641,
       audio: 0,
-      start: 8035250,
-      crunched: 0,
-      end: 8041783,
+      end: 8042174,
       filename: "/lib/python3.6/distutils/tests/support.py"
     }, {
+      start: 8042174,
       audio: 0,
-      start: 8041783,
-      crunched: 0,
-      end: 8042511,
+      end: 8042902,
       filename: "/lib/python3.6/distutils/tests/test_bdist_msi.py"
     }, {
+      start: 8042902,
       audio: 0,
-      start: 8042511,
-      crunched: 0,
-      end: 8054879,
+      end: 8055270,
       filename: "/lib/python3.6/distutils/tests/xxmodule.c"
     }, {
+      start: 8055270,
       audio: 0,
-      start: 8054879,
-      crunched: 0,
-      end: 8058315,
+      end: 8058706,
       filename: "/lib/python3.6/distutils/tests/test_text_file.py"
     }, {
+      start: 8058706,
       audio: 0,
-      start: 8058315,
-      crunched: 0,
-      end: 8063177,
+      end: 8063568,
       filename: "/lib/python3.6/distutils/tests/test_unixccompiler.py"
     }, {
+      start: 8063568,
       audio: 0,
-      start: 8063177,
-      crunched: 0,
-      end: 8067012,
+      end: 8067403,
       filename: "/lib/python3.6/distutils/tests/test_cmd.py"
     }, {
+      start: 8067403,
       audio: 0,
-      start: 8067012,
-      crunched: 0,
-      end: 8069589,
+      end: 8069980,
       filename: "/lib/python3.6/distutils/tests/test_install_data.py"
     }, {
+      start: 8069980,
       audio: 0,
-      start: 8069589,
-      crunched: 0,
-      end: 8089035,
+      end: 8089426,
       filename: "/lib/python3.6/distutils/tests/test_build_ext.py"
     }, {
+      start: 8089426,
       audio: 0,
-      start: 8089035,
-      crunched: 0,
-      end: 8090095,
+      end: 8090486,
       filename: "/lib/python3.6/distutils/tests/__init__.py"
     }, {
+      start: 8090486,
       audio: 0,
-      start: 8090095,
-      crunched: 0,
-      end: 8092863,
+      end: 8093254,
       filename: "/lib/python3.6/distutils/tests/test_extension.py"
     }, {
+      start: 8093254,
       audio: 0,
-      start: 8092863,
-      crunched: 0,
-      end: 8105949,
+      end: 8106340,
       filename: "/lib/python3.6/distutils/command/config.py"
     }, {
+      start: 8106340,
       audio: 0,
-      start: 8105949,
-      crunched: 0,
-      end: 8110861,
+      end: 8111252,
       filename: "/lib/python3.6/distutils/command/bdist_dumb.py"
     }, {
+      start: 8111252,
       audio: 0,
-      start: 8110861,
-      crunched: 0,
-      end: 8698637,
+      end: 8699028,
       filename: "/lib/python3.6/distutils/command/wininst-14.0-amd64.exe"
     }, {
+      start: 8699028,
       audio: 0,
-      start: 8698637,
-      crunched: 0,
-      end: 8700654,
+      end: 8701045,
       filename: "/lib/python3.6/distutils/command/install_scripts.py"
     }, {
+      start: 8701045,
       audio: 0,
-      start: 8700654,
-      crunched: 0,
-      end: 8703476,
+      end: 8703867,
       filename: "/lib/python3.6/distutils/command/install_data.py"
     }, {
+      start: 8703867,
       audio: 0,
-      start: 8703476,
-      crunched: 0,
-      end: 8711873,
+      end: 8712264,
       filename: "/lib/python3.6/distutils/command/install_lib.py"
     }, {
+      start: 8712264,
       audio: 0,
-      start: 8711873,
-      crunched: 0,
-      end: 8729037,
+      end: 8729428,
       filename: "/lib/python3.6/distutils/command/build_py.py"
     }, {
+      start: 8729428,
       audio: 0,
-      start: 8729037,
-      crunched: 0,
-      end: 8744473,
+      end: 8744864,
       filename: "/lib/python3.6/distutils/command/bdist_wininst.py"
     }, {
+      start: 8744864,
       audio: 0,
-      start: 8744473,
-      crunched: 0,
-      end: 8747076,
+      end: 8747467,
       filename: "/lib/python3.6/distutils/command/install_egg_info.py"
     }, {
+      start: 8747467,
       audio: 0,
-      start: 8747076,
-      crunched: 0,
-      end: 8943172,
+      end: 8943563,
       filename: "/lib/python3.6/distutils/command/wininst-9.0.exe"
     }, {
+      start: 8943563,
       audio: 0,
-      start: 8943172,
-      crunched: 0,
-      end: 8949404,
+      end: 8949795,
       filename: "/lib/python3.6/distutils/command/build_scripts.py"
     }, {
+      start: 8949795,
       audio: 0,
-      start: 8949404,
-      crunched: 0,
-      end: 8976141,
+      end: 8976532,
       filename: "/lib/python3.6/distutils/command/install.py"
     }, {
+      start: 8976532,
       audio: 0,
-      start: 8976141,
-      crunched: 0,
-      end: 9037581,
+      end: 9037972,
       filename: "/lib/python3.6/distutils/command/wininst-6.0.exe"
     }, {
+      start: 9037972,
       audio: 0,
-      start: 9037581,
-      crunched: 0,
-      end: 9072812,
+      end: 9073203,
       filename: "/lib/python3.6/distutils/command/bdist_msi.py"
     }, {
+      start: 9073203,
       audio: 0,
-      start: 9072812,
-      crunched: 0,
-      end: 9297068,
+      end: 9297459,
       filename: "/lib/python3.6/distutils/command/wininst-9.0-amd64.exe"
     }, {
+      start: 9297459,
       audio: 0,
-      start: 9297068,
-      crunched: 0,
-      end: 9299844,
+      end: 9300235,
       filename: "/lib/python3.6/distutils/command/clean.py"
     }, {
+      start: 9300235,
       audio: 0,
-      start: 9299844,
-      crunched: 0,
-      end: 9300477,
+      end: 9300868,
       filename: "/lib/python3.6/distutils/command/command_template"
     }, {
+      start: 9300868,
       audio: 0,
-      start: 9300477,
-      crunched: 0,
-      end: 9307808,
+      end: 9308199,
       filename: "/lib/python3.6/distutils/command/upload.py"
     }, {
+      start: 9308199,
       audio: 0,
-      start: 9307808,
-      crunched: 0,
-      end: 9313556,
+      end: 9313947,
       filename: "/lib/python3.6/distutils/command/build.py"
     }, {
+      start: 9313947,
       audio: 0,
-      start: 9313556,
-      crunched: 0,
-      end: 9321578,
+      end: 9321969,
       filename: "/lib/python3.6/distutils/command/build_clib.py"
     }, {
+      start: 9321969,
       audio: 0,
-      start: 9321578,
-      crunched: 0,
-      end: 9512554,
+      end: 9512945,
       filename: "/lib/python3.6/distutils/command/wininst-10.0.exe"
     }, {
+      start: 9512945,
       audio: 0,
-      start: 9512554,
-      crunched: 0,
-      end: 9578090,
+      end: 9578481,
       filename: "/lib/python3.6/distutils/command/wininst-7.1.exe"
     }, {
+      start: 9578481,
       audio: 0,
-      start: 9578090,
-      crunched: 0,
-      end: 9583586,
+      end: 9583977,
       filename: "/lib/python3.6/distutils/command/check.py"
     }, {
+      start: 9583977,
       audio: 0,
-      start: 9583586,
-      crunched: 0,
-      end: 9595298,
+      end: 9595689,
       filename: "/lib/python3.6/distutils/command/register.py"
     }, {
+      start: 9595689,
       audio: 0,
-      start: 9595298,
-      crunched: 0,
-      end: 9626783,
+      end: 9627174,
       filename: "/lib/python3.6/distutils/command/build_ext.py"
     }, {
+      start: 9627174,
       audio: 0,
-      start: 9626783,
-      crunched: 0,
-      end: 9632345,
+      end: 9632736,
       filename: "/lib/python3.6/distutils/command/bdist.py"
     }, {
+      start: 9632736,
       audio: 0,
-      start: 9632345,
-      crunched: 0,
-      end: 9854553,
+      end: 9854944,
       filename: "/lib/python3.6/distutils/command/wininst-10.0-amd64.exe"
     }, {
+      start: 9854944,
       audio: 0,
-      start: 9854553,
-      crunched: 0,
-      end: 9915993,
+      end: 9916384,
       filename: "/lib/python3.6/distutils/command/wininst-8.0.exe"
     }, {
+      start: 9916384,
       audio: 0,
-      start: 9915993,
-      crunched: 0,
-      end: 9917291,
+      end: 9917682,
       filename: "/lib/python3.6/distutils/command/install_headers.py"
     }, {
+      start: 9917682,
       audio: 0,
-      start: 9917291,
-      crunched: 0,
-      end: 10375531,
+      end: 10375922,
       filename: "/lib/python3.6/distutils/command/wininst-14.0.exe"
     }, {
+      start: 10375922,
       audio: 0,
-      start: 10375531,
-      crunched: 0,
-      end: 10376330,
+      end: 10376721,
       filename: "/lib/python3.6/distutils/command/__init__.py"
     }, {
+      start: 10376721,
       audio: 0,
-      start: 10376330,
-      crunched: 0,
-      end: 10398e3,
+      end: 10398391,
       filename: "/lib/python3.6/distutils/command/bdist_rpm.py"
     }, {
+      start: 10398391,
       audio: 0,
-      start: 10398e3,
-      crunched: 0,
-      end: 10415826,
+      end: 10416217,
       filename: "/lib/python3.6/distutils/command/sdist.py"
     }, {
+      start: 10416217,
       audio: 0,
-      start: 10415826,
-      crunched: 0,
-      end: 10428126,
+      end: 10428517,
       filename: "/lib/python3.6/encodings/tis_620.py"
     }, {
+      start: 10428517,
       audio: 0,
-      start: 10428126,
-      crunched: 0,
-      end: 10441715,
+      end: 10442106,
       filename: "/lib/python3.6/encodings/iso8859_10.py"
     }, {
+      start: 10442106,
       audio: 0,
-      start: 10441715,
-      crunched: 0,
-      end: 10455283,
+      end: 10455674,
       filename: "/lib/python3.6/encodings/cp1006.py"
     }, {
+      start: 10455674,
       audio: 0,
-      start: 10455283,
-      crunched: 0,
-      end: 10456322,
+      end: 10456713,
       filename: "/lib/python3.6/encodings/big5hkscs.py"
     }, {
+      start: 10456713,
       audio: 0,
-      start: 10456322,
-      crunched: 0,
-      end: 10469166,
+      end: 10469557,
       filename: "/lib/python3.6/encodings/iso8859_7.py"
     }, {
+      start: 10469557,
       audio: 0,
-      start: 10469166,
-      crunched: 0,
-      end: 10471415,
+      end: 10471806,
       filename: "/lib/python3.6/encodings/bz2_codec.py"
     }, {
+      start: 10471806,
       audio: 0,
-      start: 10471415,
-      crunched: 0,
-      end: 10484779,
+      end: 10485170,
       filename: "/lib/python3.6/encodings/cp1258.py"
     }, {
+      start: 10485170,
       audio: 0,
-      start: 10484779,
-      crunched: 0,
-      end: 10519460,
+      end: 10519851,
       filename: "/lib/python3.6/encodings/cp860.py"
     }, {
+      start: 10519851,
       audio: 0,
-      start: 10519460,
-      crunched: 0,
-      end: 10535037,
+      end: 10535428,
       filename: "/lib/python3.6/encodings/aliases.py"
     }, {
+      start: 10535428,
       audio: 0,
-      start: 10535037,
-      crunched: 0,
-      end: 10547851,
+      end: 10548242,
       filename: "/lib/python3.6/encodings/cp1256.py"
     }, {
+      start: 10548242,
       audio: 0,
-      start: 10547851,
-      crunched: 0,
-      end: 10548870,
+      end: 10549261,
       filename: "/lib/python3.6/encodings/oem.py"
     }, {
+      start: 10549261,
       audio: 0,
-      start: 10548870,
-      crunched: 0,
-      end: 10562026,
+      end: 10562417,
       filename: "/lib/python3.6/encodings/iso8859_9.py"
     }, {
+      start: 10562417,
       audio: 0,
-      start: 10562026,
-      crunched: 0,
-      end: 10563065,
+      end: 10563456,
       filename: "/lib/python3.6/encodings/shift_jis.py"
     }, {
+      start: 10563456,
       audio: 0,
-      start: 10563065,
-      crunched: 0,
-      end: 10564171,
+      end: 10564562,
       filename: "/lib/python3.6/encodings/cp65001.py"
     }, {
+      start: 10564562,
       audio: 0,
-      start: 10564171,
-      crunched: 0,
-      end: 10565379,
+      end: 10565770,
       filename: "/lib/python3.6/encodings/raw_unicode_escape.py"
     }, {
+      start: 10565770,
       audio: 0,
-      start: 10565379,
-      crunched: 0,
-      end: 10579511,
+      end: 10579902,
       filename: "/lib/python3.6/encodings/cp273.py"
     }, {
+      start: 10579902,
       audio: 0,
-      start: 10579511,
-      crunched: 0,
-      end: 10580534,
+      end: 10580925,
       filename: "/lib/python3.6/encodings/cp950.py"
     }, {
+      start: 10580925,
       audio: 0,
-      start: 10580534,
-      crunched: 0,
-      end: 10581549,
+      end: 10581940,
       filename: "/lib/python3.6/encodings/gbk.py"
     }, {
+      start: 10581940,
       audio: 0,
-      start: 10581549,
-      crunched: 0,
-      end: 10615654,
+      end: 10595394,
+      filename: "/lib/python3.6/encodings/mac_cyrillic.py"
+    }, {
+      start: 10595394,
+      audio: 0,
+      end: 10629499,
       filename: "/lib/python3.6/encodings/cp850.py"
     }, {
+      start: 10629499,
       audio: 0,
-      start: 10615654,
-      crunched: 0,
-      end: 10616600,
+      end: 10630445,
       filename: "/lib/python3.6/encodings/utf_7.py"
     }, {
+      start: 10630445,
       audio: 0,
-      start: 10616600,
-      crunched: 0,
-      end: 10630286,
+      end: 10644166,
+      filename: "/lib/python3.6/encodings/mac_greek.py"
+    }, {
+      start: 10644166,
+      audio: 0,
+      end: 10657852,
       filename: "/lib/python3.6/encodings/cp720.py"
     }, {
+      start: 10657852,
       audio: 0,
-      start: 10630286,
-      crunched: 0,
-      end: 10664538,
+      end: 10692104,
       filename: "/lib/python3.6/encodings/cp863.py"
     }, {
+      start: 10692104,
       audio: 0,
-      start: 10664538,
-      crunched: 0,
-      end: 10665561,
+      end: 10705765,
+      filename: "/lib/python3.6/encodings/mac_romanian.py"
+    }, {
+      start: 10705765,
+      audio: 0,
+      end: 10706788,
       filename: "/lib/python3.6/encodings/johab.py"
     }, {
+      start: 10706788,
       audio: 0,
-      start: 10665561,
-      crunched: 0,
-      end: 10677616,
+      end: 10718843,
       filename: "/lib/python3.6/encodings/cp424.py"
     }, {
+      start: 10718843,
       audio: 0,
-      start: 10677616,
-      crunched: 0,
-      end: 10688449,
+      end: 10729676,
       filename: "/lib/python3.6/encodings/iso8859_6.py"
     }, {
+      start: 10729676,
       audio: 0,
-      start: 10688449,
-      crunched: 0,
-      end: 10701570,
+      end: 10742797,
       filename: "/lib/python3.6/encodings/cp500.py"
     }, {
+      start: 10742797,
       audio: 0,
-      start: 10701570,
-      crunched: 0,
-      end: 10702607,
+      end: 10779264,
+      filename: "/lib/python3.6/encodings/mac_arabic.py"
+    }, {
+      start: 10779264,
+      audio: 0,
+      end: 10780301,
       filename: "/lib/python3.6/encodings/utf_16_be.py"
     }, {
+      start: 10780301,
       audio: 0,
-      start: 10702607,
-      crunched: 0,
-      end: 10703630,
+      end: 10781324,
       filename: "/lib/python3.6/encodings/cp949.py"
     }, {
+      start: 10781324,
       audio: 0,
-      start: 10703630,
-      crunched: 0,
-      end: 10715965,
+      end: 10793659,
       filename: "/lib/python3.6/encodings/iso8859_11.py"
     }, {
+      start: 10793659,
       audio: 0,
-      start: 10715965,
-      crunched: 0,
-      end: 10750529,
+      end: 10828223,
       filename: "/lib/python3.6/encodings/cp437.py"
     }, {
+      start: 10828223,
       audio: 0,
-      start: 10750529,
-      crunched: 0,
-      end: 10763722,
+      end: 10841416,
       filename: "/lib/python3.6/encodings/koi8_t.py"
     }, {
+      start: 10841416,
       audio: 0,
-      start: 10763722,
-      crunched: 0,
-      end: 10777445,
+      end: 10855139,
       filename: "/lib/python3.6/encodings/kz1048.py"
     }, {
+      start: 10855139,
       audio: 0,
-      start: 10777445,
-      crunched: 0,
-      end: 10782681,
+      end: 10860375,
       filename: "/lib/python3.6/encodings/utf_16.py"
     }, {
+      start: 10860375,
       audio: 0,
-      start: 10782681,
-      crunched: 0,
-      end: 10783877,
+      end: 10861571,
       filename: "/lib/python3.6/encodings/unicode_internal.py"
     }, {
+      start: 10861571,
       audio: 0,
-      start: 10783877,
-      crunched: 0,
-      end: 10793047,
+      end: 10870741,
       filename: "/lib/python3.6/encodings/idna.py"
     }, {
+      start: 10870741,
       audio: 0,
-      start: 10793047,
-      crunched: 0,
-      end: 10794572,
+      end: 10872266,
       filename: "/lib/python3.6/encodings/quopri_codec.py"
     }, {
+      start: 10872266,
       audio: 0,
-      start: 10794572,
-      crunched: 0,
-      end: 10807038,
+      end: 10884732,
       filename: "/lib/python3.6/encodings/cp1255.py"
     }, {
+      start: 10884732,
       audio: 0,
-      start: 10807038,
-      crunched: 0,
-      end: 10808111,
+      end: 10885805,
       filename: "/lib/python3.6/encodings/iso2022_jp_2004.py"
     }, {
+      start: 10885805,
       audio: 0,
-      start: 10808111,
-      crunched: 0,
-      end: 10810195,
+      end: 10887889,
       filename: "/lib/python3.6/encodings/charmap.py"
     }, {
+      start: 10887889,
       audio: 0,
-      start: 10810195,
-      crunched: 0,
-      end: 10823571,
+      end: 10902007,
+      filename: "/lib/python3.6/encodings/mac_latin2.py"
+    }, {
+      start: 10902007,
+      audio: 0,
+      end: 10915383,
       filename: "/lib/python3.6/encodings/iso8859_4.py"
     }, {
+      start: 10915383,
       audio: 0,
-      start: 10823571,
-      crunched: 0,
-      end: 10825079,
+      end: 10916891,
       filename: "/lib/python3.6/encodings/hex_codec.py"
     }, {
+      start: 10916891,
       audio: 0,
-      start: 10825079,
-      crunched: 0,
-      end: 10826612,
+      end: 10932061,
+      filename: "/lib/python3.6/encodings/mac_farsi.py"
+    }, {
+      start: 10932061,
+      audio: 0,
+      end: 10933594,
       filename: "/lib/python3.6/encodings/base64_codec.py"
     }, {
+      start: 10933594,
       audio: 0,
-      start: 10826612,
-      crunched: 0,
-      end: 10840627,
+      end: 10947609,
       filename: "/lib/python3.6/encodings/ptcp154.py"
     }, {
+      start: 10947609,
       audio: 0,
-      start: 10840627,
-      crunched: 0,
-      end: 10842831,
+      end: 10949813,
       filename: "/lib/python3.6/encodings/zlib_codec.py"
     }, {
+      start: 10949813,
       audio: 0,
-      start: 10842831,
-      crunched: 0,
-      end: 10845552,
+      end: 10952534,
       filename: "/lib/python3.6/encodings/uu_codec.py"
     }, {
+      start: 10952534,
       audio: 0,
-      start: 10845552,
-      crunched: 0,
-      end: 10858665,
+      end: 10965647,
       filename: "/lib/python3.6/encodings/cp1026.py"
     }, {
+      start: 10965647,
       audio: 0,
-      start: 10858665,
-      crunched: 0,
-      end: 10872176,
+      end: 10979160,
+      filename: "/lib/python3.6/encodings/mac_turkish.py"
+    }, {
+      start: 10979160,
+      audio: 0,
+      end: 10992671,
       filename: "/lib/python3.6/encodings/cp1252.py"
     }, {
+      start: 10992671,
       audio: 0,
-      start: 10872176,
-      crunched: 0,
-      end: 10873203,
+      end: 10993698,
       filename: "/lib/python3.6/encodings/gb2312.py"
     }, {
+      start: 10993698,
       audio: 0,
-      start: 10873203,
-      crunched: 0,
-      end: 10874208,
+      end: 10994703,
       filename: "/lib/python3.6/encodings/utf_8.py"
     }, {
+      start: 10994703,
       audio: 0,
-      start: 10874208,
-      crunched: 0,
-      end: 10875392,
+      end: 10995887,
       filename: "/lib/python3.6/encodings/unicode_escape.py"
     }, {
+      start: 10995887,
       audio: 0,
-      start: 10875392,
-      crunched: 0,
-      end: 10888753,
+      end: 11009248,
       filename: "/lib/python3.6/encodings/cp1251.py"
     }, {
+      start: 11009248,
       audio: 0,
-      start: 10888753,
-      crunched: 0,
-      end: 10889772,
+      end: 11023350,
+      filename: "/lib/python3.6/encodings/mac_centeuro.py"
+    }, {
+      start: 11023350,
+      audio: 0,
+      end: 11024369,
       filename: "/lib/python3.6/encodings/big5.py"
     }, {
+      start: 11024369,
       audio: 0,
-      start: 10889772,
-      crunched: 0,
-      end: 10896653,
+      end: 11031250,
       filename: "/lib/python3.6/encodings/punycode.py"
     }, {
+      start: 11031250,
       audio: 0,
-      start: 10896653,
-      crunched: 0,
-      end: 10910415,
+      end: 11045012,
       filename: "/lib/python3.6/encodings/koi8_u.py"
     }, {
+      start: 11045012,
       audio: 0,
-      start: 10910415,
-      crunched: 0,
-      end: 10944430,
+      end: 11079027,
       filename: "/lib/python3.6/encodings/cp858.py"
     }, {
+      start: 11079027,
       audio: 0,
-      start: 10944430,
-      crunched: 0,
-      end: 10958209,
+      end: 11092806,
       filename: "/lib/python3.6/encodings/koi8_r.py"
     }, {
+      start: 11092806,
       audio: 0,
-      start: 10958209,
-      crunched: 0,
-      end: 10963338,
+      end: 11097935,
       filename: "/lib/python3.6/encodings/utf_32.py"
     }, {
+      start: 11097935,
       audio: 0,
-      start: 10963338,
-      crunched: 0,
-      end: 10976353,
+      end: 11110950,
       filename: "/lib/python3.6/encodings/iso8859_5.py"
     }, {
+      start: 11110950,
       audio: 0,
-      start: 10976353,
-      crunched: 0,
-      end: 10977404,
+      end: 11112001,
       filename: "/lib/python3.6/encodings/euc_jisx0213.py"
     }, {
+      start: 11112001,
       audio: 0,
-      start: 10977404,
-      crunched: 0,
-      end: 10978703,
+      end: 11113300,
       filename: "/lib/python3.6/encodings/undefined.py"
     }, {
+      start: 11113300,
       audio: 0,
-      start: 10978703,
-      crunched: 0,
-      end: 10991797,
+      end: 11126394,
       filename: "/lib/python3.6/encodings/cp1253.py"
     }, {
+      start: 11126394,
       audio: 0,
-      start: 10991797,
-      crunched: 0,
-      end: 11005009,
+      end: 11139606,
       filename: "/lib/python3.6/encodings/iso8859_15.py"
     }, {
+      start: 11139606,
       audio: 0,
-      start: 11005009,
-      crunched: 0,
-      end: 11018383,
+      end: 11152980,
       filename: "/lib/python3.6/encodings/cp1257.py"
     }, {
+      start: 11152980,
       audio: 0,
-      start: 11018383,
-      crunched: 0,
-      end: 11019647,
+      end: 11154244,
       filename: "/lib/python3.6/encodings/latin_1.py"
     }, {
+      start: 11154244,
       audio: 0,
-      start: 11019647,
-      crunched: 0,
-      end: 11032918,
+      end: 11167724,
+      filename: "/lib/python3.6/encodings/mac_roman.py"
+    }, {
+      start: 11167724,
+      audio: 0,
+      end: 11180995,
       filename: "/lib/python3.6/encodings/iso8859_13.py"
     }, {
+      start: 11180995,
       audio: 0,
-      start: 11032918,
-      crunched: 0,
-      end: 11046007,
+      end: 11194084,
       filename: "/lib/python3.6/encodings/iso8859_3.py"
     }, {
+      start: 11194084,
       audio: 0,
-      start: 11046007,
-      crunched: 0,
-      end: 11058430,
+      end: 11206507,
       filename: "/lib/python3.6/encodings/cp856.py"
     }, {
+      start: 11206507,
       audio: 0,
-      start: 11058430,
-      crunched: 0,
-      end: 11059499,
+      end: 11207576,
       filename: "/lib/python3.6/encodings/iso2022_jp_ext.py"
     }, {
+      start: 11207576,
       audio: 0,
-      start: 11059499,
-      crunched: 0,
-      end: 11094117,
+      end: 11242194,
       filename: "/lib/python3.6/encodings/cp865.py"
     }, {
+      start: 11242194,
       audio: 0,
-      start: 11094117,
-      crunched: 0,
-      end: 11107592,
+      end: 11255669,
       filename: "/lib/python3.6/encodings/hp_roman8.py"
     }, {
+      start: 11255669,
       audio: 0,
-      start: 11107592,
-      crunched: 0,
-      end: 11121094,
+      end: 11269171,
       filename: "/lib/python3.6/encodings/cp1254.py"
     }, {
+      start: 11269171,
       audio: 0,
-      start: 11121094,
-      crunched: 0,
-      end: 11134270,
+      end: 11282347,
       filename: "/lib/python3.6/encodings/iso8859_1.py"
     }, {
+      start: 11282347,
       audio: 0,
-      start: 11134270,
-      crunched: 0,
-      end: 11135301,
+      end: 11283378,
       filename: "/lib/python3.6/encodings/gb18030.py"
     }, {
+      start: 11283378,
       audio: 0,
-      start: 11135301,
-      crunched: 0,
-      end: 11136354,
+      end: 11284431,
       filename: "/lib/python3.6/encodings/iso2022_kr.py"
     }, {
+      start: 11284431,
       audio: 0,
-      start: 11136354,
-      crunched: 0,
-      end: 11169319,
+      end: 11317396,
       filename: "/lib/python3.6/encodings/cp869.py"
     }, {
+      start: 11317396,
       audio: 0,
-      start: 11169319,
-      crunched: 0,
-      end: 11182876,
+      end: 11330953,
       filename: "/lib/python3.6/encodings/iso8859_16.py"
     }, {
+      start: 11330953,
       audio: 0,
-      start: 11182876,
-      crunched: 0,
-      end: 11183937,
+      end: 11332014,
       filename: "/lib/python3.6/encodings/iso2022_jp_1.py"
     }, {
+      start: 11332014,
       audio: 0,
-      start: 11183937,
-      crunched: 0,
-      end: 11194973,
+      end: 11343050,
       filename: "/lib/python3.6/encodings/iso8859_8.py"
     }, {
+      start: 11343050,
       audio: 0,
-      start: 11194973,
-      crunched: 0,
-      end: 11196032,
+      end: 11344109,
       filename: "/lib/python3.6/encodings/shift_jis_2004.py"
     }, {
+      start: 11344109,
       audio: 0,
-      start: 11196032,
-      crunched: 0,
-      end: 11209551,
+      end: 11357628,
       filename: "/lib/python3.6/encodings/palmos.py"
     }, {
+      start: 11357628,
       audio: 0,
-      start: 11209551,
-      crunched: 0,
-      end: 11213684,
+      end: 11361761,
       filename: "/lib/python3.6/encodings/utf_8_sig.py"
     }, {
+      start: 11361761,
       audio: 0,
-      start: 11213684,
-      crunched: 0,
-      end: 11214707,
+      end: 11362784,
       filename: "/lib/python3.6/encodings/cp932.py"
     }, {
+      start: 11362784,
       audio: 0,
-      start: 11214707,
-      crunched: 0,
-      end: 11215734,
+      end: 11363811,
       filename: "/lib/python3.6/encodings/euc_kr.py"
     }, {
+      start: 11363811,
       audio: 0,
-      start: 11215734,
-      crunched: 0,
-      end: 11216945,
+      end: 11365022,
       filename: "/lib/python3.6/encodings/mbcs.py"
     }, {
+      start: 11365022,
       audio: 0,
-      start: 11216945,
-      crunched: 0,
-      end: 11229799,
+      end: 11377876,
       filename: "/lib/python3.6/encodings/cp875.py"
     }, {
+      start: 11377876,
       audio: 0,
-      start: 11229799,
-      crunched: 0,
-      end: 11230850,
+      end: 11378927,
       filename: "/lib/python3.6/encodings/euc_jis_2004.py"
     }, {
+      start: 11378927,
       audio: 0,
-      start: 11230850,
-      crunched: 0,
-      end: 11231861,
+      end: 11379938,
       filename: "/lib/python3.6/encodings/hz.py"
     }, {
+      start: 11379938,
       audio: 0,
-      start: 11231861,
-      crunched: 0,
-      end: 11232920,
+      end: 11393571,
+      filename: "/lib/python3.6/encodings/mac_croatian.py"
+    }, {
+      start: 11393571,
+      audio: 0,
+      end: 11394630,
       filename: "/lib/python3.6/encodings/shift_jisx0213.py"
     }, {
+      start: 11394630,
       audio: 0,
-      start: 11232920,
-      crunched: 0,
-      end: 11267517,
+      end: 11429227,
       filename: "/lib/python3.6/encodings/cp1125.py"
     }, {
+      start: 11429227,
       audio: 0,
-      start: 11267517,
-      crunched: 0,
-      end: 11301993,
+      end: 11463703,
       filename: "/lib/python3.6/encodings/cp775.py"
     }, {
+      start: 11463703,
       audio: 0,
-      start: 11301993,
-      crunched: 0,
-      end: 11315397,
+      end: 11477107,
       filename: "/lib/python3.6/encodings/iso8859_2.py"
     }, {
+      start: 11477107,
       audio: 0,
-      start: 11315397,
-      crunched: 0,
-      end: 11350030,
+      end: 11511740,
       filename: "/lib/python3.6/encodings/cp861.py"
     }, {
+      start: 11511740,
       audio: 0,
-      start: 11350030,
-      crunched: 0,
-      end: 11351083,
+      end: 11512793,
       filename: "/lib/python3.6/encodings/iso2022_jp.py"
     }, {
+      start: 11512793,
       audio: 0,
-      start: 11351083,
-      crunched: 0,
-      end: 11352331,
+      end: 11514041,
       filename: "/lib/python3.6/encodings/ascii.py"
     }, {
+      start: 11514041,
       audio: 0,
-      start: 11352331,
-      crunched: 0,
-      end: 11365452,
+      end: 11527162,
       filename: "/lib/python3.6/encodings/cp037.py"
     }, {
+      start: 11527162,
       audio: 0,
-      start: 11365452,
-      crunched: 0,
-      end: 11399848,
+      end: 11561558,
       filename: "/lib/python3.6/encodings/cp866.py"
     }, {
+      start: 11561558,
       audio: 0,
-      start: 11399848,
-      crunched: 0,
-      end: 11400875,
+      end: 11562585,
       filename: "/lib/python3.6/encodings/euc_jp.py"
     }, {
+      start: 11562585,
       audio: 0,
-      start: 11400875,
-      crunched: 0,
-      end: 11401805,
+      end: 11563515,
       filename: "/lib/python3.6/encodings/utf_32_be.py"
     }, {
+      start: 11563515,
       audio: 0,
-      start: 11401805,
-      crunched: 0,
-      end: 11402842,
+      end: 11577013,
+      filename: "/lib/python3.6/encodings/mac_iceland.py"
+    }, {
+      start: 11577013,
+      audio: 0,
+      end: 11578050,
       filename: "/lib/python3.6/encodings/utf_16_le.py"
     }, {
+      start: 11578050,
       audio: 0,
-      start: 11402842,
-      crunched: 0,
-      end: 11416494,
+      end: 11591702,
       filename: "/lib/python3.6/encodings/iso8859_14.py"
     }, {
+      start: 11591702,
       audio: 0,
-      start: 11416494,
-      crunched: 0,
-      end: 11417424,
+      end: 11592632,
       filename: "/lib/python3.6/encodings/utf_32_le.py"
     }, {
+      start: 11592632,
       audio: 0,
-      start: 11417424,
-      crunched: 0,
-      end: 11450794,
+      end: 11626002,
       filename: "/lib/python3.6/encodings/cp862.py"
     }, {
+      start: 11626002,
       audio: 0,
-      start: 11450794,
-      crunched: 0,
-      end: 11484644,
+      end: 11659852,
       filename: "/lib/python3.6/encodings/cp855.py"
     }, {
+      start: 11659852,
       audio: 0,
-      start: 11484644,
-      crunched: 0,
-      end: 11497239,
+      end: 11672447,
       filename: "/lib/python3.6/encodings/cp874.py"
     }, {
+      start: 11672447,
       audio: 0,
-      start: 11497239,
-      crunched: 0,
-      end: 11510925,
+      end: 11686133,
       filename: "/lib/python3.6/encodings/cp1250.py"
     }, {
+      start: 11686133,
       audio: 0,
-      start: 11510925,
-      crunched: 0,
-      end: 11511986,
+      end: 11687194,
       filename: "/lib/python3.6/encodings/iso2022_jp_3.py"
     }, {
+      start: 11687194,
       audio: 0,
-      start: 11511986,
-      crunched: 0,
-      end: 11545649,
+      end: 11720857,
       filename: "/lib/python3.6/encodings/cp864.py"
     }, {
+      start: 11720857,
       audio: 0,
-      start: 11545649,
-      crunched: 0,
-      end: 11546710,
+      end: 11721918,
       filename: "/lib/python3.6/encodings/iso2022_jp_2.py"
     }, {
+      start: 11721918,
       audio: 0,
-      start: 11546710,
-      crunched: 0,
-      end: 11581391,
+      end: 11756599,
       filename: "/lib/python3.6/encodings/cp737.py"
     }, {
+      start: 11756599,
       audio: 0,
-      start: 11581391,
-      crunched: 0,
-      end: 11583819,
+      end: 11759027,
       filename: "/lib/python3.6/encodings/rot_13.py"
     }, {
+      start: 11759027,
       audio: 0,
-      start: 11583819,
-      crunched: 0,
-      end: 11589461,
+      end: 11764669,
       filename: "/lib/python3.6/encodings/__init__.py"
     }, {
+      start: 11764669,
       audio: 0,
-      start: 11589461,
-      crunched: 0,
-      end: 11624463,
+      end: 11799671,
       filename: "/lib/python3.6/encodings/cp852.py"
     }, {
+      start: 11799671,
       audio: 0,
-      start: 11624463,
-      crunched: 0,
-      end: 11637568,
+      end: 11812776,
       filename: "/lib/python3.6/encodings/cp1140.py"
     }, {
+      start: 11812776,
       audio: 0,
-      start: 11637568,
-      crunched: 0,
-      end: 11671476,
+      end: 11846684,
       filename: "/lib/python3.6/encodings/cp857.py"
     }],
-    remote_package_size: 11671476,
-    package_uuid: "c163e247-2212-49ef-a386-25f8173aec51"
+    remote_package_size: 11846684,
+    package_uuid: "a2655c0a-a8b1-4b59-b5e2-d48ebe04d09f"
   })
 })();

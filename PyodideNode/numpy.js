@@ -8,13 +8,13 @@ Module.expectedDataFileDownloads++;
 (function() {
   var loadPackage = function(metadata) {
     var PACKAGE_PATH;
-    var PACKAGE_NAME = "/home/mdboom/Work/builds/compiling/pyodide.tmp/packages/numpy/build/numpy.data";
+    var PACKAGE_NAME = "/home/mdboom/Work/builds/compiling/pyodide/packages/numpy/build/numpy.data";
     var REMOTE_PACKAGE_BASE = "numpy.data";
     if (typeof Module["locateFilePackage"] === "function" && !Module["locateFile"]) {
       Module["locateFile"] = Module["locateFilePackage"];
-      Module.printErr("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
+      err("warning: you defined Module.locateFilePackage, that has been renamed to Module.locateFile (using your locateFilePackage for now)")
     }
-    var REMOTE_PACKAGE_NAME = typeof Module["locateFile"] === "function" ? Module["locateFile"](REMOTE_PACKAGE_BASE) : (Module["filePackagePrefixURL"] || "") + REMOTE_PACKAGE_BASE;
+    var REMOTE_PACKAGE_NAME = Module["locateFile"] ? Module["locateFile"](REMOTE_PACKAGE_BASE, "") : REMOTE_PACKAGE_BASE;
     var REMOTE_PACKAGE_SIZE = metadata.remote_package_size;
     var PACKAGE_UUID = metadata.package_uuid;
 
@@ -88,10 +88,9 @@ Module.expectedDataFileDownloads++;
       Module["FS_createPath"]("/lib/python3.6/site-packages/numpy", "testing", true, true);
       Module["FS_createPath"]("/lib/python3.6/site-packages/numpy/testing", "nose_tools", true, true);
 
-      function DataRequest(start, end, crunched, audio) {
+      function DataRequest(start, end, audio) {
         this.start = start;
         this.end = end;
-        this.crunched = crunched;
         this.audio = audio
       }
       DataRequest.prototype = {
@@ -111,11 +110,10 @@ Module.expectedDataFileDownloads++;
           Module["FS_createPreloadedFile"](this.name, null, byteArray, true, true, function() {
             Module["removeRunDependency"]("fp " + that.name)
           }, function() {
-            console.error(`Error, creation of preloaded file failed`);
             if (that.audio) {
               Module["removeRunDependency"]("fp " + that.name)
             } else {
-              Module.printErr("Preloading file " + that.name + " failed")
+              err("Preloading file " + that.name + " failed")
             }
           }, false, true);
           this.requests[this.name] = null
@@ -123,7 +121,7 @@ Module.expectedDataFileDownloads++;
       };
       var files = metadata.files;
       for (var i = 0; i < files.length; ++i) {
-        new DataRequest(files[i].start, files[i].end, files[i].crunched, files[i].audio).open("GET", files[i].filename)
+        new DataRequest(files[i].start, files[i].end, files[i].audio).open("GET", files[i].filename)
       }
 
       function processPackageData(arrayBuffer) {
@@ -133,7 +131,7 @@ Module.expectedDataFileDownloads++;
         if(!arrayBuffer) throw "bad input to processPackageData";
         var byteArray = new Uint8Array(arrayBuffer);
         var curr;
-        if (Module["SPLIT_MEMORY"]) Module.printErr("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");
+        if (Module["SPLIT_MEMORY"]) err("warning: you should run the file packager with --no-heap-copy when SPLIT_MEMORY is used, otherwise copying into the heap may fail due to the splitting");
         var ptr = Module["getMemory"](byteArray.length);
         Module["HEAPU8"].set(byteArray, ptr);
         DataRequest.prototype.byteArray = Module["HEAPU8"].subarray(ptr, ptr + byteArray.length);
@@ -141,9 +139,9 @@ Module.expectedDataFileDownloads++;
         for (var i = 0; i < files.length; ++i) {
           DataRequest.prototype.requests[files[i].filename].onload()
         }
-        Module["removeRunDependency"]("datafile_/home/mdboom/Work/builds/compiling/pyodide.tmp/packages/numpy/build/numpy.data")
+        Module["removeRunDependency"]("datafile_/home/mdboom/Work/builds/compiling/pyodide/packages/numpy/build/numpy.data")
       }
-      Module["addRunDependency"]("datafile_/home/mdboom/Work/builds/compiling/pyodide.tmp/packages/numpy/build/numpy.data");
+      Module["addRunDependency"]("datafile_/home/mdboom/Work/builds/compiling/pyodide/packages/numpy/build/numpy.data");
       if (!Module.preloadResults) Module.preloadResults = {};
       Module.preloadResults[PACKAGE_NAME] = {
         fromCache: false
@@ -164,1285 +162,1072 @@ Module.expectedDataFileDownloads++;
   };
   loadPackage({
     files: [{
-      audio: 0,
       start: 0,
-      crunched: 0,
+      audio: 0,
       end: 14730,
       filename: "/lib/python3.6/site-packages/numpy/ctypeslib.py"
     }, {
-      audio: 0,
       start: 14730,
-      crunched: 0,
+      audio: 0,
       end: 16287,
       filename: "/lib/python3.6/site-packages/numpy/conftest.py"
     }, {
-      audio: 0,
       start: 16287,
-      crunched: 0,
+      audio: 0,
       end: 17587,
       filename: "/lib/python3.6/site-packages/numpy/__config__.py"
     }, {
-      audio: 0,
       start: 17587,
-      crunched: 0,
+      audio: 0,
       end: 17918,
       filename: "/lib/python3.6/site-packages/numpy/_distributor_init.py"
     }, {
-      audio: 0,
       start: 17918,
-      crunched: 0,
+      audio: 0,
       end: 31152,
       filename: "/lib/python3.6/site-packages/numpy/_import_tools.py"
     }, {
-      audio: 0,
       start: 31152,
-      crunched: 0,
+      audio: 0,
       end: 265899,
       filename: "/lib/python3.6/site-packages/numpy/add_newdocs.py"
     }, {
-      audio: 0,
       start: 265899,
-      crunched: 0,
+      audio: 0,
       end: 275708,
       filename: "/lib/python3.6/site-packages/numpy/matlib.py"
     }, {
-      audio: 0,
       start: 275708,
-      crunched: 0,
+      audio: 0,
       end: 276002,
       filename: "/lib/python3.6/site-packages/numpy/version.py"
     }, {
-      audio: 0,
       start: 276002,
-      crunched: 0,
+      audio: 0,
       end: 276922,
       filename: "/lib/python3.6/site-packages/numpy/setup.py"
     }, {
-      audio: 0,
       start: 276922,
-      crunched: 0,
+      audio: 0,
       end: 278781,
       filename: "/lib/python3.6/site-packages/numpy/_globals.py"
     }, {
-      audio: 0,
       start: 278781,
-      crunched: 0,
+      audio: 0,
       end: 285032,
       filename: "/lib/python3.6/site-packages/numpy/__init__.py"
     }, {
-      audio: 0,
       start: 285032,
-      crunched: 0,
+      audio: 0,
       end: 286896,
       filename: "/lib/python3.6/site-packages/numpy/dual.py"
     }, {
-      audio: 0,
       start: 286896,
-      crunched: 0,
+      audio: 0,
       end: 344300,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/legendre.py"
     }, {
-      audio: 0,
       start: 344300,
-      crunched: 0,
+      audio: 0,
       end: 411269,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/chebyshev.py"
     }, {
-      audio: 0,
       start: 411269,
-      crunched: 0,
+      audio: 0,
       end: 441361,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/_polybase.py"
     }, {
-      audio: 0,
       start: 441361,
-      crunched: 0,
+      audio: 0,
       end: 452890,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/polyutils.py"
     }, {
-      audio: 0,
       start: 452890,
-      crunched: 0,
+      audio: 0,
       end: 510976,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/hermite_e.py"
     }, {
-      audio: 0,
       start: 510976,
-      crunched: 0,
+      audio: 0,
       end: 568872,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/hermite.py"
     }, {
-      audio: 0,
       start: 568872,
-      crunched: 0,
+      audio: 0,
       end: 625181,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/laguerre.py"
     }, {
-      audio: 0,
       start: 625181,
-      crunched: 0,
+      audio: 0,
       end: 625566,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/setup.py"
     }, {
-      audio: 0,
       start: 625566,
-      crunched: 0,
+      audio: 0,
       end: 678374,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/polynomial.py"
     }, {
-      audio: 0,
       start: 678374,
-      crunched: 0,
+      audio: 0,
       end: 679514,
       filename: "/lib/python3.6/site-packages/numpy/polynomial/__init__.py"
     }, {
-      audio: 0,
       start: 679514,
-      crunched: 0,
+      audio: 0,
       end: 735477,
       filename: "/lib/python3.6/site-packages/numpy/ma/extras.py"
     }, {
-      audio: 0,
       start: 735477,
-      crunched: 0,
+      audio: 0,
       end: 762912,
       filename: "/lib/python3.6/site-packages/numpy/ma/mrecords.py"
     }, {
-      audio: 0,
       start: 762912,
-      crunched: 0,
+      audio: 0,
       end: 1018755,
       filename: "/lib/python3.6/site-packages/numpy/ma/core.py"
     }, {
-      audio: 0,
       start: 1018755,
-      crunched: 0,
+      audio: 0,
       end: 1029139,
       filename: "/lib/python3.6/site-packages/numpy/ma/testutils.py"
     }, {
-      audio: 0,
       start: 1029139,
-      crunched: 0,
+      audio: 0,
       end: 1029519,
       filename: "/lib/python3.6/site-packages/numpy/ma/version.py"
     }, {
-      audio: 0,
       start: 1029519,
-      crunched: 0,
+      audio: 0,
       end: 1029948,
       filename: "/lib/python3.6/site-packages/numpy/ma/setup.py"
     }, {
-      audio: 0,
       start: 1029948,
-      crunched: 0,
+      audio: 0,
       end: 1045534,
       filename: "/lib/python3.6/site-packages/numpy/ma/timer_comparison.py"
     }, {
-      audio: 0,
       start: 1045534,
-      crunched: 0,
+      audio: 0,
       end: 1050451,
       filename: "/lib/python3.6/site-packages/numpy/ma/bench.py"
     }, {
-      audio: 0,
       start: 1050451,
-      crunched: 0,
+      audio: 0,
       end: 1051927,
       filename: "/lib/python3.6/site-packages/numpy/ma/__init__.py"
     }, {
-      audio: 0,
       start: 1051927,
-      crunched: 0,
-      end: 2260468,
+      audio: 0,
+      end: 2261251,
       filename: "/lib/python3.6/site-packages/numpy/random/mtrand.so"
     }, {
+      start: 2261251,
       audio: 0,
-      start: 2260468,
-      crunched: 0,
-      end: 2262780,
+      end: 2263563,
       filename: "/lib/python3.6/site-packages/numpy/random/setup.py"
     }, {
+      start: 2263563,
       audio: 0,
-      start: 2262780,
-      crunched: 0,
-      end: 2268261,
+      end: 2269044,
       filename: "/lib/python3.6/site-packages/numpy/random/__init__.py"
     }, {
+      start: 2269044,
       audio: 0,
-      start: 2268261,
-      crunched: 0,
-      end: 2273460,
+      end: 2274243,
       filename: "/lib/python3.6/site-packages/numpy/random/info.py"
     }, {
+      start: 2274243,
       audio: 0,
-      start: 2273460,
-      crunched: 0,
-      end: 2294027,
+      end: 2294810,
       filename: "/lib/python3.6/site-packages/numpy/lib/arraysetops.py"
     }, {
+      start: 2294810,
       audio: 0,
-      start: 2294027,
-      crunched: 0,
-      end: 2298894,
+      end: 2299677,
       filename: "/lib/python3.6/site-packages/numpy/lib/_version.py"
     }, {
+      start: 2299677,
       audio: 0,
-      start: 2298894,
-      crunched: 0,
-      end: 2468926,
+      end: 2469709,
       filename: "/lib/python3.6/site-packages/numpy/lib/function_base.py"
     }, {
+      start: 2469709,
       audio: 0,
-      start: 2468926,
-      crunched: 0,
-      end: 2476743,
+      end: 2477526,
       filename: "/lib/python3.6/site-packages/numpy/lib/user_array.py"
     }, {
+      start: 2477526,
       audio: 0,
-      start: 2476743,
-      crunched: 0,
-      end: 2501238,
+      end: 2502021,
       filename: "/lib/python3.6/site-packages/numpy/lib/financial.py"
     }, {
+      start: 2502021,
       audio: 0,
-      start: 2501238,
-      crunched: 0,
-      end: 2529906,
+      end: 2530689,
       filename: "/lib/python3.6/site-packages/numpy/lib/shape_base.py"
     }, {
+      start: 2530689,
       audio: 0,
-      start: 2529906,
-      crunched: 0,
-      end: 2581763,
+      end: 2582546,
       filename: "/lib/python3.6/site-packages/numpy/lib/arraypad.py"
     }, {
+      start: 2582546,
       audio: 0,
-      start: 2581763,
-      crunched: 0,
-      end: 2598263,
+      end: 2599046,
       filename: "/lib/python3.6/site-packages/numpy/lib/type_check.py"
     }, {
+      start: 2599046,
       audio: 0,
-      start: 2598263,
-      crunched: 0,
-      end: 2627419,
+      end: 2628202,
       filename: "/lib/python3.6/site-packages/numpy/lib/format.py"
     }, {
+      start: 2628202,
       audio: 0,
-      start: 2627419,
-      crunched: 0,
-      end: 2634703,
+      end: 2635486,
       filename: "/lib/python3.6/site-packages/numpy/lib/mixins.py"
     }, {
+      start: 2635486,
       audio: 0,
-      start: 2634703,
-      crunched: 0,
-      end: 2717875,
+      end: 2718658,
       filename: "/lib/python3.6/site-packages/numpy/lib/npyio.py"
     }, {
+      start: 2718658,
       audio: 0,
-      start: 2717875,
-      crunched: 0,
-      end: 2744555,
+      end: 2745338,
       filename: "/lib/python3.6/site-packages/numpy/lib/index_tricks.py"
     }, {
+      start: 2745338,
       audio: 0,
-      start: 2744555,
-      crunched: 0,
-      end: 2751746,
+      end: 2752529,
       filename: "/lib/python3.6/site-packages/numpy/lib/arrayterator.py"
     }, {
+      start: 2752529,
       audio: 0,
-      start: 2751746,
-      crunched: 0,
-      end: 2791420,
+      end: 2792203,
       filename: "/lib/python3.6/site-packages/numpy/lib/recfunctions.py"
     }, {
+      start: 2792203,
       audio: 0,
-      start: 2791420,
-      crunched: 0,
-      end: 2827760,
+      end: 2828543,
       filename: "/lib/python3.6/site-packages/numpy/lib/utils.py"
     }, {
+      start: 2828543,
       audio: 0,
-      start: 2827760,
-      crunched: 0,
-      end: 2828139,
+      end: 2828922,
       filename: "/lib/python3.6/site-packages/numpy/lib/setup.py"
     }, {
+      start: 2828922,
       audio: 0,
-      start: 2828139,
-      crunched: 0,
-      end: 2878993,
+      end: 2879776,
       filename: "/lib/python3.6/site-packages/numpy/lib/nanfunctions.py"
     }, {
+      start: 2879776,
       audio: 0,
-      start: 2878993,
-      crunched: 0,
-      end: 2887778,
+      end: 2888561,
       filename: "/lib/python3.6/site-packages/numpy/lib/stride_tricks.py"
     }, {
+      start: 2888561,
       audio: 0,
-      start: 2887778,
-      crunched: 0,
-      end: 2893492,
+      end: 2894275,
       filename: "/lib/python3.6/site-packages/numpy/lib/ufunclike.py"
     }, {
+      start: 2894275,
       audio: 0,
-      start: 2893492,
-      crunched: 0,
-      end: 2907577,
+      end: 2908360,
       filename: "/lib/python3.6/site-packages/numpy/lib/scimath.py"
     }, {
+      start: 2908360,
       audio: 0,
-      start: 2907577,
-      crunched: 0,
-      end: 2932888,
+      end: 2933671,
       filename: "/lib/python3.6/site-packages/numpy/lib/_datasource.py"
     }, {
+      start: 2933671,
       audio: 0,
-      start: 2932888,
-      crunched: 0,
-      end: 2971460,
+      end: 2972243,
       filename: "/lib/python3.6/site-packages/numpy/lib/polynomial.py"
     }, {
+      start: 2972243,
       audio: 0,
-      start: 2971460,
-      crunched: 0,
-      end: 2972761,
+      end: 2973544,
       filename: "/lib/python3.6/site-packages/numpy/lib/__init__.py"
     }, {
+      start: 2973544,
       audio: 0,
-      start: 2972761,
-      crunched: 0,
-      end: 2998578,
+      end: 2999361,
       filename: "/lib/python3.6/site-packages/numpy/lib/twodim_base.py"
     }, {
+      start: 2999361,
       audio: 0,
-      start: 2998578,
-      crunched: 0,
-      end: 3031194,
+      end: 3031977,
       filename: "/lib/python3.6/site-packages/numpy/lib/_iotools.py"
     }, {
+      start: 3031977,
       audio: 0,
-      start: 3031194,
-      crunched: 0,
-      end: 3037810,
+      end: 3038593,
       filename: "/lib/python3.6/site-packages/numpy/lib/info.py"
     }, {
+      start: 3038593,
       audio: 0,
-      start: 3037810,
-      crunched: 0,
-      end: 3045364,
+      end: 3046147,
       filename: "/lib/python3.6/site-packages/numpy/compat/_inspect.py"
     }, {
+      start: 3046147,
       audio: 0,
-      start: 3045364,
-      crunched: 0,
-      end: 3045735,
+      end: 3046518,
       filename: "/lib/python3.6/site-packages/numpy/compat/setup.py"
     }, {
+      start: 3046518,
       audio: 0,
-      start: 3045735,
-      crunched: 0,
-      end: 3049372,
+      end: 3050155,
       filename: "/lib/python3.6/site-packages/numpy/compat/py3k.py"
     }, {
+      start: 3050155,
       audio: 0,
-      start: 3049372,
-      crunched: 0,
-      end: 3049870,
+      end: 3050653,
       filename: "/lib/python3.6/site-packages/numpy/compat/__init__.py"
     }, {
+      start: 3050653,
       audio: 0,
-      start: 3049870,
-      crunched: 0,
-      end: 3082843,
+      end: 3083626,
       filename: "/lib/python3.6/site-packages/numpy/matrixlib/defmatrix.py"
     }, {
+      start: 3083626,
       audio: 0,
-      start: 3082843,
-      crunched: 0,
-      end: 3083291,
+      end: 3084074,
       filename: "/lib/python3.6/site-packages/numpy/matrixlib/setup.py"
     }, {
+      start: 3084074,
       audio: 0,
-      start: 3083291,
-      crunched: 0,
-      end: 3083581,
+      end: 3084364,
       filename: "/lib/python3.6/site-packages/numpy/matrixlib/__init__.py"
     }, {
+      start: 3084364,
       audio: 0,
-      start: 3083581,
-      crunched: 0,
-      end: 3091499,
+      end: 3092282,
       filename: "/lib/python3.6/site-packages/numpy/doc/basics.py"
     }, {
+      start: 3092282,
       audio: 0,
-      start: 3091499,
-      crunched: 0,
-      end: 3103870,
+      end: 3104653,
       filename: "/lib/python3.6/site-packages/numpy/doc/glossary.py"
     }, {
+      start: 3104653,
       audio: 0,
-      start: 3103870,
-      crunched: 0,
-      end: 3109371,
+      end: 3110154,
       filename: "/lib/python3.6/site-packages/numpy/doc/creation.py"
     }, {
+      start: 3110154,
       audio: 0,
-      start: 3109371,
-      crunched: 0,
-      end: 3114936,
+      end: 3115719,
       filename: "/lib/python3.6/site-packages/numpy/doc/broadcasting.py"
     }, {
+      start: 3115719,
       audio: 0,
-      start: 3114936,
-      crunched: 0,
-      end: 3120282,
+      end: 3121065,
       filename: "/lib/python3.6/site-packages/numpy/doc/byteswapping.py"
     }, {
+      start: 3121065,
       audio: 0,
-      start: 3120282,
-      crunched: 0,
-      end: 3135951,
+      end: 3136734,
       filename: "/lib/python3.6/site-packages/numpy/doc/indexing.py"
     }, {
+      start: 3136734,
       audio: 0,
-      start: 3135951,
-      crunched: 0,
-      end: 3142145,
+      end: 3142928,
       filename: "/lib/python3.6/site-packages/numpy/doc/misc.py"
     }, {
+      start: 3142928,
       audio: 0,
-      start: 3142145,
-      crunched: 0,
-      end: 3147572,
+      end: 3148355,
       filename: "/lib/python3.6/site-packages/numpy/doc/ufuncs.py"
     }, {
+      start: 3148355,
       audio: 0,
-      start: 3147572,
-      crunched: 0,
-      end: 3176132,
+      end: 3176915,
       filename: "/lib/python3.6/site-packages/numpy/doc/subclassing.py"
     }, {
+      start: 3176915,
       audio: 0,
-      start: 3176132,
-      crunched: 0,
-      end: 3200575,
+      end: 3201358,
       filename: "/lib/python3.6/site-packages/numpy/doc/structured_arrays.py"
     }, {
+      start: 3201358,
       audio: 0,
-      start: 3200575,
-      crunched: 0,
-      end: 3209457,
+      end: 3210240,
       filename: "/lib/python3.6/site-packages/numpy/doc/constants.py"
     }, {
+      start: 3210240,
       audio: 0,
-      start: 3209457,
-      crunched: 0,
-      end: 3219126,
+      end: 3219909,
       filename: "/lib/python3.6/site-packages/numpy/doc/internals.py"
     }, {
+      start: 3219909,
       audio: 0,
-      start: 3219126,
-      crunched: 0,
-      end: 3219700,
+      end: 3220483,
       filename: "/lib/python3.6/site-packages/numpy/doc/__init__.py"
     }, {
+      start: 3220483,
       audio: 0,
-      start: 3219700,
-      crunched: 0,
-      end: 3228924,
+      end: 3229707,
       filename: "/lib/python3.6/site-packages/numpy/f2py/func2subr.py"
     }, {
+      start: 3229707,
       audio: 0,
-      start: 3228924,
-      crunched: 0,
-      end: 3233954,
+      end: 3234737,
       filename: "/lib/python3.6/site-packages/numpy/f2py/common_rules.py"
     }, {
+      start: 3234737,
       audio: 0,
-      start: 3233954,
-      crunched: 0,
-      end: 3292479,
+      end: 3293262,
       filename: "/lib/python3.6/site-packages/numpy/f2py/rules.py"
     }, {
+      start: 3293262,
       audio: 0,
-      start: 3292479,
-      crunched: 0,
-      end: 3294002,
+      end: 3294785,
       filename: "/lib/python3.6/site-packages/numpy/f2py/f2py_testing.py"
     }, {
+      start: 3294785,
       audio: 0,
-      start: 3294002,
-      crunched: 0,
-      end: 3299297,
+      end: 3300080,
       filename: "/lib/python3.6/site-packages/numpy/f2py/diagnose.py"
     }, {
+      start: 3300080,
       audio: 0,
-      start: 3299297,
-      crunched: 0,
-      end: 3344410,
+      end: 3345193,
       filename: "/lib/python3.6/site-packages/numpy/f2py/cfuncs.py"
     }, {
+      start: 3345193,
       audio: 0,
-      start: 3344410,
-      crunched: 0,
-      end: 3366236,
+      end: 3367019,
       filename: "/lib/python3.6/site-packages/numpy/f2py/auxfuncs.py"
     }, {
+      start: 3367019,
       audio: 0,
-      start: 3366236,
-      crunched: 0,
-      end: 3369888,
+      end: 3370671,
       filename: "/lib/python3.6/site-packages/numpy/f2py/use_rules.py"
     }, {
+      start: 3370671,
       audio: 0,
-      start: 3369888,
-      crunched: 0,
-      end: 3498292,
+      end: 3499075,
       filename: "/lib/python3.6/site-packages/numpy/f2py/crackfortran.py"
     }, {
+      start: 3499075,
       audio: 0,
-      start: 3498292,
-      crunched: 0,
-      end: 3520648,
+      end: 3521431,
       filename: "/lib/python3.6/site-packages/numpy/f2py/cb_rules.py"
     }, {
+      start: 3521431,
       audio: 0,
-      start: 3520648,
-      crunched: 0,
-      end: 3520902,
+      end: 3521685,
       filename: "/lib/python3.6/site-packages/numpy/f2py/__version__.py"
     }, {
+      start: 3521685,
       audio: 0,
-      start: 3520902,
-      crunched: 0,
-      end: 3524827,
+      end: 3525610,
       filename: "/lib/python3.6/site-packages/numpy/f2py/setup.py"
     }, {
+      start: 3525610,
       audio: 0,
-      start: 3524827,
-      crunched: 0,
-      end: 3534677,
+      end: 3535460,
       filename: "/lib/python3.6/site-packages/numpy/f2py/f90mod_rules.py"
     }, {
+      start: 3535460,
       audio: 0,
-      start: 3534677,
-      crunched: 0,
-      end: 3566216,
+      end: 3566999,
       filename: "/lib/python3.6/site-packages/numpy/f2py/capi_maps.py"
     }, {
+      start: 3566999,
       audio: 0,
-      start: 3566216,
-      crunched: 0,
-      end: 3568243,
+      end: 3569026,
       filename: "/lib/python3.6/site-packages/numpy/f2py/__init__.py"
     }, {
+      start: 3569026,
       audio: 0,
-      start: 3568243,
-      crunched: 0,
-      end: 3591151,
+      end: 3591934,
       filename: "/lib/python3.6/site-packages/numpy/f2py/f2py2e.py"
     }, {
+      start: 3591934,
       audio: 0,
-      start: 3591151,
-      crunched: 0,
-      end: 3591890,
+      end: 3592673,
       filename: "/lib/python3.6/site-packages/numpy/f2py/__main__.py"
     }, {
+      start: 3592673,
       audio: 0,
-      start: 3591890,
-      crunched: 0,
-      end: 3592026,
+      end: 3592809,
       filename: "/lib/python3.6/site-packages/numpy/f2py/info.py"
     }, {
+      start: 3592809,
       audio: 0,
-      start: 3592026,
-      crunched: 0,
-      end: 3629800,
+      end: 3630576,
       filename: "/lib/python3.6/site-packages/numpy/fft/fftpack_lite.so"
     }, {
+      start: 3630576,
       audio: 0,
-      start: 3629800,
-      crunched: 0,
-      end: 3639392,
+      end: 3640168,
       filename: "/lib/python3.6/site-packages/numpy/fft/helper.py"
     }, {
+      start: 3640168,
       audio: 0,
-      start: 3639392,
-      crunched: 0,
-      end: 3639942,
+      end: 3640718,
       filename: "/lib/python3.6/site-packages/numpy/fft/setup.py"
     }, {
+      start: 3640718,
       audio: 0,
-      start: 3639942,
-      crunched: 0,
-      end: 3686001,
+      end: 3686777,
       filename: "/lib/python3.6/site-packages/numpy/fft/fftpack.py"
     }, {
+      start: 3686777,
       audio: 0,
-      start: 3686001,
-      crunched: 0,
-      end: 3686259,
+      end: 3687035,
       filename: "/lib/python3.6/site-packages/numpy/fft/__init__.py"
     }, {
+      start: 3687035,
       audio: 0,
-      start: 3686259,
-      crunched: 0,
-      end: 3693494,
+      end: 3694270,
       filename: "/lib/python3.6/site-packages/numpy/fft/info.py"
     }, {
+      start: 3694270,
       audio: 0,
-      start: 3693494,
-      crunched: 0,
-      end: 3723587,
+      end: 3724363,
       filename: "/lib/python3.6/site-packages/numpy/core/records.py"
     }, {
+      start: 3724363,
       audio: 0,
-      start: 3723587,
-      crunched: 0,
-      end: 5544151,
+      end: 5546454,
       filename: "/lib/python3.6/site-packages/numpy/core/multiarray.so"
     }, {
+      start: 5546454,
       audio: 0,
-      start: 5544151,
-      crunched: 0,
-      end: 5555583,
+      end: 5557886,
       filename: "/lib/python3.6/site-packages/numpy/core/memmap.py"
     }, {
+      start: 5557886,
       audio: 0,
-      start: 5555583,
-      crunched: 0,
-      end: 5567923,
+      end: 5570226,
       filename: "/lib/python3.6/site-packages/numpy/core/function_base.py"
     }, {
+      start: 5570226,
       audio: 0,
-      start: 5567923,
-      crunched: 0,
-      end: 5653654,
+      end: 5655957,
       filename: "/lib/python3.6/site-packages/numpy/core/numeric.py"
     }, {
+      start: 5655957,
       audio: 0,
-      start: 5653654,
-      crunched: 0,
-      end: 5672076,
+      end: 5674379,
       filename: "/lib/python3.6/site-packages/numpy/core/getlimits.py"
     }, {
+      start: 5674379,
       audio: 0,
-      start: 5672076,
-      crunched: 0,
-      end: 5785648,
+      end: 5787912,
       filename: "/lib/python3.6/site-packages/numpy/core/multiarray_tests.so"
     }, {
+      start: 5787912,
       audio: 0,
-      start: 5785648,
-      crunched: 0,
-      end: 5807464,
+      end: 5809728,
       filename: "/lib/python3.6/site-packages/numpy/core/_internal.py"
     }, {
+      start: 5809728,
       audio: 0,
-      start: 5807464,
-      crunched: 0,
-      end: 5826280,
+      end: 5828544,
       filename: "/lib/python3.6/site-packages/numpy/core/shape_base.py"
     }, {
+      start: 5828544,
       audio: 0,
-      start: 5826280,
-      crunched: 0,
-      end: 5926917,
+      end: 5929181,
       filename: "/lib/python3.6/site-packages/numpy/core/fromnumeric.py"
     }, {
+      start: 5929181,
       audio: 0,
-      start: 5926917,
-      crunched: 0,
-      end: 5994286,
+      end: 5996550,
       filename: "/lib/python3.6/site-packages/numpy/core/defchararray.py"
     }, {
+      start: 5996550,
       audio: 0,
-      start: 5994286,
-      crunched: 0,
-      end: 5994699,
+      end: 5996963,
       filename: "/lib/python3.6/site-packages/numpy/core/cversions.py"
     }, {
+      start: 5996963,
       audio: 0,
-      start: 5994699,
-      crunched: 0,
-      end: 5999091,
+      end: 6001351,
       filename: "/lib/python3.6/site-packages/numpy/core/struct_ufunc_test.so"
     }, {
+      start: 6001351,
       audio: 0,
-      start: 5999091,
-      crunched: 0,
-      end: 6003795,
+      end: 6006055,
       filename: "/lib/python3.6/site-packages/numpy/core/_methods.py"
     }, {
+      start: 6006055,
       audio: 0,
-      start: 6003795,
-      crunched: 0,
-      end: 6019748,
+      end: 6022008,
       filename: "/lib/python3.6/site-packages/numpy/core/setup_common.py"
     }, {
+      start: 6022008,
       audio: 0,
-      start: 6019748,
-      crunched: 0,
-      end: 6030537,
+      end: 6032797,
       filename: "/lib/python3.6/site-packages/numpy/core/machar.py"
     }, {
+      start: 6032797,
       audio: 0,
-      start: 6030537,
-      crunched: 0,
-      end: 6087802,
+      end: 6090062,
       filename: "/lib/python3.6/site-packages/numpy/core/arrayprint.py"
     }, {
+      start: 6090062,
       audio: 0,
-      start: 6087802,
-      crunched: 0,
-      end: 6088491,
+      end: 6090746,
       filename: "/lib/python3.6/site-packages/numpy/core/_dummy.so"
     }, {
+      start: 6090746,
       audio: 0,
-      start: 6088491,
-      crunched: 0,
-      end: 6117593,
+      end: 6119848,
       filename: "/lib/python3.6/site-packages/numpy/core/numerictypes.py"
     }, {
+      start: 6119848,
       audio: 0,
-      start: 6117593,
-      crunched: 0,
-      end: 6159070,
+      end: 6161325,
       filename: "/lib/python3.6/site-packages/numpy/core/setup.py"
     }, {
+      start: 6161325,
       audio: 0,
-      start: 6159070,
-      crunched: 0,
-      end: 6922755,
+      end: 6925939,
       filename: "/lib/python3.6/site-packages/numpy/core/umath.so"
     }, {
+      start: 6925939,
       audio: 0,
-      start: 6922755,
-      crunched: 0,
-      end: 6934991,
+      end: 6938171,
       filename: "/lib/python3.6/site-packages/numpy/core/umath_tests.so"
     }, {
+      start: 6938171,
       audio: 0,
-      start: 6934991,
-      crunched: 0,
-      end: 6942497,
+      end: 6945677,
       filename: "/lib/python3.6/site-packages/numpy/core/generate_numpy_api.py"
     }, {
+      start: 6945677,
       audio: 0,
-      start: 6942497,
-      crunched: 0,
-      end: 6946181,
+      end: 6949359,
       filename: "/lib/python3.6/site-packages/numpy/core/operand_flag_tests.so"
     }, {
+      start: 6949359,
       audio: 0,
-      start: 6946181,
-      crunched: 0,
-      end: 7003007,
+      end: 7006200,
       filename: "/lib/python3.6/site-packages/numpy/core/test_rational.so"
     }, {
+      start: 7006200,
       audio: 0,
-      start: 7003007,
-      crunched: 0,
-      end: 7043699,
+      end: 7046892,
       filename: "/lib/python3.6/site-packages/numpy/core/einsumfunc.py"
     }, {
+      start: 7046892,
       audio: 0,
-      start: 7043699,
-      crunched: 0,
-      end: 7046743,
+      end: 7049936,
       filename: "/lib/python3.6/site-packages/numpy/core/__init__.py"
     }, {
+      start: 7049936,
       audio: 0,
-      start: 7046743,
-      crunched: 0,
-      end: 7051435,
+      end: 7054628,
       filename: "/lib/python3.6/site-packages/numpy/core/info.py"
     }, {
+      start: 7054628,
       audio: 0,
-      start: 7051435,
-      crunched: 0,
-      end: 7053488,
+      end: 7056681,
       filename: "/lib/python3.6/site-packages/numpy/distutils/line_endings.py"
     }, {
+      start: 7056681,
       audio: 0,
-      start: 7053488,
-      crunched: 0,
-      end: 7142989,
+      end: 7146182,
       filename: "/lib/python3.6/site-packages/numpy/distutils/system_info.py"
     }, {
+      start: 7146182,
       audio: 0,
-      start: 7142989,
-      crunched: 0,
-      end: 7144980,
+      end: 7148173,
       filename: "/lib/python3.6/site-packages/numpy/distutils/msvccompiler.py"
     }, {
+      start: 7148173,
       audio: 0,
-      start: 7144980,
-      crunched: 0,
-      end: 7147326,
+      end: 7150519,
       filename: "/lib/python3.6/site-packages/numpy/distutils/environment.py"
     }, {
+      start: 7150519,
       audio: 0,
-      start: 7147326,
-      crunched: 0,
-      end: 7160569,
+      end: 7163762,
       filename: "/lib/python3.6/site-packages/numpy/distutils/npy_pkg_config.py"
     }, {
+      start: 7163762,
       audio: 0,
-      start: 7160569,
-      crunched: 0,
-      end: 7160787,
+      end: 7163980,
       filename: "/lib/python3.6/site-packages/numpy/distutils/compat.py"
     }, {
+      start: 7163980,
       audio: 0,
-      start: 7160787,
-      crunched: 0,
-      end: 7163754,
+      end: 7166947,
       filename: "/lib/python3.6/site-packages/numpy/distutils/extension.py"
     }, {
+      start: 7166947,
       audio: 0,
-      start: 7163754,
-      crunched: 0,
-      end: 7173463,
+      end: 7176656,
       filename: "/lib/python3.6/site-packages/numpy/distutils/conv_template.py"
     }, {
+      start: 7176656,
       audio: 0,
-      start: 7173463,
-      crunched: 0,
-      end: 7174163,
+      end: 7177356,
       filename: "/lib/python3.6/site-packages/numpy/distutils/numpy_distribution.py"
     }, {
+      start: 7177356,
       audio: 0,
-      start: 7174163,
-      crunched: 0,
-      end: 7177675,
+      end: 7180868,
       filename: "/lib/python3.6/site-packages/numpy/distutils/lib2def.py"
     }, {
+      start: 7180868,
       audio: 0,
-      start: 7177675,
-      crunched: 0,
-      end: 7181966,
+      end: 7185159,
       filename: "/lib/python3.6/site-packages/numpy/distutils/intelccompiler.py"
     }, {
+      start: 7185159,
       audio: 0,
-      start: 7181966,
-      crunched: 0,
-      end: 7184711,
+      end: 7187904,
       filename: "/lib/python3.6/site-packages/numpy/distutils/log.py"
     }, {
+      start: 7187904,
       audio: 0,
-      start: 7184711,
-      crunched: 0,
-      end: 7189867,
+      end: 7193060,
       filename: "/lib/python3.6/site-packages/numpy/distutils/unixccompiler.py"
     }, {
+      start: 7193060,
       audio: 0,
-      start: 7189867,
-      crunched: 0,
-      end: 7272146,
+      end: 7275339,
       filename: "/lib/python3.6/site-packages/numpy/distutils/misc_util.py"
     }, {
+      start: 7275339,
       audio: 0,
-      start: 7272146,
-      crunched: 0,
-      end: 7280329,
+      end: 7283522,
       filename: "/lib/python3.6/site-packages/numpy/distutils/core.py"
     }, {
+      start: 7283522,
       audio: 0,
-      start: 7280329,
-      crunched: 0,
-      end: 7288159,
+      end: 7291352,
       filename: "/lib/python3.6/site-packages/numpy/distutils/from_template.py"
     }, {
+      start: 7291352,
       audio: 0,
-      start: 7288159,
-      crunched: 0,
-      end: 7290417,
+      end: 7293610,
       filename: "/lib/python3.6/site-packages/numpy/distutils/msvc9compiler.py"
     }, {
+      start: 7293610,
       audio: 0,
-      start: 7290417,
-      crunched: 0,
-      end: 7291717,
+      end: 7294910,
       filename: "/lib/python3.6/site-packages/numpy/distutils/__config__.py"
     }, {
+      start: 7294910,
       audio: 0,
-      start: 7291717,
-      crunched: 0,
-      end: 7291868,
+      end: 7295061,
       filename: "/lib/python3.6/site-packages/numpy/distutils/__version__.py"
     }, {
+      start: 7295061,
       audio: 0,
-      start: 7291868,
-      crunched: 0,
-      end: 7292479,
+      end: 7295672,
       filename: "/lib/python3.6/site-packages/numpy/distutils/setup.py"
     }, {
+      start: 7295672,
       audio: 0,
-      start: 7292479,
-      crunched: 0,
-      end: 7315494,
+      end: 7318687,
       filename: "/lib/python3.6/site-packages/numpy/distutils/cpuinfo.py"
     }, {
+      start: 7318687,
       audio: 0,
-      start: 7315494,
-      crunched: 0,
-      end: 7344041,
+      end: 7347234,
       filename: "/lib/python3.6/site-packages/numpy/distutils/ccompiler.py"
     }, {
+      start: 7347234,
       audio: 0,
-      start: 7344041,
-      crunched: 0,
-      end: 7369242,
+      end: 7372435,
       filename: "/lib/python3.6/site-packages/numpy/distutils/mingw32ccompiler.py"
     }, {
+      start: 7372435,
       audio: 0,
-      start: 7369242,
-      crunched: 0,
-      end: 7377905,
+      end: 7381098,
       filename: "/lib/python3.6/site-packages/numpy/distutils/exec_command.py"
     }, {
+      start: 7381098,
       audio: 0,
-      start: 7377905,
-      crunched: 0,
-      end: 7378993,
+      end: 7382186,
       filename: "/lib/python3.6/site-packages/numpy/distutils/__init__.py"
     }, {
+      start: 7382186,
       audio: 0,
-      start: 7378993,
-      crunched: 0,
-      end: 7379772,
+      end: 7382965,
       filename: "/lib/python3.6/site-packages/numpy/distutils/pathccompiler.py"
     }, {
+      start: 7382965,
       audio: 0,
-      start: 7379772,
-      crunched: 0,
-      end: 7379929,
+      end: 7383122,
       filename: "/lib/python3.6/site-packages/numpy/distutils/info.py"
     }, {
+      start: 7383122,
       audio: 0,
-      start: 7379929,
-      crunched: 0,
-      end: 7397939,
+      end: 7401132,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/config.py"
     }, {
+      start: 7401132,
       audio: 0,
-      start: 7397939,
-      crunched: 0,
-      end: 7398853,
+      end: 7402046,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/install_data.py"
     }, {
+      start: 7402046,
       audio: 0,
-      start: 7398853,
-      crunched: 0,
-      end: 7400063,
+      end: 7403256,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/build_py.py"
     }, {
+      start: 7403256,
       audio: 0,
-      start: 7400063,
-      crunched: 0,
-      end: 7401378,
+      end: 7404571,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/install_clib.py"
     }, {
+      start: 7404571,
       audio: 0,
-      start: 7401378,
-      crunched: 0,
-      end: 7405757,
+      end: 7408950,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/config_compiler.py"
     }, {
+      start: 7408950,
       audio: 0,
-      start: 7405757,
-      crunched: 0,
-      end: 7436703,
+      end: 7439896,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/build_src.py"
     }, {
+      start: 7439896,
       audio: 0,
-      start: 7436703,
-      crunched: 0,
-      end: 7438434,
+      end: 7441627,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/build_scripts.py"
     }, {
+      start: 7441627,
       audio: 0,
-      start: 7438434,
-      crunched: 0,
-      end: 7441561,
+      end: 7444754,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/install.py"
     }, {
+      start: 7444754,
       audio: 0,
-      start: 7441561,
-      crunched: 0,
-      end: 7443609,
+      end: 7446802,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/autodist.py"
     }, {
+      start: 7446802,
       audio: 0,
-      start: 7443609,
-      crunched: 0,
-      end: 7444596,
+      end: 7447789,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/egg_info.py"
     }, {
+      start: 7447789,
       audio: 0,
-      start: 7444596,
-      crunched: 0,
-      end: 7446214,
+      end: 7449407,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/build.py"
     }, {
+      start: 7449407,
       audio: 0,
-      start: 7446214,
-      crunched: 0,
-      end: 7459603,
+      end: 7462796,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/build_clib.py"
     }, {
+      start: 7462796,
       audio: 0,
-      start: 7459603,
-      crunched: 0,
-      end: 7484867,
+      end: 7488060,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/build_ext.py"
     }, {
+      start: 7488060,
       audio: 0,
-      start: 7484867,
-      crunched: 0,
-      end: 7485508,
+      end: 7488701,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/develop.py"
     }, {
+      start: 7488701,
       audio: 0,
-      start: 7485508,
-      crunched: 0,
-      end: 7486493,
+      end: 7489686,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/install_headers.py"
     }, {
+      start: 7489686,
       audio: 0,
-      start: 7486493,
-      crunched: 0,
-      end: 7487591,
+      end: 7490784,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/__init__.py"
     }, {
+      start: 7490784,
       audio: 0,
-      start: 7487591,
-      crunched: 0,
-      end: 7488366,
+      end: 7491559,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/bdist_rpm.py"
     }, {
+      start: 7491559,
       audio: 0,
-      start: 7488366,
-      crunched: 0,
-      end: 7489165,
+      end: 7492358,
       filename: "/lib/python3.6/site-packages/numpy/distutils/command/sdist.py"
     }, {
+      start: 7492358,
       audio: 0,
-      start: 7489165,
-      crunched: 0,
-      end: 7490945,
+      end: 7494138,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/mips.py"
     }, {
+      start: 7494138,
       audio: 0,
-      start: 7490945,
-      crunched: 0,
-      end: 7492072,
+      end: 7495265,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/pathf95.py"
     }, {
+      start: 7495265,
       audio: 0,
-      start: 7492072,
-      crunched: 0,
-      end: 7498845,
+      end: 7502038,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/intel.py"
     }, {
+      start: 7502038,
       audio: 0,
-      start: 7498845,
-      crunched: 0,
-      end: 7503058,
+      end: 7506251,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/pg.py"
     }, {
+      start: 7506251,
       audio: 0,
-      start: 7503058,
-      crunched: 0,
-      end: 7508625,
+      end: 7511818,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/absoft.py"
     }, {
+      start: 7511818,
       audio: 0,
-      start: 7508625,
-      crunched: 0,
-      end: 7509449,
+      end: 7512642,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/none.py"
     }, {
+      start: 7512642,
       audio: 0,
-      start: 7509449,
-      crunched: 0,
-      end: 7529212,
+      end: 7532405,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/gnu.py"
     }, {
+      start: 7532405,
       audio: 0,
-      start: 7529212,
-      crunched: 0,
-      end: 7530857,
+      end: 7534050,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/sun.py"
     }, {
+      start: 7534050,
       audio: 0,
-      start: 7530857,
-      crunched: 0,
-      end: 7532276,
+      end: 7535469,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/hpux.py"
     }, {
+      start: 7535469,
       audio: 0,
-      start: 7532276,
-      crunched: 0,
-      end: 7535711,
+      end: 7538904,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/ibm.py"
     }, {
+      start: 7538904,
       audio: 0,
-      start: 7535711,
-      crunched: 0,
-      end: 7537107,
+      end: 7540300,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/g95.py"
     }, {
+      start: 7540300,
       audio: 0,
-      start: 7537107,
-      crunched: 0,
-      end: 7539715,
+      end: 7542908,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/nag.py"
     }, {
+      start: 7542908,
       audio: 0,
-      start: 7539715,
-      crunched: 0,
-      end: 7543824,
+      end: 7547017,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/compaq.py"
     }, {
+      start: 7547017,
       audio: 0,
-      start: 7543824,
-      crunched: 0,
-      end: 7545217,
+      end: 7548410,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/lahey.py"
     }, {
+      start: 7548410,
       audio: 0,
-      start: 7545217,
-      crunched: 0,
-      end: 7546950,
+      end: 7550143,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/vast.py"
     }, {
+      start: 7550143,
       audio: 0,
-      start: 7546950,
-      crunched: 0,
-      end: 7586297,
+      end: 7589490,
       filename: "/lib/python3.6/site-packages/numpy/distutils/fcompiler/__init__.py"
     }, {
+      start: 7589490,
       audio: 0,
-      start: 7586297,
-      crunched: 0,
-      end: 7666734,
+      end: 7669927,
       filename: "/lib/python3.6/site-packages/numpy/linalg/linalg.py"
     }, {
+      start: 7669927,
       audio: 0,
-      start: 7666734,
-      crunched: 0,
-      end: 7668612,
+      end: 7671805,
       filename: "/lib/python3.6/site-packages/numpy/linalg/setup.py"
     }, {
+      start: 7671805,
       audio: 0,
-      start: 7668612,
-      crunched: 0,
-      end: 9131046,
+      end: 9134428,
       filename: "/lib/python3.6/site-packages/numpy/linalg/_umath_linalg.so"
     }, {
+      start: 9134428,
       audio: 0,
-      start: 9131046,
-      crunched: 0,
-      end: 10500764,
+      end: 10504378,
       filename: "/lib/python3.6/site-packages/numpy/linalg/lapack_lite.so"
     }, {
+      start: 10504378,
       audio: 0,
-      start: 10500764,
-      crunched: 0,
-      end: 10503096,
+      end: 10506710,
       filename: "/lib/python3.6/site-packages/numpy/linalg/__init__.py"
     }, {
+      start: 10506710,
       audio: 0,
-      start: 10503096,
-      crunched: 0,
-      end: 10504294,
+      end: 10507908,
       filename: "/lib/python3.6/site-packages/numpy/linalg/info.py"
     }, {
+      start: 10507908,
       audio: 0,
-      start: 10504294,
-      crunched: 0,
-      end: 10504424,
+      end: 10508038,
       filename: "/lib/python3.6/site-packages/numpy/testing/noseclasses.py"
     }, {
+      start: 10508038,
       audio: 0,
-      start: 10504424,
-      crunched: 0,
-      end: 10507129,
+      end: 10510743,
       filename: "/lib/python3.6/site-packages/numpy/testing/print_coercion_tables.py"
     }, {
+      start: 10510743,
       audio: 0,
-      start: 10507129,
-      crunched: 0,
-      end: 10507418,
+      end: 10511032,
       filename: "/lib/python3.6/site-packages/numpy/testing/nosetester.py"
     }, {
+      start: 10511032,
       audio: 0,
-      start: 10507418,
-      crunched: 0,
-      end: 10507546,
+      end: 10511160,
       filename: "/lib/python3.6/site-packages/numpy/testing/decorators.py"
     }, {
+      start: 10511160,
       audio: 0,
-      start: 10507546,
-      crunched: 0,
-      end: 10508472,
+      end: 10512086,
       filename: "/lib/python3.6/site-packages/numpy/testing/utils.py"
     }, {
+      start: 10512086,
       audio: 0,
-      start: 10508472,
-      crunched: 0,
-      end: 10509149,
+      end: 10512763,
       filename: "/lib/python3.6/site-packages/numpy/testing/setup.py"
     }, {
+      start: 10512763,
       audio: 0,
-      start: 10509149,
-      crunched: 0,
-      end: 10509624,
+      end: 10513238,
       filename: "/lib/python3.6/site-packages/numpy/testing/__init__.py"
     }, {
+      start: 10513238,
       audio: 0,
-      start: 10509624,
-      crunched: 0,
-      end: 10524223,
+      end: 10527837,
       filename: "/lib/python3.6/site-packages/numpy/testing/nose_tools/noseclasses.py"
     }, {
+      start: 10527837,
       audio: 0,
-      start: 10524223,
-      crunched: 0,
-      end: 10544785,
+      end: 10548399,
       filename: "/lib/python3.6/site-packages/numpy/testing/nose_tools/nosetester.py"
     }, {
+      start: 10548399,
       audio: 0,
-      start: 10544785,
-      crunched: 0,
-      end: 10553376,
+      end: 10556990,
       filename: "/lib/python3.6/site-packages/numpy/testing/nose_tools/decorators.py"
     }, {
+      start: 10556990,
       audio: 0,
-      start: 10553376,
-      crunched: 0,
-      end: 10628810,
+      end: 10632424,
       filename: "/lib/python3.6/site-packages/numpy/testing/nose_tools/utils.py"
     }, {
+      start: 10632424,
       audio: 0,
-      start: 10628810,
-      crunched: 0,
-      end: 10647096,
+      end: 10650710,
       filename: "/lib/python3.6/site-packages/numpy/testing/nose_tools/parameterized.py"
     }, {
+      start: 10650710,
       audio: 0,
-      start: 10647096,
-      crunched: 0,
-      end: 10647096,
+      end: 10650710,
       filename: "/lib/python3.6/site-packages/numpy/testing/nose_tools/__init__.py"
     }],
-    remote_package_size: 10647096,
-    package_uuid: "99c1a12c-32f2-4139-b1fa-5eb0a000f9bc"
+    remote_package_size: 10650710,
+    package_uuid: "c82e3089-8f52-4fdd-91a4-9be0c0d857d4"
   })
 })();

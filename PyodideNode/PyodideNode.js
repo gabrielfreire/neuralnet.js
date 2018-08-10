@@ -40,6 +40,7 @@ class PyodideNode {
                     return {};
                 };
                 Module.filePackagePrefixURL = externalPackagesURL;
+                Module.locateFile = (path) => externalPackagesURL + path;
                 Module.postRun = () => {
                     // remove module from the process
                     Module = null;

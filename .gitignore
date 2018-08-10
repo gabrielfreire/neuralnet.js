@@ -3,3 +3,6 @@ node_modules
 # package
 package-lock.json
 dist
+www/data/dctts_ssrn_model/
+www/data/dctts_text2mel_model/
+www/data/tacotron_model/
