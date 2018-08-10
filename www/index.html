@@ -33,10 +33,10 @@
       const TACOTRON_WEIGHTS_URL = 'data/tacotron_model/weights_manifest.json';
       async function loadModel() {
         try {
-          const t2mModel = await tf.loadFrozenModel(TEXT2MEL_MODEL_URL, TEXT2MEL_WEIGHTS_URL);
-          console.log(t2mModel);
-          const ssrnModel = await tf.loadFrozenModel(SSRN_MODEL_URL, SSRN_WEIGHTS_URL);
-          console.log(ssrnModel);
+          // const t2mModel = await tf.loadFrozenModel(TEXT2MEL_MODEL_URL, TEXT2MEL_WEIGHTS_URL);
+          // console.log(t2mModel);
+          // const ssrnModel = await tf.loadFrozenModel(SSRN_MODEL_URL, SSRN_WEIGHTS_URL);
+          // console.log(ssrnModel);
           const tacotronModel = await tf.loadFrozenModel(TACOTRON_MODEL_URL, TACOTRON_WEIGHTS_URL);
           console.log(tacotronModel);
         }catch(e) {
