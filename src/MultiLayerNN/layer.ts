@@ -36,7 +36,7 @@ export class Layer {
     optimize(loss: Matrix, learningRate: number): Matrix {
         let nextLoss = new Matrix(this.options.input, 1);
         // Calculate Gradient
-        // GRADIENT = LEARNING_RATE * LOSS * SIGMOID(OUTPUT_DERIVATIVE)
+        // GRADIENT = LEARNING_RATE * LOSS * ACTIVATION(OUTPUT_DERIVATIVE)
         let gradients = this.output.map((e, i, j) => this.activation(e, true));
         gradients.multiply(loss);
         gradients.multiply(learningRate);

@@ -37,13 +37,13 @@
           // console.log(t2mModel);
           // const ssrnModel = await tf.loadFrozenModel(SSRN_MODEL_URL, SSRN_WEIGHTS_URL);
           // console.log(ssrnModel);
-          const tacotronModel = await tf.loadFrozenModel(TACOTRON_MODEL_URL, TACOTRON_WEIGHTS_URL);
-          console.log(tacotronModel);
+          // const tacotronModel = await tf.loadFrozenModel(TACOTRON_MODEL_URL, TACOTRON_WEIGHTS_URL);
+          // console.log(tacotronModel);
         }catch(e) {
           console.log(e);
         }
       }
-      loadModel();
+      // loadModel();
       const _ui = ui();
       // load Python language
       _ui.showLoading();

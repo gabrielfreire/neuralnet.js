@@ -2,7 +2,7 @@ const path = require('path');
 const fs = require('fs');
 const pyodideModuleInitializer = require('./pyodide.asm.js');
 const pyodideWasmURL = path.join(__dirname, '/pyodide.asm.wasm');
-const pyodidePackagesURL = path.join(__dirname, '/');
+const pyodidePackagesURL = path.join(__dirname, '/packages');
 const externalPackagesURL = 'https://iodide.io/pyodide-demo/';
 const fetch = require('isomorphic-fetch');
 let pyodide = null;
@@ -49,6 +49,7 @@ class PyodideNode {
                     pyodide.filePackagePrefixURL = externalPackagesURL
                     pyodide.loadPackage = self._loadPackage;
                     process['pyodide'] = pyodide;
+                    console.log('Loaded Python');
                     resolve();
                 };
                 pyodide = pyodideModuleInitializer(Module);
