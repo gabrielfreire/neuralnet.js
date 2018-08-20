@@ -82,7 +82,9 @@ class AudioGenerator {
                 let sampleRate = decodedBuffer.sampleRate;
                 if(!this.numpyLoaded) reject({ message: "Numpy was not loaded yet, try again in a few seconds" });
                 let spec = this._spectrogramFromAudioBuffer(buffer, step, wind, sampleRate);
+                // let spec2 = createSpectrogram(decodedBuffer, 320, 160, 161);
                 console.log(spec);
+                // console.log(spec2);
                 resolve(spec);
             });
         });
