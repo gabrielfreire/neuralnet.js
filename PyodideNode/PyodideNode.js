@@ -1,9 +1,10 @@
 const path = require('path');
 const fs = require('fs');
-const pyodideModuleInitializer = require('./pyodide.asm.js');
-const pyodideWasmURL = path.join(__dirname, '/pyodide.asm.wasm');
-const pyodidePackagesURL = path.join(__dirname, '/packages');
 const externalPackagesURL = 'https://iodide.io/pyodide-demo/';
+let pyodideModuleInitializer = require('./pyodide.asm.js'); // TODO: use the remote asm.js below when it's fixed
+const externalPyodideModuleInitializer = `${externalPackagesURL}pyodide.asm.js`;
+const externalPyodideWasmURL = `${externalPackagesURL}pyodide.asm.wasm`;;
+const pyodidePackagesURL = path.join(__dirname, '/packages');
 const fetch = require('isomorphic-fetch');
 let pyodide = null;
 const packages = {
@@ -28,7 +29,7 @@ class PyodideNode {
         return new Promise((resolve, reject) => {
             let Module = {};
             pyodide = {};
-            this._fetch_node(pyodideWasmURL).then((buffer) => buffer.arrayBuffer()).then((arrayBuffer) => {
+            self._fetch_node(externalPyodideWasmURL).then((buffer) => buffer.buffer()).then(async (arrayBuffer) => {
                 Module.instantiateWasm = (info, receiveInstance) => {
                     WebAssembly.compile(arrayBuffer).then(module => {
                         // add Module to the process
@@ -36,7 +37,9 @@ class PyodideNode {
                         // load pyodide.asm.data.js (python standard libraries)
                         require('./pyodide.asm.data.js');
                         return WebAssembly.instantiate(module, info)
-                    }).then(instance => receiveInstance(instance));
+                    })
+                    .then(instance => receiveInstance(instance))
+                    .catch((err) => console.log(`ERROR: ${err}`));
                     return {};
                 };
                 Module.filePackagePrefixURL = externalPackagesURL;
@@ -52,7 +55,21 @@ class PyodideNode {
                     console.log('Loaded Python');
                     resolve();
                 };
+                // get module from remote location 
+                // TODO: uncomment this when the remote one is fixed
+                
+                // let fileDest = path.join(__dirname, '/pyodide2.asm.js');
+                // const moduleBuffer = await self._fetch_node(externalPyodideModuleInitializer);
+                // const buffer = await moduleBuffer.buffer();
+                // if(!buffer) reject('There is no buffer');
+                // fs.writeFileSync(fileDest, buffer);
+                // pyodideModuleInitializer = require('./pyodide2.asm.js');
+                
+                // load module
                 pyodide = pyodideModuleInitializer(Module);
+
+                // delete module file
+                // fs.unlinkSync(fileDest);
             }).catch((e) => {
                 reject(e);
             });
@@ -126,8 +143,13 @@ class PyodideNode {
     }
     
     _fetch_node(file) {
-        return new Promise((resolve, reject) => 
-        fs.readFile(file, (err, data) => err ? reject(err) : resolve({ arrayBuffer: () => data })));
+        return new Promise((resolve, reject) => {
+            if(file.indexOf('http') == -1) {
+                fs.readFile(file, (err, data) => err ? reject(err) : resolve({ buffer: () => data }));
+            } else {
+                fetch(file).then((buff) => resolve({ buffer: () => buff.buffer()}));
+            }
+        });
     }
 }
 module.exports = new PyodideNode();
