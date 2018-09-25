@@ -167,7 +167,7 @@ ret = ''
 # emcc.py will add this to the output itself, so it is only needed for standalone calls
 if not from_emcc:
   ret = '''
-var Module = typeof %(EXPORT_NAME)s !== 'undefined' ? %(EXPORT_NAME)s : typeof process[$(EXPORT_NAME)s] !== 'undefined' ? process[$(EXPORT_NAME)s] : {};
+var Module = typeof %(EXPORT_NAME)s !== 'undefined' ? %(EXPORT_NAME)s : typeof process[%(EXPORT_NAME)s] !== 'undefined' ? process[%(EXPORT_NAME)s] : {};
 ''' % {"EXPORT_NAME": export_name}
 
 ret += '''
@@ -447,11 +447,9 @@ if has_preloaded:
     var PACKAGE_PATH;
     if (typeof window === 'object') {
       PACKAGE_PATH = window['encodeURIComponent'](window.location.pathname.toString().substring(0, window.location.pathname.toString().lastIndexOf('/')) + '/');
-      console.warn('Browser environment'); // BROWSER
     } else if (typeof location !== 'undefined') {
       // worker
       PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
-      console.warn('Web worker environment'); // WEB WORKER
     } else if (typeof process === "object" && typeof require === "function") {
       console.warn('Node environment'); // NODE
     } else {
@@ -743,15 +741,22 @@ ret += '''%s
  function runMetaWithFS() {
   Module['addRunDependency']('%(metadata_file)s');
   var REMOTE_METADATA_NAME = Module['locateFile'] ? Module['locateFile']('%(metadata_file)s', '') : '%(metadata_file)s';
-  var xhr = new XMLHttpRequest();
-  xhr.onreadystatechange = function() {
-   if (xhr.readyState === 4 && xhr.status === 200) {
-     loadPackage(JSON.parse(xhr.responseText));
-   }
+  if (typeof XMLHttpRequest !== 'undefined') { // browser
+    var xhr = new XMLHttpRequest();
+    xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4 && xhr.status === 200) {
+      loadPackage(JSON.parse(xhr.responseText));
+    }
+    }
+    xhr.open('GET', REMOTE_METADATA_NAME, true);
+    xhr.overrideMimeType('application/json');
+    xhr.send(null);
+  } else { // node
+    var fetch = require('isomorphic-fetch');
+    fetch(REMOTE_METADATA_NAME).then((buffer) => buffer.buffer()).then((packageData) => {
+      loadPackage(JSON.parse(packageData));
+    });
   }
-  xhr.open('GET', REMOTE_METADATA_NAME, true);
-  xhr.overrideMimeType('application/json');
-  xhr.send(null);
  }
  if (Module['calledRun']) {
   runMetaWithFS();

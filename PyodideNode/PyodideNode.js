@@ -3,7 +3,7 @@ const fs = require('fs');
 const externalPackagesURL = 'https://iodide.io/pyodide-demo/';
 let pyodideModuleInitializer = require('./pyodide.asm.js'); // TODO: use the remote asm.js below when it's fixed
 const externalPyodideModuleInitializer = `${externalPackagesURL}pyodide.asm.js`;
-const externalPyodideWasmURL = `${externalPackagesURL}pyodide.asm.wasm`;;
+const externalPyodideWasmURL = `${externalPackagesURL}pyodide.asm.wasm`;
 const pyodidePackagesURL = path.join(__dirname, '/packages');
 const fetch = require('isomorphic-fetch');
 let pyodide = null;
@@ -17,8 +17,20 @@ const packages = {
 let loadedPackages = new Set();
 
 class PyodideNode {
-    constructor() {}
+    constructor() {
+        this.env = 'node';
+        this._setEnvironment();
+    }
 
+    _setEnvironment() {
+        if (typeof process !== 'undefined') {
+            this.env = 'node';
+        } else if (typeof window !== 'undefined') {
+            this.env = 'browser';
+        } else {
+            this.env = 'none';
+        }
+    };
     getModule() {
         if(!pyodide) throw "Pyodide wasn't loaded yet"
         return pyodide;
@@ -30,6 +42,11 @@ class PyodideNode {
             let Module = {};
             pyodide = {};
             self._fetch_node(externalPyodideWasmURL).then((buffer) => buffer.buffer()).then(async (arrayBuffer) => {
+                Module.noImageDecoding = true;
+                Module.noAudioDecoding = true;
+                Module.noWasmDecoding = true;
+                Module.filePackagePrefixURL = externalPackagesURL;
+                Module.locateFile = (path) => externalPackagesURL + path;
                 Module.instantiateWasm = (info, receiveInstance) => {
                     WebAssembly.compile(arrayBuffer).then(module => {
                         // add Module to the process
@@ -42,14 +59,13 @@ class PyodideNode {
                     .catch((err) => console.log(`ERROR: ${err}`));
                     return {};
                 };
-                Module.filePackagePrefixURL = externalPackagesURL;
-                Module.locateFile = (path) => externalPackagesURL + path;
                 Module.postRun = () => {
                     // remove module from the process
-                    Module = null;
-                    process['Module'] = null;
+                    // Module = null;
+                    // process['Module'] = null;
                     // setup pyodide and add to the process
                     pyodide.filePackagePrefixURL = externalPackagesURL
+                    pyodide.locateFile = (path, o) => externalPackagesURL + path;
                     pyodide.loadPackage = self._loadPackage;
                     process['pyodide'] = pyodide;
                     console.log('Loaded Python');
@@ -77,11 +93,8 @@ class PyodideNode {
     }
     
     _loadPackage(names) {
-        if (Array.isArray(names)) {
-            names = [names];
-        }
         // DFS to find all dependencies of the requested packages
-        let queue = new Array(names);
+        let queue = [].concat(names || []);
         let toLoad = new Set();
         while (queue.length) {
             const pckg = queue.pop();
@@ -119,7 +132,7 @@ class PyodideNode {
                 const pckgExternalURL = `${externalPackagesURL}${pckg}.js`;
                 if(!fs.existsSync(pckgLocalURL)){
                     // fetch
-                    const file = await fetch(pckgExternalURL);
+                    const file = await self._fetch_node(pckgExternalURL);
                     if(!file) reject(`ERROR 404, package ${pckg} was not found`);
                     const buffer = await file.buffer();
                     if(!buffer) reject();
