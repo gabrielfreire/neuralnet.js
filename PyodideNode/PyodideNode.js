@@ -1,12 +1,10 @@
 const path = require('path');
 const fs = require('fs');
+const fetch  = require('isomorphic-fetch');
 const externalPackagesURL = 'https://iodide.io/pyodide-demo/';
-let pyodideModuleInitializer = require('./pyodide.asm.js'); // TODO: use the remote asm.js below when it's fixed
 const externalPyodideModuleInitializer = `${externalPackagesURL}pyodide.asm.js`;
 const externalPyodideWasmURL = `${externalPackagesURL}pyodide.asm.wasm`;
 const pyodidePackagesURL = path.join(__dirname, '/packages');
-const fetch = require('isomorphic-fetch');
-let pyodide = null;
 const packages = {
     'dateutil': [],
     'matplotlib': ['numpy', 'dateutil', 'pytz'],
@@ -15,7 +13,6 @@ const packages = {
     'pytz': [],
 };
 let loadedPackages = new Set();
-
 class PyodideNode {
     constructor() {
         this.env = 'node';
@@ -30,62 +27,56 @@ class PyodideNode {
         } else {
             this.env = 'none';
         }
-    };
+    }
     getModule() {
-        if(!pyodide) throw "Pyodide wasn't loaded yet"
-        return pyodide;
+        if(!process.pyodide) throw "Pyodide wasn't loaded yet"
+        return process.pyodide;
     }
     
     loadLanguage() {
-        let self = this;
         return new Promise((resolve, reject) => {
+            let self = this;
             let Module = {};
-            pyodide = {};
+            let pyodide = {};
             self._fetch_node(externalPyodideWasmURL).then((buffer) => buffer.buffer()).then(async (arrayBuffer) => {
-                Module.noImageDecoding = true;
-                Module.noAudioDecoding = true;
-                Module.noWasmDecoding = true;
-                Module.filePackagePrefixURL = externalPackagesURL;
-                Module.locateFile = (path) => externalPackagesURL + path;
-                Module.instantiateWasm = (info, receiveInstance) => {
-                    WebAssembly.compile(arrayBuffer).then(module => {
+                Module['noImageDecoding'] = true;
+                Module['noAudioDecoding'] = true;
+                Module['noWasmDecoding'] = true;
+                Module['filePackagePrefixURL'] = externalPackagesURL;
+                Module['locateFile'] = (path) => externalPackagesURL + path;
+                Module['instantiateWasm'] = (info, receiveInstance) => {
+                    WebAssembly.compile(arrayBuffer).then(async module => {
                         // add Module to the process
                         process['Module'] = Module;
                         // load pyodide.asm.data.js (python standard libraries)
-                        require('./pyodide.asm.data.js');
+                        let pckgUrl = await self._fetch_node(path.join(__dirname, '/pyodide.asm.data.js'));
+                        eval(pckgUrl && pckgUrl.buffer() ? pckgUrl.buffer().toString() : '');
                         return WebAssembly.instantiate(module, info)
                     })
                     .then(instance => receiveInstance(instance))
                     .catch((err) => console.log(`ERROR: ${err}`));
                     return {};
                 };
-                Module.postRun = () => {
+                Module['postRun'] = () => {
                     // remove module from the process
-                    // Module = null;
-                    // process['Module'] = null;
+                    Module = null;
                     // setup pyodide and add to the process
-                    pyodide.filePackagePrefixURL = externalPackagesURL
-                    pyodide.locateFile = (path, o) => externalPackagesURL + path;
-                    pyodide.loadPackage = self._loadPackage;
-                    process['pyodide'] = pyodide;
+                    pyodide['filePackagePrefixURL'] = externalPackagesURL
+                    pyodide['loadPackage'] = self._loadPackage;
+                    pyodide['locateFile'] = (path) => externalPackagesURL + path;
+                    process['Module'] = pyodide;
                     console.log('Loaded Python');
                     resolve();
                 };
                 // get module from remote location 
                 // TODO: uncomment this when the remote one is fixed
-                
-                // let fileDest = path.join(__dirname, '/pyodide2.asm.js');
-                // const moduleBuffer = await self._fetch_node(externalPyodideModuleInitializer);
-                // const buffer = await moduleBuffer.buffer();
-                // if(!buffer) reject('There is no buffer');
-                // fs.writeFileSync(fileDest, buffer);
-                // pyodideModuleInitializer = require('./pyodide2.asm.js');
-                
+                const fetchedFile = await self._fetch_node(externalPyodideModuleInitializer);
+                const buffer = await fetchedFile.buffer();
+                if(!buffer) reject('There is no buffer');
+                // eval module code
+                let pyodideModuleInitializer = eval(buffer.toString());
                 // load module
                 pyodide = pyodideModuleInitializer(Module);
-
-                // delete module file
-                // fs.unlinkSync(fileDest);
             }).catch((e) => {
                 reject(e);
             });
@@ -96,6 +87,7 @@ class PyodideNode {
         // DFS to find all dependencies of the requested packages
         let queue = [].concat(names || []);
         let toLoad = new Set();
+        let self = this;
         while (queue.length) {
             const pckg = queue.pop();
             if (!packages.hasOwnProperty(pckg)) {
@@ -118,10 +110,10 @@ class PyodideNode {
                 resolve('No new packages to load');
             }
 
-            pyodide.monitorRunDependencies = (n) => {
+            process.pyodide['monitorRunDependencies'] = (n) => {
                 if (n === 0) {
                     toLoad.forEach((pckg) => loadedPackages.add(pckg));
-                    delete pyodide.monitorRunDependencies;
+                    delete process.pyodide.monitorRunDependencies;
                     const packageList = Array.from(toLoad.keys()).join(', ');
                     console.log(`Loaded ${packageList}`);
                     resolve(`Loaded ${packageList}`);
@@ -149,7 +141,7 @@ class PyodideNode {
             // We have to invalidate Python's import caches, or it won't
             // see the new files. This is done here so it happens in parallel
             // with the fetching over the network.
-            pyodide.runPython(
+            process.pyodide.runPython(
                 'import importlib as _importlib\n' +
                     '_importlib.invalidate_caches()\n');
         });

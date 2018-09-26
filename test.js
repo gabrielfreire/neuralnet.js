@@ -1,5 +1,5 @@
 const fs = require('fs');
-const pyodideNode = require('./PyodideNode/PyodideNode');
+const pyodideNode = require('./PyodideNode/PyodideNodeES5');
 async function init() {
     try {
         await pyodideNode.loadLanguage();
