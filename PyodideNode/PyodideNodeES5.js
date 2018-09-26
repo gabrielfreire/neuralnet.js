@@ -67,8 +67,7 @@ PyodideNode.prototype.loadLanguage = function() {
                 console.log('Loaded Python');
                 resolve();
             };
-            // get module from remote location 
-            // TODO: uncomment this when the remote one is fixed
+            // get module from remote location
             const fetchedFile = await self._fetch_node(externalPyodideModuleInitializer);
             const buffer = await fetchedFile.buffer();
             if(!buffer) reject('There is no buffer');
