@@ -1,5 +1,5 @@
 const fs = require('fs');
-const pyodideNode = require('./PyodideNode/PyodideNodeES5');
+const pyodideNode = require('./PyodideNode/PyodideNode');
 async function init() {
     try {
         await pyodideNode.loadLanguage();
@@ -27,12 +27,13 @@ async function init() {
 // beautify minified js files
 function beaut() {
     var beautify = require('js-beautify').js;
-    fs.readFile(__dirname + '/PyodideNode/pyodide.asm.data2.js', 'utf8', function (err, data) {
-    // fs.readFile(__dirname + '/PyodideNode/packages/numpy2.js', 'utf8', function (err, data) {
+    // fs.readFile(__dirname + '/PyodideNode/pyodide.asm.data2.js', 'utf8', function (err, data) {
+    fs.readFile(__dirname + '/PyodideNode/packages/numpy2.js', 'utf8', function (err, data) {
         if (err) {
             throw err;
         }
-        fs.writeFileSync(__dirname + '/PyodideNode/pyodide.asm.data3.js', beautify(data, { indent_size: 2, space_in_empty_paren: true }));
+        fs.writeFileSync(__dirname + '/PyodideNode/packages/numpy3.js', beautify(data, { indent_size: 2, space_in_empty_paren: true }));
+        // fs.writeFileSync(__dirname + '/PyodideNode/pyodide.asm.data3.js', beautify(data, { indent_size: 2, space_in_empty_paren: true }));
     });
 }
 init();

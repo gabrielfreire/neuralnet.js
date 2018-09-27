@@ -63,7 +63,8 @@ PyodideNode.prototype.loadLanguage = function() {
                 pyodide['filePackagePrefixURL'] = externalPackagesURL
                 pyodide['loadPackage'] = self._loadPackage;
                 pyodide['locateFile'] = (path) => externalPackagesURL + path;
-                process['Module'] = pyodide;
+                process['Module'] = null;
+                process['pyodide'] = pyodide;
                 console.log('Loaded Python');
                 resolve();
             };

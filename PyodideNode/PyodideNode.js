@@ -64,7 +64,8 @@ class PyodideNode {
                     pyodide['filePackagePrefixURL'] = externalPackagesURL
                     pyodide['loadPackage'] = self._loadPackage;
                     pyodide['locateFile'] = (path) => externalPackagesURL + path;
-                    process['Module'] = pyodide;
+                    process['Module'] = null;
+                    process['pyodide'] = pyodide;
                     console.log('Loaded Python');
                     resolve();
                 };
@@ -73,7 +74,8 @@ class PyodideNode {
                 const buffer = await fetchedFile.buffer();
                 if(!buffer) reject('There is no buffer');
                 // eval module code
-                let pyodideModuleInitializer = eval(buffer.toString());
+                let pyodideModuleInitializer = require('./pyodide.asm.js');
+                // let pyodideModuleInitializer = eval(buffer.toString());
                 // load module
                 pyodide = pyodideModuleInitializer(Module);
             }).catch((e) => {

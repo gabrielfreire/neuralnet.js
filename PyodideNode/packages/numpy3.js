@@ -1,4 +1,4 @@
-var Module = typeof pyodide !== "undefined" ? pyodide : typeof process.pyodide !== 'undefined' ? process.pyodide : {};
+var Module = typeof pyodide._module !== "undefined" ? pyodide._module : {};
 if (!Module.expectedDataFileDownloads) {
   Module.expectedDataFileDownloads = 0;
   Module.finishedDataFileDownloads = 0
@@ -7,17 +7,12 @@ Module.expectedDataFileDownloads++;
 (function() {
   var loadPackage = function(metadata) {
     var PACKAGE_PATH;
-    if (typeof window === 'object') {
-      PACKAGE_PATH = window['encodeURIComponent'](window.location.pathname.toString().substring(0, window.location.pathname.toString().lastIndexOf('/')) + '/');
-      console.warn('Browser environment'); // BROWSER
-    } else if (typeof location !== 'undefined') {
-      // worker
-      PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf('/')) + '/');
-      console.warn('Web worker environment'); // WEB WORKER
-    } else if (typeof process === "object" && typeof require === "function") {
-      console.warn('Node environment'); // NODE
+    if (typeof window === "object") {
+      PACKAGE_PATH = window["encodeURIComponent"](window.location.pathname.toString().substring(0, window.location.pathname.toString().lastIndexOf("/")) + "/")
+    } else if (typeof location !== "undefined") {
+      PACKAGE_PATH = encodeURIComponent(location.pathname.toString().substring(0, location.pathname.toString().lastIndexOf("/")) + "/")
     } else {
-      throw 'using preloaded data can only be done on a web page, web worker or in nodejs';
+      throw "using preloaded data can only be done on a web page or in a web worker"
     }
     var PACKAGE_NAME = "numpy.data";
     var REMOTE_PACKAGE_BASE = "numpy.data";
@@ -30,94 +25,51 @@ Module.expectedDataFileDownloads++;
     var PACKAGE_UUID = metadata.package_uuid;
 
     function fetchRemotePackage(packageName, packageSize, callback, errback) {
-      if (typeof XMLHttpRequest !== 'undefined') { // BROWSER
-        var xhr = new XMLHttpRequest();
-        xhr.open('GET', packageName, true);
-        xhr.responseType = 'arraybuffer';
-        xhr.onprogress = function(event) {
-            var url = packageName;
-            var size = packageSize;
-            if (event.total) size = event.total;
-            if (event.loaded) {
-            if (!xhr.addedTotal) {
-                xhr.addedTotal = true;
-                if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
-                Module.dataFileDownloads[url] = {
-                  loaded: event.loaded,
-                  total: size
-                };
-            } else {
-                Module.dataFileDownloads[url].loaded = event.loaded;
+      var xhr = new XMLHttpRequest;
+      xhr.open("GET", packageName, true);
+      xhr.responseType = "arraybuffer";
+      xhr.onprogress = function(event) {
+        var url = packageName;
+        var size = packageSize;
+        if (event.total) size = event.total;
+        if (event.loaded) {
+          if (!xhr.addedTotal) {
+            xhr.addedTotal = true;
+            if (!Module.dataFileDownloads) Module.dataFileDownloads = {};
+            Module.dataFileDownloads[url] = {
+              loaded: event.loaded,
+              total: size
             }
-            var total = 0;
-            var loaded = 0;
-            var num = 0;
-            for (var download in Module.dataFileDownloads) {
+          } else {
+            Module.dataFileDownloads[url].loaded = event.loaded
+          }
+          var total = 0;
+          var loaded = 0;
+          var num = 0;
+          for (var download in Module.dataFileDownloads) {
             var data = Module.dataFileDownloads[download];
-                total += data.total;
-                loaded += data.loaded;
-                num++;
-            }
-            total = Math.ceil(total * Module.expectedDataFileDownloads/num);
-            if (Module['setStatus']) Module['setStatus']('Downloading data... (' + loaded + '/' + total + ')');
-            } else if (!Module.dataFileDownloads) {
-            if (Module['setStatus']) Module['setStatus']('Downloading data...');
-            }
-        };
-        xhr.onerror = function(event) {
-            throw new Error("NetworkError for: " + packageName);
-        }
-        xhr.onload = function(event) {
-            if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || (xhr.status == 0 && xhr.response)) { // file URLs can return 0
-            var packageData = xhr.response;
-            callback(packageData);
-            } else {
-            throw new Error(xhr.statusText + " : " + xhr.responseURL);
-            }
-        };
-        xhr.send(null);
-      } else {
-        function fetch_node(file) {
-          var fs = require('fs');
-          var fetch = require('isomorphic-fetch');
-          return new Promise((resolve, reject) => {
-          if(file.indexOf('http') == -1) {
-              fs.readFile(file, (err, data) => err ? reject(err) : resolve({ buffer: () => data })); // local
-          } else {
-              fetch(file).then((buff) => resolve({ buffer: () => buff.buffer()})); // remote
+            total += data.total;
+            loaded += data.loaded;
+            num++
           }
-          });
+          total = Math.ceil(total * Module.expectedDataFileDownloads / num);
+          if (Module["setStatus"]) Module["setStatus"]("Downloading data... (" + loaded + "/" + total + ")")
+        } else if (!Module.dataFileDownloads) {
+          if (Module["setStatus"]) Module["setStatus"]("Downloading data...")
         }
-        fetch_node(packageName).then((buffer) => buffer.buffer()).then((packageData) => {
-          if (!Module.dataFileDownloads) {
-            if (Module['setStatus']) Module['setStatus']('Downloading data...');
-            console.log('Downloading ' + packageName + 'data...');
-          } else {
-            Module.dataFileDownloads[packageName] = {
-                loaded: packageSize,
-                total: packageSize
-            }
-            var total = 0;
-            var loaded = 0;
-            var num = 0;
-            for (var download in Module.dataFileDownloads) {
-                var data = Module.dataFileDownloads[download];
-                total += data.total;
-                loaded += data.loaded;
-                num++
-            }
-            total = Math.ceil(total * Module.expectedDataFileDownloads / num);
-            if (Module['setStatus']) {
-              Module['setStatus']('Downloading data... (' + loaded + '/' + total + ')');
-              console.log('Downloaded ' + packageName + ' data... (' + loaded + '/' + total + ')');
-            }
-          }
-          callback(packageData);
-        }).catch((err) => {
-          console.error('Something wrong happened ' + err);
-          throw new Error('Something wrong happened ' + err);
-        });
-      }
+      };
+      xhr.onerror = function(event) {
+        throw new Error("NetworkError for: " + packageName)
+      };
+      xhr.onload = function(event) {
+        if (xhr.status == 200 || xhr.status == 304 || xhr.status == 206 || xhr.status == 0 && xhr.response) {
+          var packageData = xhr.response;
+          callback(packageData)
+        } else {
+          throw new Error(xhr.statusText + " : " + xhr.responseURL)
+        }
+      };
+      xhr.send(null)
     }
 
     function handleError(error) {
@@ -243,7 +195,6 @@ Module.expectedDataFileDownloads++;
       function processPackageData(arrayBuffer) {
         Module.finishedDataFileDownloads++;
         assert(arrayBuffer, "Loading data file failed.");
-        arrayBuffer = arrayBuffer instanceof ArrayBuffer ? arrayBuffer : arrayBuffer.buffer;
         assert(arrayBuffer instanceof ArrayBuffer, "bad input to processPackageData");
         var byteArray = new Uint8Array(arrayBuffer);
         var curr;
