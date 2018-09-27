@@ -57,6 +57,7 @@ class PyodideNode {
                     .catch((err) => console.log(`ERROR: ${err}`));
                     return {};
                 };
+                Module['global'] = global;
                 Module['postRun'] = () => {
                     // remove module from the process
                     Module = null;
