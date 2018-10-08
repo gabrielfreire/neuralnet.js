@@ -4,7 +4,12 @@ async function init() {
     try {
         await pyodideNode.loadLanguage();
         const pyodide = pyodideNode.getModule();
-
+        pyodide.runPython(
+            'a = [1, 2, 3]\n' +
+            'b = [4, 5, 6]\n' +
+            'print(a)\n' +
+            'print(b)\n'
+        )
         await pyodide.loadPackage('numpy');
 
         pyodide.runPython('import numpy as np'); 
@@ -33,8 +38,8 @@ function beaut() {
             throw err;
         }
         // fs.writeFileSync(__dirname + '/PyodideNode/packages/numpy3.js', beautify(data, { indent_size: 2, space_in_empty_paren: true }));
-        fs.writeFileSync(__dirname + '/PyodideNode/pyodide.asm3.js', beautify(data, { indent_size: 2, space_in_empty_paren: true }));
+        fs.writeFileSync(__dirname + '/PyodideNode/pyodide.asm.js', beautify(data, { indent_size: 2, space_in_empty_paren: true }));
     });
 }
-init();
-// beaut();
+// init();
+beaut();
